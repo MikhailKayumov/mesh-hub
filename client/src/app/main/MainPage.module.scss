@@ -1,0 +1,18 @@
+.root {
+  padding: 16px;
+  overflow: auto;
+  height: 100%;
+}
+
+.paper {
+  background-color: rgb(20 20 20);
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 16px;
+  min-height: 360px;
+}
+
+.viewer {
+  height: 100%;
+  padding: 0;
+}

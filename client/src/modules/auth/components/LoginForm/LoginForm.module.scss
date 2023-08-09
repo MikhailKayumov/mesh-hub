@@ -1,0 +1,27 @@
+.root {
+  width: 360px;
+
+  .fields {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .show-password-btn {
+    cursor: pointer;
+    border-radius: 4px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      background-color: #ececec;
+    }
+
+    &:active {
+      background-color: transparent;
+    }
+  }
+}

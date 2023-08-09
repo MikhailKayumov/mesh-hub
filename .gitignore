@@ -1,0 +1,15 @@
+.vs
+.idea
+
+/node_modules
+/.pnp
+.pnp.js
+
+/data
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.env*.local
+.env

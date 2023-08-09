@@ -1,0 +1,39 @@
+.root {
+  flex: 1;
+
+  .sidebar {
+    height: 100%;
+  }
+
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 8px;
+
+    & :global(.ant-breadcrumb-link) {
+      font-size: 12px;
+      line-height: 22px;
+    }
+
+    & :global(.ant-breadcrumb-separator) {
+      font-size: 16px;
+      line-height: 22px;
+      font-weight: lighter;
+      margin-inline: 2px;
+      //color: rgb(253 253 253 / 48%);
+    }
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+
+    .content {
+      flex: 1;
+      overflow: auto;
+    }
+  }
+}

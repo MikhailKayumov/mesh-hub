@@ -61,20 +61,7 @@ export class ConfigService {
     return mode === 'PRODUCTION';
   }
 
-  public get<T = string>(name: string, defaultValue?: T): T {
-    return defaultValue ? this.config.get<T>(name, defaultValue) : this.config.getOrThrow(name);
-  }
-
-  public getNumber(name: string, defaultValue?: number): number {
-    const value = Number(this.get<number>(name, defaultValue));
-    if (isNaN(value)) {
-      throw new Error(`Variable ${name} must be number`);
-    }
-
-    return value;
-  }
-
-  public getTypeOrmOptions(): DataSourceOptions {
+  public get typeOrmOptions(): DataSourceOptions {
     return {
       type: 'postgres',
       host: this.get('POSTGRES_HOST'),
@@ -86,5 +73,18 @@ export class ConfigService {
       entities: ['dist/**/*.entity.js'],
       migrations: ['dist/database/migrations/**/*.js'],
     };
+  }
+
+  public get<T = string>(name: string, defaultValue?: T): T {
+    return defaultValue ? this.config.get<T>(name, defaultValue) : this.config.getOrThrow(name);
+  }
+
+  public getNumber(name: string, defaultValue?: number): number {
+    const value = Number(this.get<number>(name, defaultValue));
+    if (isNaN(value)) {
+      throw new Error(`Variable ${name} must be number`);
+    }
+
+    return value;
   }
 }

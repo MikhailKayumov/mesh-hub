@@ -1,9 +1,10 @@
-import { AuthService } from '@modules/auth/auth.service';
-import { LoginRequestDto } from '@modules/auth/dto/login.request.dto';
-import { RefreshRequestDto } from '@modules/auth/dto/refresh.request.dto';
-import { SessionResponseDto } from '@modules/auth/dto/session.response.dto';
+import { JwtAuth, JwtRefreshAuth } from '@decorators/auth/auth.decorator';
+import { SessionEntity } from '@entities/session/session.entity';
 import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Session } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginRequestDto } from './dto/login.request.dto';
+import { SessionResponseDto } from './dto/session.response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -21,9 +22,17 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @JwtAuth()
+  public async logout(@Session() session: SessionEntity): Promise<void> {
+    return this.authService.logout(session);
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  public async refresh(@Body() dto: RefreshRequestDto): Promise<SessionResponseDto> {
-    return this.authService.refresh(dto);
+  @JwtRefreshAuth()
+  public async refresh(@Session() session: SessionEntity): Promise<SessionResponseDto> {
+    return this.authService.refresh(session);
   }
 }

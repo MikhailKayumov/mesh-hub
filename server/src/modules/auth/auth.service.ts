@@ -1,11 +1,6 @@
 import { ConfigService } from '@config/config.service';
 import { SessionEntity } from '@entities/session/session.entity';
 import { UserEntity } from '@entities/user/user.entity';
-import { AuthMapper } from '@modules/auth/auth.mapper';
-import { AuthRepository } from '@modules/auth/auth.repository';
-import { LoginRequestDto } from '@modules/auth/dto/login.request.dto';
-import { RefreshRequestDto } from '@modules/auth/dto/refresh.request.dto';
-import { SessionResponseDto } from '@modules/auth/dto/session.response.dto';
 import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
 import { UserRepository } from '@modules/user/user.repository';
 import { UserService } from '@modules/user/user.service';
@@ -13,11 +8,11 @@ import { HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } 
 import { JwtService } from '@nestjs/jwt';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { LessThan, MoreThanOrEqual } from 'typeorm';
-
-export interface ValidateSessionProps {
-  token: string;
-  userId: string;
-}
+import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
+import { AuthMapper } from './auth.mapper';
+import { AuthRepository } from './auth.repository';
+import { LoginRequestDto } from './dto/login.request.dto';
+import { SessionResponseDto } from './dto/session.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +35,7 @@ export class AuthService {
 
   public async login({ email, password }: LoginRequestDto): Promise<SessionResponseDto> {
     const user = await this.userRepository.findByEmail(email);
+
     if (!user || !(await this.userService.comparePassword(password, user.salt, user.password))) {
       throw new HttpException('Неверные логин или пароль', HttpStatus.NOT_FOUND);
     }
@@ -47,35 +43,39 @@ export class AuthService {
     return AuthMapper.sessionEntityToResponse(await this.createSession(user));
   }
 
-  public async refresh({ token, userId }: RefreshRequestDto): Promise<SessionResponseDto> {
-    const session = await this.validateSession(token, userId);
-    this.authRepository.delete(session.id);
-    return AuthMapper.sessionEntityToResponse(await this.createSession(session.user));
+  public async logout(session: SessionEntity): Promise<void> {
+    await this.authRepository.delete(session.id);
   }
 
-  public async createSession(user: UserEntity): Promise<SessionEntity> {
-    const sessions = await this.authRepository.find({
-      where: { user: { id: user.id } },
-    });
-    if (sessions && sessions.length) {
-      await Promise.all(sessions.map(({ id }) => this.authRepository.delete({ id })));
-    }
+  public async refresh(session: SessionEntity): Promise<SessionResponseDto> {
+    try {
+      await this.jwtService.verifyAsync(session.refreshToken, {
+        secret: this.configService.jwt.refreshSecret,
+        algorithms: [this.configService.jwt.algorithm],
+      });
 
-    const accessToken = await this.jwtService.signAsync({
-      userId: user.id,
-      userEmail: user.email,
-    });
-    const refreshToken = await this.jwtService.signAsync(
-      {
-        userId: user.id,
-        userEmail: user.email,
-      },
-      {
+      return AuthMapper.sessionEntityToResponse(await this.createSession(session.user, session.id));
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  public async createSession(user: UserEntity, sessionId?: string): Promise<SessionEntity> {
+    const where: FindOptionsWhere<SessionEntity> = { user: { id: user.id } };
+    if (sessionId) {
+      (where as any).id = sessionId;
+    }
+    await this.authRepository.delete(where);
+
+    const payload = { userId: user.id, userEmail: user.email };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload),
+      this.jwtService.signAsync(payload, {
         secret: this.configService.jwt.refreshSecret,
         algorithm: this.configService.jwt.algorithm,
         expiresIn: this.configService.jwt.refreshExpiresIn,
-      },
-    );
+      }),
+    ]);
 
     return this.authRepository.createSession(accessToken, refreshToken, user);
   }
@@ -84,34 +84,28 @@ export class AuthService {
     const session = await this.authRepository.findOne({
       where: {
         accessToken: token,
-        user: { id: userId },
+        user: {
+          id: userId,
+        },
         expiredAt: MoreThanOrEqual(new Date()),
       },
       relations: {
         user: true,
       },
     });
-
-    if (
-      !session ||
-      !session.user ||
-      !(await this.jwtService.verifyAsync(session.refreshToken, {
-        secret: this.configService.jwt.refreshSecret,
-        algorithms: [this.configService.jwt.algorithm],
-      }))
-    ) {
+    if (!session || !session.user) {
       throw new UnauthorizedException();
     }
 
     return session;
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_NOON)
-  public async clearSessions() {
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  public async clearSessions(): Promise<void> {
     const { affected } = await this.authRepository.delete({
       expiredAt: LessThan(new Date()),
     });
 
-    this.logger.debug(`Removed ${affected} expired session`);
+    this.logger.log(`${affected ?? 0} expired session${(affected ?? 0) > 2 ? 's' : ''} has been removed`);
   }
 }

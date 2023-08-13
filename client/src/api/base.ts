@@ -1,4 +1,3 @@
-import { Mutex } from 'async-mutex';
 import { NextResponse } from 'next/server';
 import { Route, Routes } from '~/api/routes';
 import DotEnv from '~/utils/env';

@@ -5,13 +5,10 @@ const { _, getInlineParseContent, getParseContent, parseSchema, getComponentByRe
 const { parameters, path, method, payload, query, formData, security, requestParams } = route.request;
 const { type, errorType, contentTypes } = route.response;
 const { HTTP_CLIENT, RESERVED_REQ_PARAMS_ARG_NAMES } = config.constants;
-const routeDocs = includeFile("./base/route-docs", { config, route, utils });
+
 const queryName = (query && query.name) || "query";
 const pathParams = _.values(parameters);
 const pathParamsNames = _.map(pathParams, "name");
-
-const isFetchTemplate = config.httpClientType === HTTP_CLIENT.FETCH;
-
 const requestConfigParam = {
     name: specificArgNameResolver.resolve(RESERVED_REQ_PARAMS_ARG_NAMES),
     optional: true,
@@ -56,7 +53,7 @@ const requestContentKind = {
 const responseContentKind = {
     "JSON": '"json"',
     "IMAGE": '"blob"',
-    "FORM_DATA": isFetchTemplate ? '"formData"' : '"document"'
+    "FORM_DATA": '"formData"'
 }
 
 const bodyTmpl = _.get(payload, "name") || null;
@@ -65,30 +62,13 @@ const bodyContentKindTmpl = requestContentKind[requestBodyInfo.contentKind] || n
 const responseFormatTmpl = responseContentKind[responseBodyInfo.success && responseBodyInfo.success.schema && responseBodyInfo.success.schema.contentKind] || null;
 const securityTmpl = security ? 'true' : null;
 
-const describeReturnType = () => {
-    if (!config.toJS) return "";
+// const describeReturnType = () => `Promise<HttpResponse<${type}, ${errorType}>>`
 
-    switch(config.httpClientType) {
-        case HTTP_CLIENT.AXIOS: {
-          return `Promise<AxiosResponse<${type}>>`
-        }
-        default: {
-          return `Promise<HttpResponse<${type}, ${errorType}>`
-        }
-    }
-}
-
+const describeReturnType = () => `Promise<HttpResponse<${type}, HttpException>>`
 %>
-/**
-<%~ routeDocs.description %>
 
- *<% /* Here you can add some other JSDoc tags */ %>
-
-<%~ routeDocs.lines %>
-
- */
-<%~ route.routeName.usage %> = (<%~ wrapperArgs %>)<%~ config.toJS ? `: ${describeReturnType()}` : "" %> =>
-    <%~ config.singleHttpClient ? 'this.http.request' : 'this.request' %><<%~ type %>, <%~ errorType %>>({
+public <%~ route.routeName.usage %> = (<%~ wrapperArgs %>)<%~ `: ${describeReturnType()}` %> => {
+    return this.httpClient.request<<%~ type %>, HttpException>({
         path: `<%~ path %>`,
         method: '<%~ _.upperCase(method) %>',
         <%~ queryTmpl ? `query: ${queryTmpl},` : '' %>
@@ -98,3 +78,4 @@ const describeReturnType = () => {
         <%~ responseFormatTmpl ? `format: ${responseFormatTmpl},` : '' %>
         ...<%~ _.get(requestConfigParam, "name") %>,
     })
+}

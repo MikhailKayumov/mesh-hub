@@ -2,19 +2,13 @@
 const { modelTypes, utils, config } = it;
 const { formatDescription, require, _, Ts } = utils;
 
-
 const buildGenerics = (contract) => {
   if (!contract.genericArgs || !contract.genericArgs.length) return '';
 
   return '<' + contract.genericArgs.map(({ name, default: defaultType, extends: extendsType }) => {
-    return [
-      name,
-      extendsType && `extends ${extendsType}`,
-      defaultType && `= ${defaultType}`,
-    ].join('')
+    return [name, extendsType && `extends ${extendsType}`, defaultType && `= ${defaultType}`].join('')
   }).join(',') + '>'
 }
-
 const dataContractTemplates = {
   enum: (contract) => {
     return `enum ${contract.name} {\r\n${contract.content} \r\n }`;
@@ -24,7 +18,7 @@ const dataContractTemplates = {
   },
   type: (contract) => {
     return `type ${contract.name}${buildGenerics(contract)} = ${contract.content}`;
-  },
+  }
 }
 %>
 
@@ -33,8 +27,9 @@ type <%~ config.Ts.CodeGenKeyword.UtilRequiredKeys %><T, K extends keyof T> = Om
 <% } %>
 
 <% for (const contract of modelTypes) { %>
-<!--  <%~ includeFile('./base/data-contract-jsdoc.ejs', { ...it, data: { ...contract, ...contract.typeData } }) %>-->
-  <%~ contract.internal ? '' : 'export'%> <%~ (dataContractTemplates[contract.typeIdentifier] || dataContractTemplates.type)(contract) %>
-
-
+export <%~ (dataContractTemplates[contract.typeIdentifier] || dataContractTemplates.type)(contract) %>
+<%~ `\n\n` %>
 <% } %>
+
+export type HttpException = Record<string | number, any>;
+<%~ `\n\n` %>

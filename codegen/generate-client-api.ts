@@ -7,7 +7,7 @@ generateApi({
   output: path.resolve(process.cwd(), './test'),
   input: path.resolve(process.cwd(), '../server/swagger.openapi3.json'),
   templates: path.resolve(process.cwd(), './templates'),
-  cleanOutput: true,
+  // cleanOutput: true,
   modular: true,
   httpClientType: 'fetch',
   extractingOptions: {

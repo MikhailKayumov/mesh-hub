@@ -6,21 +6,21 @@ const routes = route.routes;
 const dataContracts = _.map(modelTypes, "name");
 %>
 
-<% if (config.httpClientType === config.constants.HTTP_CLIENT.AXIOS) { %> import type { AxiosRequestConfig, AxiosResponse } from "axios"; <% } %>
-
-import { HttpClient, RequestParams, ContentType, HttpResponse } from "./<%~ config.fileNames.httpClient %>";
 <% if (dataContracts.length) { %>
-import { <%~ dataContracts.join(", ") %> } from "./<%~ config.fileNames.dataContracts %>"
+import { HttpException, <%~ dataContracts.join(", ") %> } from "./<%~ config.fileNames.dataContracts %>"
 <% } %>
+import { HttpClient, RequestParams, ContentType, HttpResponse } from "./<%~ config.fileNames.httpClient %>";
 
-export class <%= apiClassName %><SecurityDataType = unknown><% if (!config.singleHttpClient) { %> extends HttpClient<SecurityDataType> <% } %> {
-<% if(config.singleHttpClient) { %>
-  http: HttpClient<SecurityDataType>;
+export interface BaseHttpClient {
+    request<T = any, E = any>(params: any): Promise<HttpResponse<T, E>>;
+}
 
-  constructor (http: HttpClient<SecurityDataType>) {
-    this.http = http;
-  }
-<% } %>
+export default class <%= apiClassName %><SecurityDataType = unknown> {
+    public readonly httpClient: HttpClient;
+
+    public constructor(httpClient: HttpClient) {
+        this.httpClient = httpClient;
+    }
 
     <% for (const route of routes) { %>
         <%~ includeFile('./procedure-call.ejs', { ...it, route }) %>

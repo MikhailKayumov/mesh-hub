@@ -62,6 +62,9 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Unauthorized"
           }
         },
         "tags": [
@@ -91,6 +94,9 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Unauthorized"
           }
         },
         "tags": [
@@ -121,6 +127,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
           }
         },
         "tags": [
@@ -159,6 +171,9 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Unauthorized"
           }
         },
         "tags": [
@@ -179,7 +194,10 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Logout was succeed"
+          },
+          "403": {
+            "description": "Unauthorized"
           }
         },
         "tags": [
@@ -202,7 +220,7 @@
           }
         },
         "responses": {
-          "default": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
@@ -234,7 +252,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -248,7 +273,10 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Logout was succeed"
+          },
+          "403": {
+            "description": "Unauthorized"
           }
         },
         "tags": [
@@ -262,7 +290,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized"
           }
         },
         "tags": [
@@ -355,7 +393,10 @@
             "type": "string"
           },
           "password": {
-            "type": "string"
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 24,
+            "pattern": "/^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/"
           },
           "firstName": {
             "type": "string"
@@ -399,7 +440,10 @@
             "type": "string"
           },
           "password": {
-            "type": "string"
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 24,
+            "pattern": "passwordRegExp"
           }
         },
         "required": [

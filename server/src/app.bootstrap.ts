@@ -3,9 +3,10 @@ import { CookiesInterceptor } from '@interceptors/cookies.interceptor';
 import { LoggingInterceptor } from '@interceptors/logging.interceptor';
 import { ValidationPipe } from '@nestjs/common';
 import { NestApplication, NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { SwaggerService } from './swagger/swagger.service';
 
 export default class AppBootstrap {
   private static application: NestApplication;
@@ -34,7 +35,7 @@ export default class AppBootstrap {
       }),
     );
     this.application.useGlobalInterceptors(new LoggingInterceptor());
-    this.application.useGlobalInterceptors(new CookiesInterceptor(this.application.get(ConfigService)));
+    this.application.useGlobalInterceptors(new CookiesInterceptor(this.configService));
 
     return this.application;
   }
@@ -42,14 +43,8 @@ export default class AppBootstrap {
   public static async runApp(): Promise<NestApplication> {
     await this.initApp();
 
-    const config = new DocumentBuilder()
-      .setTitle('MeshHub Swagger')
-      .setDescription('The mesh hub API description')
-      .setVersion('1.0')
-      .addTag('meshes')
-      .build();
-    const document = SwaggerModule.createDocument(this.application, config);
-    SwaggerModule.setup('api', this.application, document);
+    const swaggerService = new SwaggerService(this.application, this.configService);
+    SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument());
 
     this.application.listen(this.configService.app.port, this.configService.app.host);
 

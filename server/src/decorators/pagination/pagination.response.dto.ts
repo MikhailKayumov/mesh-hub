@@ -1,27 +1,32 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import validateDto from '@utils/validate-dto';
 import { IsBoolean, IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 
 export class PaginationResponseDto<T = unknown> {
   public readonly data: T[];
 
+  @ApiPropertyOptional()
   @IsInt()
   @IsNumber({ allowNaN: false })
   @Min(0)
   @IsOptional()
   public skip: number;
 
-  @IsOptional()
+  @ApiPropertyOptional()
   @IsInt()
   @IsNumber({ allowNaN: false })
   @Min(1)
+  @IsOptional()
   public size: number;
 
+  @ApiPropertyOptional()
   @IsInt()
   @IsNumber({ allowNaN: false })
   @Min(0)
   @IsOptional()
   public totalCount: number;
 
+  @ApiPropertyOptional()
   @IsBoolean()
   @IsOptional()
   public hasMore: boolean;

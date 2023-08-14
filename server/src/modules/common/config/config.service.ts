@@ -75,6 +75,15 @@ export class ConfigService {
     };
   }
 
+  public get swagger() {
+    return {
+      title: this.get('SWAGGER_TITLE', 'MeshHub Swagger'),
+      description: this.get('SWAGGER_DESCRIPTION', 'The mesh hub API description'),
+      version: this.get('SWAGGER_VERSION', '1.0'),
+      server: this.get('SWAGGER_SERVER', 'http://localhost:8080'),
+    };
+  }
+
   public get<T = string>(name: string, defaultValue?: T): T {
     return defaultValue ? this.config.get<T>(name, defaultValue) : this.config.getOrThrow(name);
   }

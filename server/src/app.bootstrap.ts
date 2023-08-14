@@ -23,16 +23,9 @@ export default class AppBootstrap {
     this.application = await NestFactory.create(AppModule);
     this.configService = this.application.get(ConfigService);
 
-    return this.application;
-  }
-
-  public static async runApp(): Promise<NestApplication> {
-    await this.initApp();
-
     this.application.use(cookieParser());
     this.application.enableCors(this.configService.cors);
     this.application.setGlobalPrefix(this.configService.app.prefix);
-
     this.application.useGlobalPipes(
       new ValidationPipe({
         transform: true,
@@ -42,6 +35,12 @@ export default class AppBootstrap {
     );
     this.application.useGlobalInterceptors(new LoggingInterceptor());
     this.application.useGlobalInterceptors(new CookiesInterceptor(this.application.get(ConfigService)));
+
+    return this.application;
+  }
+
+  public static async runApp(): Promise<NestApplication> {
+    await this.initApp();
 
     const config = new DocumentBuilder()
       .setTitle('MeshHub Swagger')

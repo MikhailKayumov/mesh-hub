@@ -1,6 +1,7 @@
 import './global.css';
 import { PropsWithChildren } from 'react';
 import { Metadata } from 'next';
+import styles from './RootLayout.module.css';
 
 export const metadata: Metadata = {
   title: 'MeshHub',
@@ -10,7 +11,12 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='ru' data-mode='dark'>
-      <body className='prose dark:prose-invert w-full dark:bg-slate-950 dark:text-white'>{children}</body>
+      <body>
+        <header className={styles.header}>
+          <h2 className='m-0 font-headings'>MeshHub</h2>
+        </header>
+        {children}
+      </body>
     </html>
   );
 }

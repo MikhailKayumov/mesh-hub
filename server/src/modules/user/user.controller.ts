@@ -1,6 +1,7 @@
 import { JwtAuth } from '@decorators/auth/auth.decorator';
-import { ApiPaginatedResponse, PaginatedRequest, PaginationDto, PaginationResponseDto } from '@decorators/pagination';
-import { Body, Controller, Delete, Get, HttpException, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@decorators/pagination';
+import { UserEntity } from '@entities/user/user.entity';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserCreateRequestDto } from './dto/user.create.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
@@ -15,8 +16,10 @@ export class UserController {
   public constructor(private readonly userService: UserService) {}
 
   @Get('')
-  @ApiPaginatedResponse(UserResponseDto)
-  public async getUsers(@PaginatedRequest() paginate: PaginationDto): Promise<PaginationResponseDto<UserResponseDto>> {
+  @PaginatedResponse(UserResponseDto)
+  public async getUsers(
+    @PaginatedRequest(UserEntity) paginate: PaginationDto,
+  ): Promise<PaginationResponseDto<UserResponseDto>> {
     return await this.userService.getUsers(paginate);
   }
 

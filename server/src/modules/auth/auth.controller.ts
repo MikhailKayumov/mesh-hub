@@ -1,8 +1,9 @@
 import { JwtAuth, JwtRefreshAuth } from '@decorators/auth/auth.decorator';
 import { SessionEntity } from '@entities/session/session.entity';
 import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
-import { Body, Controller, HttpCode, HttpStatus, Post, Session } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Session } from '@nestjs/common';
 import { ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/login.request.dto';
 import { SessionResponseDto } from './dto/session.response.dto';
@@ -22,8 +23,11 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: () => SessionResponseDto })
-  public async login(@Body() dto: LoginRequestDto): Promise<SessionResponseDto> {
-    return this.authService.login(dto);
+  public async login(
+    @Body() dto: LoginRequestDto,
+    @Req() request: Request & { session?: SessionEntity },
+  ): Promise<SessionResponseDto> {
+    return this.authService.login(dto, request);
   }
 
   @Post('logout')
@@ -40,7 +44,10 @@ export class AuthController {
   @ApiOkResponse({ type: () => SessionResponseDto })
   @ApiForbiddenResponse({ description: 'Unauthorized' })
   @JwtRefreshAuth()
-  public async refresh(@Session() session: SessionEntity): Promise<SessionResponseDto> {
-    return this.authService.refresh(session);
+  public async refresh(
+    @Session() session: SessionEntity,
+    @Req() request: Request & { session?: SessionEntity },
+  ): Promise<SessionResponseDto> {
+    return this.authService.refresh(session, request);
   }
 }

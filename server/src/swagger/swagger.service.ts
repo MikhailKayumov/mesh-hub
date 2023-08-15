@@ -31,7 +31,7 @@ export class SwaggerService {
       .setDescription(description)
       .setVersion(version)
       .addBearerAuth()
-      .addCookieAuth('x-access-token')
+      .addCookieAuth(this.configService.jwt.cookieName)
       .addServer(server)
       .build();
   }

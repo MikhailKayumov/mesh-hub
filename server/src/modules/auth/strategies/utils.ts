@@ -4,7 +4,14 @@ import type { JwtStrategyType } from '../types';
 
 export function extractJwt(request: Request): string | null {
   const extract = ExtractJwt.fromExtractors([
-    (req: Request): string | null => req?.cookies?.['x-access-token'] ?? null,
+    (req: Request): string | null => {
+      const cookieName: string | undefined = process.env['AUTH_JWT_COOKIE_NAME'];
+      if (!cookieName) {
+        return null;
+      }
+
+      return req?.cookies?.[cookieName] ?? null;
+    },
     ExtractJwt.fromAuthHeaderAsBearerToken(),
   ]);
 

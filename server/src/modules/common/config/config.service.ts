@@ -21,6 +21,7 @@ export class ConfigService {
 
   public get jwt() {
     return {
+      cookieName: this.get('AUTH_JWT_COOKIE_NAME'),
       algorithm: 'HS512' as Algorithm,
       accessSecret: this.get('AUTH_JWT_ACCESS_SECRET'),
       refreshSecret: this.get('AUTH_JWT_REFRESH_SECRET'),

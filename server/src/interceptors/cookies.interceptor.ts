@@ -26,12 +26,14 @@ export class CookiesInterceptor implements NestInterceptor {
   }
 
   private setAuthCookie(context: ExecutionContext, next: CallHandler) {
-    const { session } = context.switchToHttp().getRequest();
     const response: Response = context.switchToHttp().getResponse();
 
     return next.handle().pipe(
       map((data: unknown) => {
+        const { session } = context.switchToHttp().getRequest();
+
         if (session) {
+          this.logger.log(`Setting cookie access token for ${session.user.id}`);
           /*
             maxAge: a number representing the milliseconds from Date.now() for expiry
             expires: a Date object indicating the cookie’s expiration date (expires at the end of session by default).
@@ -43,10 +45,12 @@ export class CookiesInterceptor implements NestInterceptor {
             signed: a boolean indicating whether the cookie is to be signed (true by default).
             overwrite: a boolean indicating whether to overwrite previously set cookies of the same name (true by default).
           */
-          response.cookie('x-access-token', session.accessToken, {
+
+          response.cookie(this.configService.jwt.cookieName, session.accessToken, {
             httpOnly: true,
             maxAge: this.configService.jwt.accessExpiresIn * 1000,
             expires: addSeconds(new Date(), this.configService.jwt.accessExpiresIn),
+            secure: this.configService.isProduction,
           });
         }
 

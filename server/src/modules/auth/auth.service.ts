@@ -7,6 +7,7 @@ import { UserService } from '@modules/user/user.service';
 import { HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Request } from 'express';
 import { LessThan, MoreThanOrEqual } from 'typeorm';
 import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
 import { AuthMapper } from './auth.mapper';
@@ -33,28 +34,38 @@ export class AuthService {
     return AuthMapper.sessionEntityToResponse(await this.createSession(user));
   }
 
-  public async login({ email, password }: LoginRequestDto): Promise<SessionResponseDto> {
+  public async login(
+    { email, password }: LoginRequestDto,
+    request: Request & { session?: SessionEntity },
+  ): Promise<SessionResponseDto> {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user || !(await this.userService.comparePassword(password, user.salt, user.password))) {
       throw new HttpException('Неверные логин или пароль', HttpStatus.NOT_FOUND);
     }
 
-    return AuthMapper.sessionEntityToResponse(await this.createSession(user));
+    request.session = await this.createSession(user);
+
+    return AuthMapper.sessionEntityToResponse(request.session);
   }
 
   public async logout(session: SessionEntity): Promise<void> {
     await this.authRepository.delete(session.id);
   }
 
-  public async refresh(session: SessionEntity): Promise<SessionResponseDto> {
+  public async refresh(
+    session: SessionEntity,
+    request: Request & { session?: SessionEntity },
+  ): Promise<SessionResponseDto> {
     try {
       await this.jwtService.verifyAsync(session.refreshToken, {
         secret: this.configService.jwt.refreshSecret,
         algorithms: [this.configService.jwt.algorithm],
       });
 
-      return AuthMapper.sessionEntityToResponse(await this.createSession(session.user, session.id));
+      request.session = await this.createSession(session.user, session.id);
+
+      return AuthMapper.sessionEntityToResponse(request.session);
     } catch (e) {
       throw new UnauthorizedException();
     }

@@ -38,51 +38,25 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "readOnly": true,
-                      "nullable": false,
-                      "items": {
-                        "$ref": "#/components/schemas/UserResponseDto"
-                      }
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponseDto"
                     },
-                    "skip": {
-                      "type": "number",
-                      "readOnly": true,
-                      "nullable": false
-                    },
-                    "size": {
-                      "type": "number",
-                      "readOnly": true,
-                      "nullable": false
-                    },
-                    "sort": {
-                      "type": "array",
-                      "readOnly": true,
-                      "nullable": false,
-                      "items": {
-                        "$ref": "#/components/schemas/PaginationDtoSortItem"
-                      }
-                    },
-                    "totalCount": {
-                      "type": "number",
-                      "readOnly": true,
-                      "nullable": false
-                    },
-                    "hasMore": {
-                      "type": "boolean",
-                      "readOnly": true,
-                      "nullable": false
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "readOnly": true,
+                          "nullable": false,
+                          "items": {
+                            "$ref": "#/components/schemas/UserResponseDto"
+                          }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
                     }
-                  },
-                  "required": [
-                    "data",
-                    "skip",
-                    "size",
-                    "sort",
-                    "totalCount",
-                    "hasMore"
                   ]
                 }
               }

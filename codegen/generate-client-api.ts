@@ -16,18 +16,6 @@ generateApi({
     responseBodySuffix: ["Data", "Result", "Output"],
     responseErrorSuffix: ["Error", "Fail", "Fails", "ErrorData", "HttpError", "BadResponse"],
   },
-  hooks: {
-    // onCreateComponent: (component) => {},
-    // onCreateRequestParams: (rawType) => {},
-    // onCreateRoute: (routeData) => {},
-    // onCreateRouteName: (routeNameInfo, rawRouteInfo) => {},
-    // onFormatRouteName: (routeInfo, templateRouteName) => {},
-    // onFormatTypeName: (typeName, rawTypeName, schemaType) => {},
-    // onInit: (configuration) => {},
-    // onPreParseSchema: (originalSchema, typeName, schemaType) => {},
-    // onParseSchema: (originalSchema, parsedSchema) => {},
-    // onPrepareConfig: (currentConfiguration) => {},
-  }
 }).catch(err => {
   console.error(err);
 });

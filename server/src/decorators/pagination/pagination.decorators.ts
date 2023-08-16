@@ -57,41 +57,55 @@ export const PaginatedResponse = <T extends Type>(Model: T, status: HttpStatus =
     ApiResponse({
       status,
       schema: {
-        properties: {
-          data: {
-            type: 'array',
-            readOnly: true,
-            nullable: false,
-            items: { $ref: getSchemaPath(Model) },
+        allOf: [
+          { $ref: getSchemaPath(PaginationResponseDto) },
+          {
+            properties: {
+              data: {
+                type: 'array',
+                readOnly: true,
+                nullable: false,
+                items: { $ref: getSchemaPath(Model) },
+              },
+            },
+            required: ['data'],
           },
-          skip: {
-            type: 'number',
-            readOnly: true,
-            nullable: false,
-          },
-          size: {
-            type: 'number',
-            readOnly: true,
-            nullable: false,
-          },
-          sort: {
-            type: 'array',
-            readOnly: true,
-            nullable: false,
-            items: { $ref: getSchemaPath(PaginationDtoSortItem) },
-          },
-          totalCount: {
-            type: 'number',
-            readOnly: true,
-            nullable: false,
-          },
-          hasMore: {
-            type: 'boolean',
-            readOnly: true,
-            nullable: false,
-          },
-        },
-        required: ['data', 'skip', 'size', 'sort', 'totalCount', 'hasMore'],
+        ],
+        // properties: {
+        //   data: {
+        //     type: 'array',
+        //     readOnly: true,
+        //     nullable: false,
+        //     items: { $ref: getSchemaPath(Model) },
+        //   },
+        //   skip: {
+        //     type: 'number',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        //   size: {
+        //     type: 'number',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        //   sort: {
+        //     type: 'array',
+        //     readOnly: true,
+        //     nullable: false,
+        //     items: { $ref: getSchemaPath(PaginationDtoSortItem) },
+        //   },
+        //   totalCount: {
+        //     type: 'number',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        //   hasMore: {
+        //     type: 'boolean',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        // },
+        // required: ['data', 'skip', 'size', 'sort', 'totalCount', 'hasMore'],
       },
     }),
   );

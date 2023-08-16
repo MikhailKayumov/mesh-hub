@@ -12,7 +12,7 @@
 import {
   HttpException,
   LoginRequestDto,
-  PaginationDtoSortItem,
+  PaginationResponseDto,
   SessionResponseDto,
   UserCreateRequestDto,
   UserResponseDto,
@@ -42,25 +42,15 @@ export default class Api<SecurityDataType = unknown> {
     params: RequestParams = {},
   ): Promise<
     HttpResponse<
-      {
+      PaginationResponseDto & {
         data: UserResponseDto[];
-        skip: number;
-        size: number;
-        sort: PaginationDtoSortItem[];
-        totalCount: number;
-        hasMore: boolean;
       },
       HttpException
     >
   > => {
     return this.httpClient.request<
-      {
+      PaginationResponseDto & {
         data: UserResponseDto[];
-        skip: number;
-        size: number;
-        sort: PaginationDtoSortItem[];
-        totalCount: number;
-        hasMore: boolean;
       },
       HttpException
     >({

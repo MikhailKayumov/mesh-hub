@@ -34,10 +34,7 @@ export class AuthService {
     return AuthMapper.sessionEntityToResponse(await this.createSession(user));
   }
 
-  public async login(
-    { email, password }: LoginRequestDto,
-    request: Request & { session?: SessionEntity },
-  ): Promise<SessionResponseDto> {
+  public async login({ email, password }: LoginRequestDto, request: Request): Promise<SessionResponseDto> {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user || !(await this.userService.comparePassword(password, user.salt, user.password))) {
@@ -53,10 +50,7 @@ export class AuthService {
     await this.authRepository.delete(session.id);
   }
 
-  public async refresh(
-    session: SessionEntity,
-    request: Request & { session?: SessionEntity },
-  ): Promise<SessionResponseDto> {
+  public async refresh(session: SessionEntity, request: Request): Promise<SessionResponseDto> {
     try {
       await this.jwtService.verifyAsync(session.refreshToken, {
         secret: this.configService.jwt.refreshSecret,

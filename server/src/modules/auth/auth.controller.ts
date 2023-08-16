@@ -23,10 +23,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: () => SessionResponseDto })
-  public async login(
-    @Body() dto: LoginRequestDto,
-    @Req() request: Request & { session?: SessionEntity },
-  ): Promise<SessionResponseDto> {
+  public async login(@Body() dto: LoginRequestDto, @Req() request: Request): Promise<SessionResponseDto> {
     return this.authService.login(dto, request);
   }
 
@@ -44,10 +41,7 @@ export class AuthController {
   @ApiOkResponse({ type: () => SessionResponseDto })
   @ApiForbiddenResponse({ description: 'Unauthorized' })
   @JwtRefreshAuth()
-  public async refresh(
-    @Session() session: SessionEntity,
-    @Req() request: Request & { session?: SessionEntity },
-  ): Promise<SessionResponseDto> {
+  public async refresh(@Session() session: SessionEntity, @Req() request: Request): Promise<SessionResponseDto> {
     return this.authService.refresh(session, request);
   }
 }

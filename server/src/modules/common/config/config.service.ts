@@ -36,7 +36,7 @@ export class ConfigService {
         const originsWhitelist = this.get<string>('CORS_ORIGINS_WHITE_LIST', '*');
 
         let originResult: boolean | string = false;
-        if (originsWhitelist && (originsWhitelist === '*' || originsWhitelist.split(',').includes(origin))) {
+        if (originsWhitelist === '*' || originsWhitelist.split(',').includes(origin)) {
           originResult = origin;
         }
 
@@ -57,9 +57,7 @@ export class ConfigService {
   }
 
   public get isProduction() {
-    const mode = this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT');
-
-    return mode === 'PRODUCTION';
+    return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'PRODUCTION';
   }
 
   public get typeOrmOptions(): DataSourceOptions {

@@ -1,3 +1,4 @@
+import { PaginationResponseDto } from '@decorators/pagination/pagination.response.dto';
 import { createParamDecorator, ExecutionContext, Type, applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiQuery, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 import { PaginationDto, PaginationDtoSortItem, PaginationSortOrder } from './pagination.dto';
@@ -50,17 +51,18 @@ export const PaginatedRequest = createParamDecorator(
   ],
 );
 
-export const PaginatedResponse = <T extends Type>(model: T, status: HttpStatus = HttpStatus.OK) => {
+export const PaginatedResponse = <T extends Type>(Model: T, status: HttpStatus = HttpStatus.OK) => {
   return applyDecorators(
-    ApiExtraModels(model),
+    ApiExtraModels(PaginationResponseDto, PaginationDtoSortItem, Model),
     ApiResponse({
       status,
       schema: {
         properties: {
           data: {
             type: 'array',
+            readOnly: true,
             nullable: false,
-            items: { $ref: getSchemaPath(model), readOnly: true },
+            items: { $ref: getSchemaPath(Model) },
           },
           skip: {
             type: 'number',
@@ -70,19 +72,26 @@ export const PaginatedResponse = <T extends Type>(model: T, status: HttpStatus =
           size: {
             type: 'number',
             readOnly: true,
-            nullable: true,
+            nullable: false,
+          },
+          sort: {
+            type: 'array',
+            readOnly: true,
+            nullable: false,
+            items: { $ref: getSchemaPath(PaginationDtoSortItem) },
           },
           totalCount: {
             type: 'number',
             readOnly: true,
-            nullable: true,
+            nullable: false,
           },
           hasMore: {
             type: 'boolean',
             readOnly: true,
-            nullable: true,
+            nullable: false,
           },
         },
+        required: ['data', 'skip', 'size', 'sort', 'totalCount', 'hasMore'],
       },
     }),
   );

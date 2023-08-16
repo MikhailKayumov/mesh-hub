@@ -23,7 +23,7 @@ export class UserMapper {
       middleName: user.middleName,
       lastName: user.lastName,
       nickname: user.nickname,
-      sessions: user?.sessions?.map(AuthMapper.sessionEntityToResponse),
+      sessions: user?.sessions?.map((s) => AuthMapper.sessionEntityToResponse(s)),
     };
   }
 }

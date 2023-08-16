@@ -12,12 +12,17 @@
 import {
   HttpException,
   LoginRequestDto,
+  PaginationDtoSortItem,
   SessionResponseDto,
   UserCreateRequestDto,
   UserResponseDto,
   UserUpdateRequestDto,
 } from "./data-contracts";
 import { ContentType, HttpClient, HttpResponse, RequestParams } from "./http-client";
+
+export interface BaseHttpClient {
+  request<T = any, E = any>(params: any): Promise<HttpResponse<T, E>>;
+}
 
 export default class Api<SecurityDataType = unknown> {
   public readonly httpClient: HttpClient;
@@ -31,27 +36,31 @@ export default class Api<SecurityDataType = unknown> {
       skip?: number;
       /** @min 1 */
       size?: number;
+      /** Sorting fields in format: [+-][fieldName] */
+      sort?: string;
     },
     params: RequestParams = {},
   ): Promise<
     HttpResponse<
       {
-        data?: UserResponseDto[];
-        skip?: number;
-        size?: number | null;
-        totalCount?: number | null;
-        hasMore?: boolean | null;
+        data: UserResponseDto[];
+        skip: number;
+        size: number;
+        sort: PaginationDtoSortItem[];
+        totalCount: number;
+        hasMore: boolean;
       },
       HttpException
     >
   > => {
     return this.httpClient.request<
       {
-        data?: UserResponseDto[];
-        skip?: number;
-        size?: number | null;
-        totalCount?: number | null;
-        hasMore?: boolean | null;
+        data: UserResponseDto[];
+        skip: number;
+        size: number;
+        sort: PaginationDtoSortItem[];
+        totalCount: number;
+        hasMore: boolean;
       },
       HttpException
     >({

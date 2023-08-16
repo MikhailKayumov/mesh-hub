@@ -15,7 +15,7 @@ export class UserService {
 
   public constructor(private readonly userRepository: UserRepository) {}
 
-  public async getUsers({ size, skip }: PaginationDto): Promise<PaginationResponseDto<UserResponseDto>> {
+  public async getUsers({ size, skip, sort }: PaginationDto): Promise<PaginationResponseDto<UserResponseDto>> {
     const qb = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.sessions', 'session')
@@ -35,6 +35,7 @@ export class UserService {
       count,
       size,
       skip,
+      sort,
     );
   }
 

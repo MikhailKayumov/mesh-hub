@@ -9,6 +9,23 @@
  * ---------------------------------------------------------------
  */
 
+export interface PaginationDtoSortItem {
+  field: string;
+  by: "ASC" | "DESC";
+}
+
+export interface PaginationResponseDto {
+  data: object[];
+  /** @min 0 */
+  skip: number;
+  /** @min 0 */
+  size: number;
+  sort: PaginationDtoSortItem[];
+  /** @min 0 */
+  totalCount: number;
+  hasMore: boolean;
+}
+
 export interface UserResponseDto {
   id: string;
   email: string;
@@ -20,13 +37,18 @@ export interface UserResponseDto {
 }
 
 export interface SessionResponseDto {
-  sessionId: string;
-  token: string;
+  id: string;
+  token?: string;
   user?: UserResponseDto;
 }
 
 export interface UserCreateRequestDto {
   email: string;
+  /**
+   * @minLength 8
+   * @maxLength 24
+   * @pattern /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/
+   */
   password: string;
   firstName?: string;
   middleName?: string;
@@ -43,5 +65,10 @@ export interface UserUpdateRequestDto {
 
 export interface LoginRequestDto {
   email: string;
+  /**
+   * @minLength 8
+   * @maxLength 24
+   * @pattern passwordRegExp
+   */
   password: string;
 }

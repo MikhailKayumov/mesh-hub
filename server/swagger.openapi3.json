@@ -21,6 +21,15 @@
               "type": "number",
               "minimum": 1
             }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Sorting fields in format: [+-][fieldName]"
+            }
           }
         ],
         "responses": {
@@ -32,10 +41,10 @@
                   "properties": {
                     "data": {
                       "type": "array",
+                      "readOnly": true,
                       "nullable": false,
                       "items": {
-                        "$ref": "#/components/schemas/UserResponseDto",
-                        "readOnly": true
+                        "$ref": "#/components/schemas/UserResponseDto"
                       }
                     },
                     "skip": {
@@ -46,19 +55,35 @@
                     "size": {
                       "type": "number",
                       "readOnly": true,
-                      "nullable": true
+                      "nullable": false
+                    },
+                    "sort": {
+                      "type": "array",
+                      "readOnly": true,
+                      "nullable": false,
+                      "items": {
+                        "$ref": "#/components/schemas/PaginationDtoSortItem"
+                      }
                     },
                     "totalCount": {
                       "type": "number",
                       "readOnly": true,
-                      "nullable": true
+                      "nullable": false
                     },
                     "hasMore": {
                       "type": "boolean",
                       "readOnly": true,
-                      "nullable": true
+                      "nullable": false
                     }
-                  }
+                  },
+                  "required": [
+                    "data",
+                    "skip",
+                    "size",
+                    "sort",
+                    "totalCount",
+                    "hasMore"
+                  ]
                 }
               }
             }
@@ -335,6 +360,65 @@
       }
     },
     "schemas": {
+      "PaginationDtoSortItem": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "by": {
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "by"
+        ]
+      },
+      "PaginationResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "skip": {
+            "type": "number",
+            "minimum": 0
+          },
+          "size": {
+            "type": "number",
+            "minimum": 0
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaginationDtoSortItem"
+            }
+          },
+          "totalCount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data",
+          "skip",
+          "size",
+          "sort",
+          "totalCount",
+          "hasMore"
+        ]
+      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -371,7 +455,7 @@
       "SessionResponseDto": {
         "type": "object",
         "properties": {
-          "sessionId": {
+          "id": {
             "type": "string"
           },
           "token": {
@@ -382,8 +466,7 @@
           }
         },
         "required": [
-          "sessionId",
-          "token"
+          "id"
         ]
       },
       "UserCreateRequestDto": {

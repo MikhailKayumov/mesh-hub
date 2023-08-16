@@ -3,10 +3,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SessionResponseDto {
   @ApiProperty()
-  public sessionId: string;
+  public id: string;
 
-  @ApiProperty()
-  public token: string;
+  @ApiPropertyOptional()
+  public token?: string;
 
   @ApiPropertyOptional({ type: () => UserResponseDto })
   public user?: UserResponseDto;

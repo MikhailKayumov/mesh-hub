@@ -24,14 +24,3 @@ const jsDocLines = _.compact([
     !_.isUndefined(data.example) && `@example ${stringify(data.example)}`
 ]).join('\n').split('\n');
 %>
-<% if (jsDocLines.every(_.isEmpty)) { %>
-<% } else if (jsDocLines.length === 1) { %>
-/** <%~ jsDocLines[0] %> */
-<% } else if (jsDocLines.length) { %>
-/**
-<% for (jsDocLine of jsDocLines) { %>
- * <%~ jsDocLine %>
-
-<% } %>
- */
-<% } %>

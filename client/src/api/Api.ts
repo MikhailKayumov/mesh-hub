@@ -34,9 +34,7 @@ export default class Api<SecurityDataType = unknown> {
   public userControllerGetUsers = (
     query?: {
       skip?: number;
-      /** @min 1 */
       size?: number;
-      /** Sorting fields in format: [+-][fieldName] */
       sort?: string;
     },
     params: RequestParams = {},

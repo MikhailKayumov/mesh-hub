@@ -16,12 +16,9 @@ export interface PaginationDtoSortItem {
 
 export interface PaginationResponseDto {
   data: object[];
-  /** @min 0 */
   skip: number;
-  /** @min 0 */
   size: number;
   sort: PaginationDtoSortItem[];
-  /** @min 0 */
   totalCount: number;
   hasMore: boolean;
 }
@@ -44,11 +41,6 @@ export interface SessionResponseDto {
 
 export interface UserCreateRequestDto {
   email: string;
-  /**
-   * @minLength 8
-   * @maxLength 24
-   * @pattern /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/
-   */
   password: string;
   firstName?: string;
   middleName?: string;
@@ -65,11 +57,6 @@ export interface UserUpdateRequestDto {
 
 export interface LoginRequestDto {
   email: string;
-  /**
-   * @minLength 8
-   * @maxLength 24
-   * @pattern passwordRegExp
-   */
   password: string;
 }
 

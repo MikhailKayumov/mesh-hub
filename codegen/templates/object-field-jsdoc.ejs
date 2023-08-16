@@ -16,13 +16,3 @@ const comments = _.uniq(
     ]).reduce((acc, comment) => [...acc, ...comment.split(/\n/g)], []),
 );
 %>
-<% if (comments.length === 1) { %>
-  /** <%~ comments[0] %> */
-<% } else if (comments.length) { %>
-  /**
-  <% comments.forEach(comment => { %>
-   * <%~ comment %>
-
-  <% }) %>
-   */
-<% } %>

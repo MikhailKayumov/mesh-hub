@@ -1,6 +1,8 @@
+import { TypeOrmNamingStrategy } from '@config/typeorm-naming-strategy';
 import { Injectable } from '@nestjs/common';
 import { type CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService as NestConfigService } from '@nestjs/config';
+import { ThrottlerModuleOptions } from '@nestjs/throttler';
 import { Algorithm } from 'jsonwebtoken';
 import { DataSourceOptions } from 'typeorm';
 
@@ -60,6 +62,10 @@ export class ConfigService {
     return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'PRODUCTION';
   }
 
+  public get isTest() {
+    return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'TEST';
+  }
+
   public get typeOrmOptions(): DataSourceOptions {
     return {
       type: 'postgres',
@@ -71,6 +77,16 @@ export class ConfigService {
       ssl: this.isProduction,
       entities: ['dist/**/*.entity.js'],
       migrations: ['dist/database/migrations/**/*.js'],
+      namingStrategy: new TypeOrmNamingStrategy(),
+    };
+  }
+
+  public get throttlerConfig(): ThrottlerModuleOptions {
+    if (this.isTest) return {};
+
+    return {
+      ttl: +this.getNumber('THROTTLE_GLOBAL_TTL', 60),
+      limit: +this.getNumber('THROTTLE_GLOBAL_LIMIT', 10),
     };
   }
 

@@ -1,15 +1,24 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard as PassportAuthGuard, IAuthModuleOptions } from '@nestjs/passport';
-import { getAuthenticateOptions, isSessionValid } from './utils';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard extends PassportAuthGuard('jwt') {
   public getAuthenticateOptions(): IAuthModuleOptions | undefined {
-    return getAuthenticateOptions('JwtAccess');
+    return {
+      defaultStrategy: 'jwt',
+      property: 'session',
+    };
   }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     await super.canActivate(context);
-    return isSessionValid(context);
+
+    const { session } = this.getRequest<Request>(context);
+    if (!session) {
+      throw new UnauthorizedException();
+    }
+
+    return true;
   }
 }

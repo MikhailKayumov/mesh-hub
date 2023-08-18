@@ -8,7 +8,6 @@ import { AuthController } from './auth.controller';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
 import { JwtAuthStrategy } from './strategies/jwt-auth.strategy';
-import { JwtRefreshAuthStrategy } from './strategies/jwt-refresh-auth.strategy';
 
 @Module({
   imports: [
@@ -25,8 +24,8 @@ import { JwtRefreshAuthStrategy } from './strategies/jwt-refresh-auth.strategy';
     }),
     UserModule,
   ],
-  providers: [AuthService, AuthRepository, JwtAuthStrategy, JwtRefreshAuthStrategy],
-  exports: [AuthService, AuthRepository, JwtAuthStrategy, JwtRefreshAuthStrategy],
+  providers: [AuthService, AuthRepository, JwtAuthStrategy],
+  exports: [AuthService, AuthRepository, JwtAuthStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

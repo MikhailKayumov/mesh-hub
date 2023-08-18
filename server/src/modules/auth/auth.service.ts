@@ -46,43 +46,9 @@ export class AuthService {
     return AuthMapper.sessionEntityToResponse(request.session);
   }
 
-  public async logout(session: SessionEntity): Promise<void> {
+  public async logout(session: SessionEntity, request: Request): Promise<void> {
     await this.authRepository.delete(session.id);
-  }
-
-  public async refresh(session: SessionEntity, request: Request): Promise<SessionResponseDto> {
-    try {
-      await this.jwtService.verifyAsync(session.refreshToken, {
-        secret: this.configService.jwt.refreshSecret,
-        algorithms: [this.configService.jwt.algorithm],
-      });
-
-      request.session = await this.createSession(session.user, session.id);
-
-      return AuthMapper.sessionEntityToResponse(request.session);
-    } catch (e) {
-      throw new UnauthorizedException();
-    }
-  }
-
-  public async createSession(user: UserEntity, sessionId?: string): Promise<SessionEntity> {
-    const where: FindOptionsWhere<SessionEntity> = { user: { id: user.id } };
-    if (sessionId) {
-      (where as any).id = sessionId;
-    }
-    await this.authRepository.delete(where);
-
-    const payload = { userId: user.id, userEmail: user.email };
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload),
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.jwt.refreshSecret,
-        algorithm: this.configService.jwt.algorithm,
-        expiresIn: this.configService.jwt.refreshExpiresIn,
-      }),
-    ]);
-
-    return this.authRepository.createSession(accessToken, refreshToken, user);
+    request.session = undefined;
   }
 
   public async validateSession(token: string, userId: string): Promise<SessionEntity> {
@@ -105,8 +71,41 @@ export class AuthService {
     return session;
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
-  public async clearSessions(): Promise<void> {
+  public async refreshSession(session: SessionEntity): Promise<SessionEntity> {
+    try {
+      await this.jwtService.verifyAsync(session.refreshToken, {
+        secret: this.configService.jwt.refreshSecret,
+        algorithms: [this.configService.jwt.algorithm],
+      });
+
+      return this.createSession(session.user, session.id);
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  private async createSession(user: UserEntity, sessionId?: string): Promise<SessionEntity> {
+    const where: FindOptionsWhere<SessionEntity> = { user: { id: user.id } };
+    if (sessionId) {
+      (where as any).id = sessionId;
+    }
+    await this.authRepository.delete(where);
+
+    const payload = { userId: user.id, userEmail: user.email };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.jwt.refreshSecret,
+        algorithm: this.configService.jwt.algorithm,
+        expiresIn: this.configService.jwt.refreshExpiresIn,
+      }),
+    ]);
+
+    return this.authRepository.createSession(accessToken, refreshToken, user);
+  }
+
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  private async clearSessions(): Promise<void> {
     const { affected } = await this.authRepository.delete({
       expiredAt: LessThan(new Date()),
     });

@@ -4,9 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-@layer base {
-  body {
-    @apply prose dark:prose-invert dark:bg-slate-950 dark:text-white min-h-screen max-w-none w-full;
-  }
+.test {
+  @apply font-bold;
 }

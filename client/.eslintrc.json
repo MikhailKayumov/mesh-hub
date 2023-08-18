@@ -24,7 +24,7 @@
     "react/display-name": ["off"],
     "prettier/prettier": ["error", {
       "endOfLine": "auto",
-      "jsxSingleQuote": true
+      "jsxSingleQuote": false
     }],
     "@next/next/no-img-element": "off",
     "@typescript-eslint/no-empty-function": ["warn"],

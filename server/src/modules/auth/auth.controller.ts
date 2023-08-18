@@ -1,8 +1,8 @@
-import { JwtAuth, JwtRefreshAuth } from '@decorators/auth/auth.decorator';
+import { JwtAuth } from '@decorators/auth/auth.decorator';
 import { SessionEntity } from '@entities/session/session.entity';
 import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Session } from '@nestjs/common';
-import { ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/login.request.dto';
@@ -30,18 +30,9 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Logout was succeed' })
-  @ApiForbiddenResponse({ description: 'Unauthorized' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @JwtAuth()
-  public async logout(@Session() session: SessionEntity): Promise<void> {
-    return this.authService.logout(session);
-  }
-
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: () => SessionResponseDto })
-  @ApiForbiddenResponse({ description: 'Unauthorized' })
-  @JwtRefreshAuth()
-  public async refresh(@Session() session: SessionEntity, @Req() request: Request): Promise<SessionResponseDto> {
-    return this.authService.refresh(session, request);
+  public async logout(@Session() session: SessionEntity, @Req() request: Request): Promise<void> {
+    return this.authService.logout(session, request);
   }
 }

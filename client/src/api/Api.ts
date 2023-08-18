@@ -147,15 +147,4 @@ export default class Api<SecurityDataType = unknown> {
       ...params,
     });
   };
-
-  public authControllerRefresh = (
-    params: RequestParams = {},
-  ): Promise<HttpResponse<SessionResponseDto, HttpException>> => {
-    return this.httpClient.request<SessionResponseDto, HttpException>({
-      path: `/api/auth/refresh`,
-      method: "POST",
-      format: "json",
-      ...params,
-    });
-  };
 }

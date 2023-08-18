@@ -274,31 +274,7 @@
           "200": {
             "description": "Logout was succeed"
           },
-          "403": {
-            "description": "Unauthorized"
-          }
-        },
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/api/auth/refresh": {
-      "post": {
-        "operationId": "AuthController_refresh",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
+          "401": {
             "description": "Unauthorized"
           }
         },

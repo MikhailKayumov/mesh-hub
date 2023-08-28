@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
+import Api from '~/api/Api';
 
 export async function POST(request: NextRequest) {
-  console.log(request);
+  const data = await request.json();
+  const res = await Api.auth.login(data);
 
-  return NextResponse.json({ message: 'Login' });
+  revalidatePath('/');
+
+  return NextResponse.json(res);
 }

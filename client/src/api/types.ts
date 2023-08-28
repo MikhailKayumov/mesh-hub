@@ -1,74 +1,43 @@
-/* eslint-disable */
-/* tslint:disable */
-/*
- * ---------------------------------------------------------------
- * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
- * ##                                                           ##
- * ## AUTHOR: acacode                                           ##
- * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
- * ---------------------------------------------------------------
- */
+import { NextResponse } from 'next/server';
+import { ContentType } from '~/api/http.service';
 
-export interface PaginationDtoSortItem {
-  field: string;
-  by: "ASC" | "DESC";
+export type QueryParamsType = Record<string | number, any>;
+
+export type ResponseFormat = keyof Omit<Body, 'body' | 'bodyUsed'>;
+
+export type CancelToken = Symbol | string | number;
+
+export interface FullRequestParams extends Omit<RequestInit, 'body'> {
+  path: string;
+  /** content type of request body */
+  type?: ContentType;
+  /** query params */
+  query?: QueryParamsType;
+  /** format of response (i.e. response.json() -> format: "json") */
+  format?: ResponseFormat;
+  /** request body */
+  body?: unknown;
+  /** base url */
+  baseUrl?: string;
+  /** request cancellation token */
+  cancelToken?: CancelToken;
 }
 
-export interface PaginationResponseDto {
-  data: object[];
-  /** @min 0 */
-  skip: number;
-  /** @min 0 */
-  size: number;
-  sort: PaginationDtoSortItem[];
-  /** @min 0 */
-  totalCount: number;
-  hasMore: boolean;
+export type RequestParams = Omit<FullRequestParams, 'body' | 'method' | 'query' | 'path'>;
+
+export interface HttpResponse<D extends unknown> {
+  data: D;
+  response: NextResponse;
 }
 
-export interface UserResponseDto {
-  id: string;
-  email: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
-  sessions?: SessionResponseDto[];
+export interface HttpException {
+  message: string;
+  error: string;
+  statusCode: number;
+  meta?: Record<string | number, any>;
 }
 
-export interface SessionResponseDto {
-  id: string;
-  token?: string;
-  user?: UserResponseDto;
-}
-
-export interface UserCreateRequestDto {
-  email: string;
-  /**
-   * @minLength 8
-   * @maxLength 24
-   * @pattern /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/
-   */
-  password: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
-}
-
-export interface UserUpdateRequestDto {
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
-}
-
-export interface LoginRequestDto {
-  email: string;
-  /**
-   * @minLength 8
-   * @maxLength 24
-   * @pattern passwordRegExp
-   */
-  password: string;
+export interface HttpServiceConfig {
+  baseUrl?: string;
+  baseParams?: Omit<RequestParams, 'baseUrl' | 'cancelToken' | 'signal'>;
 }

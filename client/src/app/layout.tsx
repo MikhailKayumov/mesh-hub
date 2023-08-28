@@ -1,8 +1,10 @@
 import './global.css';
-import { PropsWithChildren } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { Metadata } from 'next';
+import Api from '~/api/Api';
+import Header from './components/Header';
 
-export const revalidate = 0;
+export const revalidate = 10;
 
 export const metadata: Metadata = {
   title: 'MeshHub',
@@ -10,12 +12,12 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: PropsWithChildren) {
+  const currentUser = await Api.user.current();
+
   return (
-    <html lang="ru" dir="ltr" data-mode="dark">
+    <html lang="ru" dir="ltr">
       <body className="prose grid min-h-screen w-full max-w-none grid-cols-1 grid-rows-[auto_1fr] dark:prose-invert dark:bg-slate-950 dark:text-white">
-        <header className="top-0 col-span-2 flex justify-between p-4 dark:border-b dark:border-slate-700">
-          <h2 className="m-0 font-headings">MeshHub</h2>
-        </header>
+        <Header />
         <main className="w-full">{children}</main>
       </body>
     </html>

@@ -34,8 +34,11 @@ export class CookiesInterceptor implements NestInterceptor {
     if (session) {
       response.cookie(this.configService.jwt.cookieName, session.accessToken, {
         httpOnly: true,
+        // path: '/',
+        // domain: 'http://localhost:8000',
         maxAge: subMilliseconds(session.expiredAt, Date.now()).getTime(),
         secure: this.configService.isProduction,
+        sameSite: this.configService.isProduction ? 'lax' : 'none',
         expires: session.expiredAt,
       });
     } else {

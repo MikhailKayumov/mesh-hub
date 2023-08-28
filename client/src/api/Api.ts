@@ -1,150 +1,106 @@
-/* eslint-disable */
-/* tslint:disable */
-/*
- * ---------------------------------------------------------------
- * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
- * ##                                                           ##
- * ## AUTHOR: acacode                                           ##
- * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
- * ---------------------------------------------------------------
- */
+import { HttpService } from '~/api/http.service';
+import { ApiUser } from '~/api/ApiUser';
+import { ApiAuth } from './ApiAuth';
 
-import {
-  HttpException,
-  LoginRequestDto,
-  PaginationResponseDto,
-  SessionResponseDto,
-  UserCreateRequestDto,
-  UserResponseDto,
-  UserUpdateRequestDto,
-} from "./data-contracts";
-import { ContentType, HttpClient, HttpResponse, RequestParams } from "./http-client";
+const Api = {
+  auth: new ApiAuth(new HttpService(), 'auth'),
+  user: new ApiUser(new HttpService(), 'user'),
 
-export interface BaseHttpClient {
-  request<T = any, E = any>(params: any): Promise<HttpResponse<T, E>>;
-}
+  // public userControllerGetUsers = (
+  //   query?: {
+  //     skip?: number;
+  //     size?: number;
+  //     sort?: string;
+  //   },
+  //   params: RequestParams = {},
+  // ): Promise<
+  //   HttpResponse<
+  //     PaginationResponseDto & {
+  //       data: UserResponseDto[];
+  //     },
+  //     HttpException
+  //   >
+  // > => {
+  //   return this.httpClient.request<
+  //     PaginationResponseDto & {
+  //       data: UserResponseDto[];
+  //     },
+  //     HttpException
+  //   >({
+  //     path: `/api/user`,
+  //     method: 'GET',
+  //     query: query,
+  //     format: 'json',
+  //     ...params,
+  //   });
+  // };
+  //
+  // public userControllerCreateUser = (
+  //   data: UserCreateRequestDto,
+  //   params: RequestParams = {},
+  // ): Promise<HttpResponse<UserResponseDto, HttpException>> => {
+  //   return this.httpClient.request<UserResponseDto, HttpException>({
+  //     path: `/api/user`,
+  //     method: 'POST',
+  //     body: data,
+  //     type: ContentType.Json,
+  //     format: 'json',
+  //     ...params,
+  //   });
+  // };
+  //
+  // public userControllerGetUser = (
+  //   id: string,
+  //   params: RequestParams = {},
+  // ): Promise<HttpResponse<UserResponseDto, HttpException>> => {
+  //   return this.httpClient.request<UserResponseDto, HttpException>({
+  //     path: `/api/user/${id}`,
+  //     method: 'GET',
+  //     format: 'json',
+  //     ...params,
+  //   });
+  // };
+  //
+  // public userControllerUpdateUser = (
+  //   id: string,
+  //   data: UserUpdateRequestDto,
+  //   params: RequestParams = {},
+  // ): Promise<HttpResponse<UserResponseDto, HttpException>> => {
+  //   return this.httpClient.request<UserResponseDto, HttpException>({
+  //     path: `/api/user/${id}`,
+  //     method: 'PATCH',
+  //     body: data,
+  //     type: ContentType.Json,
+  //     format: 'json',
+  //     ...params,
+  //   });
+  // };
+  //
+  // public userControllerDeleteUser = (
+  //   id: string,
+  //   params: RequestParams = {},
+  // ): Promise<HttpResponse<void, HttpException>> => {
+  //   return this.httpClient.request<void, HttpException>({
+  //     path: `/api/user/${id}`,
+  //     method: 'DELETE',
+  //     ...params,
+  //   });
+  // };
+  //
+  // public authControllerSignup = (
+  //   data: UserCreateRequestDto,
+  //   params: RequestParams = {},
+  // ): Promise<HttpResponse<SessionResponseDto, HttpException>> => {
+  //   return this.httpClient.request<SessionResponseDto, HttpException>({
+  //     path: `/api/auth/signup`,
+  //     method: 'POST',
+  //     body: data,
+  //     type: ContentType.Json,
+  //     format: 'json',
+  //     ...params,
+  //   });
+  // };
+  //
+};
 
-export default class Api<SecurityDataType = unknown> {
-  public readonly httpClient: HttpClient;
-
-  public constructor(httpClient: HttpClient) {
-    this.httpClient = httpClient;
-  }
-
-  public userControllerGetUsers = (
-    query?: {
-      skip?: number;
-      size?: number;
-      sort?: string;
-    },
-    params: RequestParams = {},
-  ): Promise<
-    HttpResponse<
-      PaginationResponseDto & {
-        data: UserResponseDto[];
-      },
-      HttpException
-    >
-  > => {
-    return this.httpClient.request<
-      PaginationResponseDto & {
-        data: UserResponseDto[];
-      },
-      HttpException
-    >({
-      path: `/api/user`,
-      method: "GET",
-      query: query,
-      format: "json",
-      ...params,
-    });
-  };
-
-  public userControllerCreateUser = (
-    data: UserCreateRequestDto,
-    params: RequestParams = {},
-  ): Promise<HttpResponse<UserResponseDto, HttpException>> => {
-    return this.httpClient.request<UserResponseDto, HttpException>({
-      path: `/api/user`,
-      method: "POST",
-      body: data,
-      type: ContentType.Json,
-      format: "json",
-      ...params,
-    });
-  };
-
-  public userControllerGetUser = (
-    id: string,
-    params: RequestParams = {},
-  ): Promise<HttpResponse<UserResponseDto, HttpException>> => {
-    return this.httpClient.request<UserResponseDto, HttpException>({
-      path: `/api/user/${id}`,
-      method: "GET",
-      format: "json",
-      ...params,
-    });
-  };
-
-  public userControllerUpdateUser = (
-    id: string,
-    data: UserUpdateRequestDto,
-    params: RequestParams = {},
-  ): Promise<HttpResponse<UserResponseDto, HttpException>> => {
-    return this.httpClient.request<UserResponseDto, HttpException>({
-      path: `/api/user/${id}`,
-      method: "PATCH",
-      body: data,
-      type: ContentType.Json,
-      format: "json",
-      ...params,
-    });
-  };
-
-  public userControllerDeleteUser = (
-    id: string,
-    params: RequestParams = {},
-  ): Promise<HttpResponse<void, HttpException>> => {
-    return this.httpClient.request<void, HttpException>({
-      path: `/api/user/${id}`,
-      method: "DELETE",
-      ...params,
-    });
-  };
-
-  public authControllerSignup = (
-    data: UserCreateRequestDto,
-    params: RequestParams = {},
-  ): Promise<HttpResponse<SessionResponseDto, HttpException>> => {
-    return this.httpClient.request<SessionResponseDto, HttpException>({
-      path: `/api/auth/signup`,
-      method: "POST",
-      body: data,
-      type: ContentType.Json,
-      format: "json",
-      ...params,
-    });
-  };
-
-  public authControllerLogin = (
-    data: LoginRequestDto,
-    params: RequestParams = {},
-  ): Promise<HttpResponse<SessionResponseDto, HttpException>> => {
-    return this.httpClient.request<SessionResponseDto, HttpException>({
-      path: `/api/auth/login`,
-      method: "POST",
-      body: data,
-      type: ContentType.Json,
-      format: "json",
-      ...params,
-    });
-  };
-
-  public authControllerLogout = (params: RequestParams = {}): Promise<HttpResponse<void, HttpException>> => {
-    return this.httpClient.request<void, HttpException>({
-      path: `/api/auth/logout`,
-      method: "POST",
-      ...params,
-    });
-  };
-}
+export default Api;

@@ -59,5 +59,3 @@ export interface LoginRequestDto {
   email: string;
   password: string;
 }
-
-export type HttpException = Record<string | number, any>;

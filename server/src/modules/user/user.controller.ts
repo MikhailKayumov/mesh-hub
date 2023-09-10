@@ -1,5 +1,6 @@
 import { JwtAuth } from '@decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@decorators/pagination';
+import { User } from '@decorators/user/user.decorator';
 import { UserEntity } from '@entities/user/user.entity';
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -21,6 +22,13 @@ export class UserController {
     @PaginatedRequest(UserEntity) paginate: PaginationDto,
   ): Promise<PaginationResponseDto<UserResponseDto>> {
     return await this.userService.getUsers(paginate);
+  }
+
+  @Get('current')
+  @ApiOkResponse({ type: () => UserResponseDto })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  public getCurrentUser(@User() user: UserEntity): Promise<UserResponseDto> {
+    return this.userService.getUser(user.id);
   }
 
   @Get(':id')

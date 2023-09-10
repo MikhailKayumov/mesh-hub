@@ -1,11 +1,12 @@
 import { ConfigService } from '@config/config.service';
 import { CookiesInterceptor } from '@interceptors/cookies.interceptor';
 import { LoggingInterceptor } from '@interceptors/logging.interceptor';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, ValidationError, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { NestApplication, NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { AppHttpException } from './exceptions/app-http.exception';
 import { SwaggerService } from './swagger/swagger.service';
 
 export default class AppBootstrap {
@@ -31,6 +32,18 @@ export default class AppBootstrap {
       new ValidationPipe({
         transform: true,
         whitelist: true,
+        exceptionFactory: (errors: ValidationError[]) => {
+          return new AppHttpException({
+            error: 'Bad Request',
+            type: 'ValidationError',
+            status: HttpStatus.BAD_REQUEST,
+            message: 'Ошибка валидации',
+            data: errors.map((error) => ({
+              property: error.property,
+              errors: error.constraints ? Object.values(error.constraints) : [],
+            })),
+          });
+        },
         enableDebugMessages: !this.configService.isProduction,
       }),
     );

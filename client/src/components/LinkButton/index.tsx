@@ -1,13 +1,11 @@
-'use client';
-import { MouseEvent } from 'react';
-import Link, { LinkProps } from 'next/link';
 import { clsx } from 'clsx';
-import { ButtonVariant, ButtonSize, ButtonClassNames } from '~/components/Button';
+import { Link, LinkProps } from 'react-router-dom';
+import { ButtonVariant, ButtonSize, ButtonClassNames } from '../Button';
 
 export interface LinkButtonProps extends LinkProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  title?: string;
+  title: string;
   className?: string;
   disabled?: boolean;
 }
@@ -38,23 +36,16 @@ export default function LinkButton({
   disabled,
   ...props
 }: LinkButtonProps) {
-  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (disabled) event.preventDefault();
-    props.onClick?.(event);
-  };
-
   return (
     <Link
       {...props}
-      onClick={onClick}
       className={clsx(
         'no-underline',
         ButtonClassNames.common,
         LinkButtonClassNames[variant][disabled ? 'disabled' : 'enabled'],
         ButtonClassNames.size[size],
         className,
-      )}
-    >
+      )}>
       {title}
     </Link>
   );

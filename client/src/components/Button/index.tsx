@@ -15,9 +15,9 @@ export interface ButtonProps
 
 export const ButtonClassNames = {
   common:
-    'flex items-center justify-between rounded transition duration-[540ms] disabled:bg-slate-100 dark:disabled:bg-slate-900 disabled:text-slate-300 dark:disabled:text-slate-600',
+    'flex items-center justify-between rounded transition duration-[174ms] disabled:bg-slate-100 dark:disabled:bg-slate-900 disabled:text-slate-300 dark:disabled:text-slate-600',
   filled:
-    'bg-blue-700 text-white enabled:hover:bg-blue-600 enabled:active:bg-blue-800 enabled:hover:shadow-md enabled:hover:shadow-blue-800/30 enabled:active:shadow enabled:active:shadow-blue-800/30',
+    'bg-blue-700 text-white enabled:hover:bg-blue-600 enabled:active:bg-blue-800 enabled:hover:shadow enabled:hover:shadow-blue-600 enabled:active:shadow-none',
   outlined:
     'text-blue-700 border border-blue-700 disabled:border-slate-200 dark:disabled:border-slate-600 enabled:hover:border-blue-600 enabled:active:border-blue-800 enabled:hover:text-blue-600 enabled:active:text-blue-800 enabled:hover:shadow-md enabled:hover:shadow-blue-800/30 enabled:active:shadow enabled:active:shadow-blue-800/30',
   text: 'text-blue-700 enabled:hover:text-blue-600 enabled:active:text-blue-800 enabled:hover:bg-blue-600/10 enabled:active:bg-blue-800/10',
@@ -40,8 +40,7 @@ export default function Button({
     <button
       {...props}
       type={type}
-      className={clsx(ButtonClassNames.common, ButtonClassNames[variant], ButtonClassNames.size[size], className)}
-    >
+      className={clsx(ButtonClassNames.common, ButtonClassNames[variant], ButtonClassNames.size[size], className)}>
       {children}
     </button>
   );

@@ -1,5 +1,5 @@
-import { isNil, isObject } from '~/utils/type-guards';
-import { ThemeMode } from '~/common/types';
+import { isNil, isObject } from '../../utils/type-guards';
+import { ThemeMode } from '../../layouts/components/ThemeSwitcher';
 import { LocalStorageKey, LocalStorageKeys } from './constants';
 
 export class LocalStorageService {

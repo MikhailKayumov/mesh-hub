@@ -5,8 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "generate": "ts-node generate-client-api.ts",
-    "generate-client-types:no-client": "swagger-typescript-api --no-client -p ../server/swagger.openapi3.json -o ../client/src/api -n types.ts",
+    "generate-client-types:no-client": "swagger-typescript-api --no-client -p ../server/swagger.openapi3.json -o ../client/src/api -n new_dto.ts",
     "generate-client-types:modular": "swagger-typescript-api --modular -p ../server/swagger.openapi3.json -o ./client/src/api -n types.ts"
   },
   "author": "Mikhail Kayumov",

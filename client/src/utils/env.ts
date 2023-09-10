@@ -1,6 +1,6 @@
-import { isNumber } from '~/utils/type-guards';
+import { isNumber } from './type-guards';
 
-class DotEnv {
+export default class DotEnv {
   public static get(name: string, defaultValue?: string): string {
     if (!process.env[name] && typeof defaultValue === 'undefined') {
       throw new Error(`Environment variable ${name} is not found.`);
@@ -19,5 +19,3 @@ class DotEnv {
     return isNaN(value) ? (defaultValue as number) : value;
   }
 }
-
-export default DotEnv;

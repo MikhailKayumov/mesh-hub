@@ -103,6 +103,33 @@
         ]
       }
     },
+    "/api/user/current": {
+      "get": {
+        "operationId": "UserController_getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
     "/api/user/{id}": {
       "get": {
         "operationId": "UserController_getUser",
@@ -406,9 +433,6 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
-          },
-          "token": {
             "type": "string"
           },
           "user": {

@@ -15,7 +15,7 @@ export interface ButtonProps
 
 export const ButtonClassNames = {
   common:
-    'flex items-center justify-between rounded transition duration-[174ms] disabled:bg-slate-100 dark:disabled:bg-slate-900 disabled:text-slate-300 dark:disabled:text-slate-600',
+    'flex self-start items-center justify-between rounded transition duration-[174ms] disabled:bg-slate-100 dark:disabled:bg-slate-900 disabled:text-slate-300 dark:disabled:text-slate-600',
   filled:
     'bg-blue-700 text-white enabled:hover:bg-blue-600 enabled:active:bg-blue-800 enabled:hover:shadow enabled:hover:shadow-blue-600 enabled:active:shadow-none',
   outlined:

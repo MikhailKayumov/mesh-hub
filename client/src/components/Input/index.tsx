@@ -1,7 +1,7 @@
 'use client';
 import { DetailedHTMLProps, forwardRef, InputHTMLAttributes, useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
+import { HiEye, HiEyeSlash } from 'react-icons/hi2';
 
 export interface InputProps
   extends Omit<DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, 'type'> {
@@ -23,7 +23,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({ type = 'text', error, 
   }, [type]);
 
   // const LeftIcon = false ? (localType === 'password' ? EyeIcon : EyeSlashIcon) : undefined;
-  const RightIcon = type === 'password' ? (localType === 'password' ? EyeIcon : EyeSlashIcon) : undefined;
+  const RightIcon = type === 'password' ? (localType === 'password' ? HiEye : HiEyeSlash) : undefined;
   const onRightIconClick = () => {
     if (type === 'password') {
       setLocalType(localType === 'password' ? 'text' : 'password');

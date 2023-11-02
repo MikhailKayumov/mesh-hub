@@ -14,7 +14,7 @@ export class JwtAuthGuard extends PassportAuthGuard('jwt') {
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     await super.canActivate(context);
 
-    const { session } = this.getRequest<Request>(context);
+    const { session } = this.getRequest(context) as Request;
     if (!session) {
       throw new UnauthorizedException();
     }

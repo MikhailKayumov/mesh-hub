@@ -1,13 +1,13 @@
 import { ConfigService } from '@config/config.service';
+import { AppHttpException } from '@exceptions/app-http.exception';
 import { CookiesInterceptor } from '@interceptors/cookies.interceptor';
 import { LoggingInterceptor } from '@interceptors/logging.interceptor';
-import { ValidationPipe, ValidationError, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
+import { ValidationPipe, ValidationError, HttpStatus } from '@nestjs/common';
 import { NestApplication, NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
+import { SwaggerService } from '@swagger/swagger.service';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
-import { AppHttpException } from './exceptions/app-http.exception';
-import { SwaggerService } from './swagger/swagger.service';
 
 export default class AppBootstrap {
   private static application: NestApplication;

@@ -1,7 +1,0 @@
-node_modules/
-public/
-src/setupTests.ts
-src/registerServiceWorker.ts
-src/common
-bundleReport.js
-config-overrides.js

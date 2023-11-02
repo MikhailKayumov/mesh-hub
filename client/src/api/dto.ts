@@ -3,7 +3,7 @@ export interface PaginationDtoSortItem {
   by: 'ASC' | 'DESC';
 }
 
-export interface PaginationResponseDto<T extends any> {
+export interface PaginationResponseDto<T = any> {
   data: T[];
   skip: number;
   size: number;

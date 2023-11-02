@@ -18,7 +18,9 @@
       "@decorators/*": ["src/decorators/*"],
       "@guards/*": ["src/guards/*"],
       "@utils/*": ["src/utils/*"],
-      "@interceptors/*": ["src/interceptors/*"]
+      "@interceptors/*": ["src/interceptors/*"],
+      "@exceptions/*": ["src/exceptions/*"],
+      "@swagger/*": ["src/swagger/*"],
     },
     "incremental": true,
     "skipLibCheck": true,

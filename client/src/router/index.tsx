@@ -1,16 +1,19 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
-import BasePage from '../pages';
-import LoginPage from '../pages/login';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import BasePage from '@/pages';
+import LoginPage from '@/pages/Login';
+import MainPage from '../pages/Main';
 import RouterPaths from './paths';
 
 const routes: RouteObject[] = [
   {
     path: RouterPaths.Base,
     element: <BasePage />,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,
-        element: <h1>Main</h1>,
+        element: <MainPage />,
       },
       {
         path: RouterPaths.Login,

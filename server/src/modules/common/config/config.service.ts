@@ -82,11 +82,15 @@ export class ConfigService {
   }
 
   public get throttlerConfig(): ThrottlerModuleOptions {
-    if (this.isTest) return {};
+    if (this.isTest) return { throttlers: [] };
 
     return {
-      ttl: +this.getNumber('THROTTLE_GLOBAL_TTL', 60),
-      limit: +this.getNumber('THROTTLE_GLOBAL_LIMIT', 10),
+      throttlers: [
+        {
+          ttl: +this.getNumber('THROTTLE_GLOBAL_TTL', 60),
+          limit: +this.getNumber('THROTTLE_GLOBAL_LIMIT', 10),
+        },
+      ],
     };
   }
 

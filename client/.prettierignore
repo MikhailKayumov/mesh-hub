@@ -1,7 +1,0 @@
-.idea
-.vscode
-*.iml
-coverage
-uploads
-.cache
-yarn.lock

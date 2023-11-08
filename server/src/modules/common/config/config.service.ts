@@ -1,6 +1,8 @@
+import { TypeOrmNamingStrategy } from '@config/typeorm-naming-strategy';
 import { Injectable } from '@nestjs/common';
 import { type CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService as NestConfigService } from '@nestjs/config';
+import { ThrottlerModuleOptions } from '@nestjs/throttler';
 import { Algorithm } from 'jsonwebtoken';
 import { DataSourceOptions } from 'typeorm';
 
@@ -21,6 +23,7 @@ export class ConfigService {
 
   public get jwt() {
     return {
+      cookieName: this.get('AUTH_JWT_COOKIE_NAME'),
       algorithm: 'HS512' as Algorithm,
       accessSecret: this.get('AUTH_JWT_ACCESS_SECRET'),
       refreshSecret: this.get('AUTH_JWT_REFRESH_SECRET'),
@@ -35,7 +38,7 @@ export class ConfigService {
         const originsWhitelist = this.get<string>('CORS_ORIGINS_WHITE_LIST', '*');
 
         let originResult: boolean | string = false;
-        if (originsWhitelist && (originsWhitelist === '*' || originsWhitelist.split(',').includes(origin))) {
+        if (originsWhitelist === '*' || originsWhitelist.split(',').includes(origin)) {
           originResult = origin;
         }
 
@@ -56,9 +59,48 @@ export class ConfigService {
   }
 
   public get isProduction() {
-    const mode = this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT');
+    return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'PRODUCTION';
+  }
 
-    return mode === 'PRODUCTION';
+  public get isTest() {
+    return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'TEST';
+  }
+
+  public get typeOrmOptions(): DataSourceOptions {
+    return {
+      type: 'postgres',
+      host: this.get('POSTGRES_HOST'),
+      port: this.get<number>('POSTGRES_PORT'),
+      username: this.get('POSTGRES_USER'),
+      password: this.get('POSTGRES_PASSWORD'),
+      database: this.get('POSTGRES_DB'),
+      ssl: this.isProduction,
+      entities: ['dist/**/*.entity.js'],
+      migrations: ['dist/database/migrations/**/*.js'],
+      namingStrategy: new TypeOrmNamingStrategy(),
+    };
+  }
+
+  public get throttlerConfig(): ThrottlerModuleOptions {
+    if (this.isTest) return { throttlers: [] };
+
+    return {
+      throttlers: [
+        {
+          ttl: +this.getNumber('THROTTLE_GLOBAL_TTL', 60),
+          limit: +this.getNumber('THROTTLE_GLOBAL_LIMIT', 10),
+        },
+      ],
+    };
+  }
+
+  public get swagger() {
+    return {
+      title: this.get('SWAGGER_TITLE', 'MeshHub Swagger'),
+      description: this.get('SWAGGER_DESCRIPTION', 'The mesh hub API description'),
+      version: this.get('SWAGGER_VERSION', '1.0'),
+      server: this.get('SWAGGER_SERVER', 'http://localhost:8080'),
+    };
   }
 
   public get<T = string>(name: string, defaultValue?: T): T {
@@ -72,19 +114,5 @@ export class ConfigService {
     }
 
     return value;
-  }
-
-  public getTypeOrmOptions(): DataSourceOptions {
-    return {
-      type: 'postgres',
-      host: this.get('POSTGRES_HOST'),
-      port: this.get<number>('POSTGRES_PORT'),
-      username: this.get('POSTGRES_USER'),
-      password: this.get('POSTGRES_PASSWORD'),
-      database: this.get('POSTGRES_DB'),
-      ssl: this.isProduction,
-      entities: ['dist/**/*.entity.js'],
-      migrations: ['dist/database/migrations/**/*.js'],
-    };
   }
 }

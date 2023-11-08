@@ -4,7 +4,6 @@ import {
   GridHelper,
   MathUtils,
   Object3D,
-  Plane,
   Scene,
   SpotLight,
   SpotLightHelper,
@@ -32,17 +31,16 @@ export class World extends Scene {
 
   public async spawnAsync(object: PromiseWorldObject3D[] | PromiseWorldObject3D) {
     if (Array.isArray(object)) {
-      await Promise.all(object).then(objects => {
-        objects.forEach(o => this.spawn(o));
+      await Promise.all(object).then((objects) => {
+        objects.forEach((o) => this.spawn(o));
       });
     } else {
-      object.then(o => this.spawn(o));
+      object.then((o) => this.spawn(o));
     }
   }
 
   public async spawnAmbientLight(intensity = 0.2) {
     if (this.lights.ambient) {
-      // eslint-disable-next-line no-console
       console.log("change ambient light's intensity");
       this.lights.ambient.intensity = intensity;
       return;
@@ -65,7 +63,7 @@ export class World extends Scene {
     const spotLight = new SpotLight(0xffffff);
 
     spotLight.power = power * 60; // 	Fluorescent / LED (watts), 1 watt === 60 lumens
-    // spotLight.distance = distance;
+    spotLight.distance = distance;
     spotLight.penumbra = penumbra;
     spotLight.angle = MathUtils.degToRad(angel);
     spotLight.position.set(at.x, at.y, at.z);
@@ -89,7 +87,7 @@ export class World extends Scene {
     return worldLight;
   }
 
-  public addAxisHelper(size = 2): this {
+  public addAxisHelper(size = 1): this {
     const axisHelper = new AxesHelper(size);
 
     this.add(axisHelper);
@@ -98,7 +96,7 @@ export class World extends Scene {
   }
 
   public addGridHelper(): this {
-    const size = 1000;
+    const size = 50;
     const division = 50;
 
     const color1 = '#6e6e6e';

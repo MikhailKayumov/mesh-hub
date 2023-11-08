@@ -1,13 +1,13 @@
 import { ConfigService } from '@config/config.service';
 import { SessionEntity } from '@entities/session/session.entity';
-import { AuthRepository } from '@modules/auth/auth.repository';
-import { AuthStrategy } from '@modules/auth/auth.strategy';
 import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
+import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
+import { JwtAuthStrategy } from './strategies/jwt-auth.strategy';
 
 @Module({
   imports: [
@@ -24,8 +24,8 @@ import { AuthService } from './auth.service';
     }),
     UserModule,
   ],
-  providers: [AuthService, AuthRepository, AuthStrategy],
-  exports: [AuthService, AuthRepository, AuthStrategy],
+  providers: [AuthService, AuthRepository, JwtAuthStrategy],
+  exports: [AuthService, AuthRepository, JwtAuthStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

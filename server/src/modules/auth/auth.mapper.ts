@@ -5,8 +5,7 @@ import { UserMapper } from '@modules/user/user.mapper';
 export class AuthMapper {
   public static sessionEntityToResponse(sessionEntity: SessionEntity): SessionResponseDto {
     return {
-      sessionId: sessionEntity.id,
-      token: sessionEntity.accessToken,
+      id: sessionEntity.id,
       user: sessionEntity.user ? UserMapper.userEntityToUserResponse(sessionEntity.user) : undefined,
     };
   }

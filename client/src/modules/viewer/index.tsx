@@ -1,23 +1,25 @@
-'use client';
-import { memo, useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { clsx } from 'clsx';
 import { run } from './classes';
-import styles from './Viewer.module.scss';
 
 export interface ViewerProps {
   className?: string;
 }
 
 // @refresh reset
-export const Viewer = memo(({ className }: ViewerProps) => {
+export default function Viewer({ className }: ViewerProps) {
   const rootRef = useRef<HTMLDivElement>();
+  const viewerRef = useRef<ReturnType<typeof run> | null>(null);
+
   const getRootRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) return;
+    if (!node || rootRef.current === node) return;
 
     rootRef.current = node;
 
-    run(node).catch(e => console.error(e));
+    run(node).then((data) => {
+      viewerRef.current = data as any;
+    });
   }, []);
 
-  return <div className={clsx(styles.root, className)} ref={getRootRef}></div>;
-});
+  return <div className={clsx('relative h-full w-full', className)} ref={getRootRef}></div>;
+}

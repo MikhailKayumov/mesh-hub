@@ -1,41 +1,58 @@
+import { PaginationDtoSortItem } from '@decorators/pagination/pagination.dto';
+import { ApiProperty } from '@nestjs/swagger';
 import validateDto from '@utils/validate-dto';
-import { IsBoolean, IsInt, IsNumber, IsOptional, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsInt, IsNumber, Min } from 'class-validator';
 
 export class PaginationResponseDto<T = unknown> {
+  @ApiProperty({ isArray: true, type: Object })
+  @IsArray()
   public readonly data: T[];
 
-  @IsInt()
+  @ApiProperty()
   @IsNumber({ allowNaN: false })
+  @IsInt()
   @Min(0)
-  @IsOptional()
   public skip: number;
 
-  @IsOptional()
-  @IsInt()
+  @ApiProperty()
   @IsNumber({ allowNaN: false })
-  @Min(1)
+  @IsInt()
+  @Min(0)
   public size: number;
 
-  @IsInt()
+  @ApiProperty({ type: () => PaginationDtoSortItem, isArray: true })
+  @Type(() => PaginationDtoSortItem)
+  @IsArray()
+  public sort: PaginationDtoSortItem[];
+
+  @ApiProperty()
   @IsNumber({ allowNaN: false })
+  @IsInt()
   @Min(0)
-  @IsOptional()
   public totalCount: number;
 
+  @ApiProperty()
   @IsBoolean()
-  @IsOptional()
   public hasMore: boolean;
 
-  constructor(data: T[], totalCount: number, size?: number, skip = 0) {
+  constructor(data: T[], totalCount: number, size?: number, skip = 0, sort: PaginationDtoSortItem[] = []) {
     this.data = data;
     this.skip = skip;
     this.size = size || data.length;
+    this.sort = sort;
     this.totalCount = totalCount;
     this.hasMore = !(size && (totalCount <= size || totalCount <= size + skip || this.data.length < size));
   }
 
-  public static async build<T = any>(data: T[], totalCount: number, size?: number, skip?: number) {
-    const dto = new PaginationResponseDto<T>(data, totalCount, size, skip);
+  public static async build<T = any>(
+    data: T[],
+    totalCount: number,
+    size?: number,
+    skip?: number,
+    sort?: PaginationDtoSortItem[],
+  ) {
+    const dto = new PaginationResponseDto<T>(data, totalCount, size, skip, sort);
 
     await validateDto(dto);
 

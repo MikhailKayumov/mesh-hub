@@ -1,4 +1,4 @@
-import { AmbientLight, Light, Object3D, SpotLight, SpotLightHelper } from 'three';
+import { AmbientLight, Light, Object3D, SpotLight, SpotLightHelper } from 'three/src/Three.js';
 
 export type PromiseWorldObject3D = Promise<Object3D | Object3D[]>;
 

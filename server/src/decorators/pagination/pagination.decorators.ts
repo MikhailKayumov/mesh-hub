@@ -1,51 +1,112 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { PaginationDto } from './pagination.dto';
+import { PaginationResponseDto } from '@decorators/pagination/pagination.response.dto';
+import { createParamDecorator, ExecutionContext, Type, applyDecorators, HttpStatus } from '@nestjs/common';
+import { ApiExtraModels, ApiQuery, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { PaginationDto, PaginationDtoSortItem, PaginationSortOrder } from './pagination.dto';
 
 export const PaginatedRequest = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): Promise<PaginationDto> => {
+  async (data: unknown, ctx: ExecutionContext): Promise<PaginationDto> => {
     const request = ctx.switchToHttp().getRequest();
 
-    return PaginationDto.build(parseInt(request.query.skip), parseInt(request.query.size));
+    const skip = parseInt(request.query.skip);
+    const size = parseInt(request.query.size);
+
+    const sort: PaginationDtoSortItem[] | undefined = await Promise.all(
+      (request.query?.sort?.split(',') ?? []).reduce((acc: Promise<PaginationDtoSortItem>[], item: string) => {
+        if (item.length) {
+          acc.push(
+            PaginationDtoSortItem.build(
+              (item[0] === '-' || item[0] === '+' ? item.substring(1) : item).trim(),
+              item[0] === '-' ? PaginationSortOrder.DESC : PaginationSortOrder.ASC,
+            ),
+          );
+        }
+
+        return acc;
+      }, []),
+    );
+
+    return PaginationDto.build(skip, size, sort);
   },
   [
-    // (target: any, key: string) => {
-    //   ApiQuery({
-    //     name: 'skip',
-    //     schema: { type: 'number' },
-    //     required: false,
-    //   })(target, key, Object.getOwnPropertyDescriptor(target, key));
-    //   ApiQuery({
-    //     name: 'size',
-    //     schema: { default: DEFAULT_PAGE_SIZE, type: 'number', minimum: 1 },
-    //     required: false,
-    //   })(target, key, Object.getOwnPropertyDescriptor(target, key));
-    //   ApiQuery({
-    //     name: 'asc',
-    //     schema: { default: false, type: 'boolean' },
-    //     required: false,
-    //   })(target, key, Object.getOwnPropertyDescriptor(target, key));
-    // },
+    (target: any, key: string) => {
+      ApiQuery({
+        name: 'skip',
+        schema: { type: 'number' },
+        required: false,
+      })(target, key, Object.getOwnPropertyDescriptor(target, key) as any);
+      ApiQuery({
+        name: 'size',
+        schema: { type: 'number', minimum: 1 },
+        required: false,
+      })(target, key, Object.getOwnPropertyDescriptor(target, key) as any);
+      ApiQuery({
+        name: 'sort',
+        schema: {
+          type: 'string',
+          description: 'Sorting fields in format: [+-][fieldName]',
+        },
+        required: false,
+      })(target, key, Object.getOwnPropertyDescriptor(target, key) as any);
+    },
   ],
 );
 
-// export const PaginatedResponse = <T extends Type>(model: T) => {
-//   return applyDecorators();
-// ApiExtraModels(PaginationResponseMetrics),
-// ApiResponse({
-//   status: HttpStatus.OK,
-//   schema: {
-//     properties: {
-//       data: {
-//         type: 'array',
-//         nullable: false,
-//         items: { $ref: getSchemaPath(model), readOnly: true },
-//       },
-//       paginate: {
-//         readOnly: true,
-//         nullable: false,
-//         $ref: getSchemaPath(PaginationResponseMetrics),
-//       },
-//     },
-//   },
-// }),
-// };
+export const PaginatedResponse = <T extends Type>(Model: T, status: HttpStatus = HttpStatus.OK) => {
+  return applyDecorators(
+    ApiExtraModels(PaginationResponseDto, PaginationDtoSortItem, Model),
+    ApiResponse({
+      status,
+      schema: {
+        allOf: [
+          { $ref: getSchemaPath(PaginationResponseDto) },
+          {
+            properties: {
+              data: {
+                type: 'array',
+                readOnly: true,
+                nullable: false,
+                items: { $ref: getSchemaPath(Model) },
+              },
+            },
+            required: ['data'],
+          },
+        ],
+        // properties: {
+        //   data: {
+        //     type: 'array',
+        //     readOnly: true,
+        //     nullable: false,
+        //     items: { $ref: getSchemaPath(Model) },
+        //   },
+        //   skip: {
+        //     type: 'number',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        //   size: {
+        //     type: 'number',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        //   sort: {
+        //     type: 'array',
+        //     readOnly: true,
+        //     nullable: false,
+        //     items: { $ref: getSchemaPath(PaginationDtoSortItem) },
+        //   },
+        //   totalCount: {
+        //     type: 'number',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        //   hasMore: {
+        //     type: 'boolean',
+        //     readOnly: true,
+        //     nullable: false,
+        //   },
+        // },
+        // required: ['data', 'skip', 'size', 'sort', 'totalCount', 'hasMore'],
+      },
+    }),
+  );
+};

@@ -9,13 +9,17 @@ export interface ViewerProps {
 // @refresh reset
 export default function Viewer({ className }: ViewerProps) {
   const rootRef = useRef<HTMLDivElement>();
+  const viewerRef = useRef<ReturnType<typeof run> | null>(null);
+
   const getRootRef = useCallback((node: HTMLDivElement | null) => {
     if (!node || rootRef.current === node) return;
 
     rootRef.current = node;
 
-    run(node).catch((e) => console.error(e));
+    run(node).then((data) => {
+      viewerRef.current = data as any;
+    });
   }, []);
 
-  return <div className={clsx('w-full h-full relative', className)} ref={getRootRef}></div>;
+  return <div className={clsx('relative h-full w-full', className)} ref={getRootRef}></div>;
 }

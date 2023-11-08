@@ -1,4 +1,4 @@
-import { MOUSE, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three/src/Three.js';
+import { MOUSE, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { isOrthographicCamera, isPerspectiveCamera } from './utils';
 
@@ -12,12 +12,10 @@ export class CameraController {
 
   public constructor(type: CameraType = 'perspective') {
     if (type === 'perspective') {
-      this.camera = new PerspectiveCamera(75, 1, 0.1, 1000);
+      this.camera = new PerspectiveCamera(75, 1, 0.1, 4000);
     } else {
-      this.camera = new OrthographicCamera(0, 0, 0, 0, 1, 1000);
+      this.camera = new OrthographicCamera(2, -2, -1, 1, 0.001, 4000);
     }
-
-    this.camera.position.set(-2, -2, 2);
   }
 
   public on(canvas: HTMLCanvasElement): void {
@@ -35,15 +33,18 @@ export class CameraController {
   public resize() {
     if (!this.canvas) return;
 
-    if (isPerspectiveCamera(this.camera)) {
-      this.camera.aspect = this.canvas.width / this.canvas.height;
-    } else if (isOrthographicCamera(this.camera)) {
-      console.log(this.canvas.width);
+    const aspect = this.canvas.width / this.canvas.height;
 
+    if (isPerspectiveCamera(this.camera)) {
+      this.camera.aspect = aspect;
+      this.camera.position.set(3.5, -1, 2);
+    } else if (isOrthographicCamera(this.camera)) {
       this.camera.left = this.canvas.width / -2;
       this.camera.right = this.canvas.width / 2;
       this.camera.top = this.canvas.height / 2;
       this.camera.bottom = this.canvas.height / -2;
+      this.camera.zoom = aspect * 100;
+      this.camera.position.set(2, 2, this.camera.zoom);
     }
   }
 

@@ -8,7 +8,7 @@ import {
   SpotLight,
   SpotLightHelper,
   Vector3,
-} from 'three/src/Three.js';
+} from 'three';
 import { PromiseWorldObject3D, WorldLights, WorldObject3D, WorldSpotLight } from './types/world';
 
 export class World extends Scene {
@@ -87,7 +87,7 @@ export class World extends Scene {
     return worldLight;
   }
 
-  public addAxisHelper(size = 2): this {
+  public addAxisHelper(size = 1): this {
     const axisHelper = new AxesHelper(size);
 
     this.add(axisHelper);
@@ -96,7 +96,7 @@ export class World extends Scene {
   }
 
   public addGridHelper(): this {
-    const size = 1000;
+    const size = 50;
     const division = 50;
 
     const color1 = '#6e6e6e';

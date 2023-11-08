@@ -22,13 +22,11 @@ export const themes: ThemeOption[] = [
 export const themeIconOptions: Record<ThemeMode, ThemeIconOption | undefined> = {
   light: {
     Icon: HiSun,
-    className: 'text-amber-500',
-    width: 20,
+    className: 'text-amber-500 w-[24px] h-[24px]',
   },
   dark: {
     Icon: HiMoon,
-    className: 'text-yellow-400',
-    width: 16,
+    className: 'text-yellow-400 w-[20px] h-[20px]',
   },
   system: undefined,
 };

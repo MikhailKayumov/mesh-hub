@@ -38,7 +38,7 @@ export default function ThemeSwitcher() {
         className="flex h-[32px] w-[32px] items-center justify-center rounded-lg text-white transition active:bg-blue-100 dark:active:bg-blue-800"
         onClick={() => setOpen((prev) => !prev)}
       >
-        {icon && <icon.Icon width={icon.width} className={icon.className} />}
+        {icon && <icon.Icon className={icon.className} />}
       </button>
       <ThemeList open={open} currentTheme={theme} onThemeSelect={onThemeSelect} />
     </div>

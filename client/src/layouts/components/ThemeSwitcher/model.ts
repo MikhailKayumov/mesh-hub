@@ -10,7 +10,6 @@ export interface ThemeOption {
 
 export interface ThemeIconOption {
   className: string;
-  width: number;
   Icon: IconType;
 }
 

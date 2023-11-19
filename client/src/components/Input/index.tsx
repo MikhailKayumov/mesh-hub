@@ -1,4 +1,3 @@
-'use client';
 import { DetailedHTMLProps, forwardRef, InputHTMLAttributes, useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { HiEye, HiEyeSlash } from 'react-icons/hi2';

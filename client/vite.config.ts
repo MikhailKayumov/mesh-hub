@@ -14,7 +14,11 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
+    build: {
+      manifest: true,
+    },
     server: {
+      open: true,
       port,
       proxy: {
         [env.VITE_APP_API_URL ?? '/api']: env.API_PROXY_URL,

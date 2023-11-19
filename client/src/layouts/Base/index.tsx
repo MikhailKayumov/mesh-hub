@@ -7,7 +7,7 @@ export default function BaseLayout({ children }: BaseLayoutProps) {
   return (
     <>
       <Header />
-      <main className="w-full flex">{children}</main>
+      {children}
     </>
   );
 }

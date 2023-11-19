@@ -73,11 +73,13 @@ export default function Form() {
           error={errors.password}
         />
       </div>
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex items-center justify-between">
         <Button size="lg" onClick={onSubmit}>
           Войти
         </Button>
-        <LinkButton to={`/${RouterPaths.Login}`} title="Зарегистрироваться?" variant="text" />
+        <LinkButton to={`/${RouterPaths.Login}`} variant="text">
+          Зарегистрироваться?
+        </LinkButton>
       </div>
     </form>
   );

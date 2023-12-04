@@ -7,7 +7,7 @@ import zod from 'zod';
 import { useLoginMutation } from '@/api/auth.ts';
 import { LoginRequestDto } from '@/api/dto.ts';
 import { isValidationException } from '@/api/utils.ts';
-import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { ValidationErrorMessages } from '@/constants';
 import RouterPaths from '@/router/paths.ts';
 import { userActions } from '@/store/user/reducer.ts';
 
@@ -16,7 +16,6 @@ const schema = zod.object({
   password: zod
     .string()
     .trim()
-    .regex(AppRegexp.Password, ValidationErrorMessages.PasswordContent)
     .min(6, ValidationErrorMessages.PasswordLength)
     .min(1, ValidationErrorMessages.RequiredField),
 });

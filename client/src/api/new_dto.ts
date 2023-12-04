@@ -46,16 +46,20 @@ export interface SessionResponseDto {
 
 export interface UserCreateRequestDto {
   email: string;
-  /**
-   * @minLength 8
-   * @maxLength 24
-   * @pattern /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/
-   */
-  password: string;
-  firstName?: string;
-  middleName?: string;
+  firstName: string;
   lastName?: string;
-  nickname?: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface UserResetPasswordRequestDto {
+  email: string;
+}
+
+export interface UserChangePasswordRequestDto {
+  requestId: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface UserUpdateRequestDto {
@@ -67,9 +71,6 @@ export interface UserUpdateRequestDto {
 
 export interface LoginRequestDto {
   email: string;
-  /**
-   * @minLength 6
-   * @pattern passwordRegExp
-   */
+  /** @minLength 6 */
   password: string;
 }

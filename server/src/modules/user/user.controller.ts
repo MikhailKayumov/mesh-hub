@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -13,7 +13,8 @@ import { UserEntity } from '@/database/entities/user/user.entity';
 import { JwtAuth, Public } from '@/decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { User } from '@/decorators/user/user.decorator';
-import { ResetPasswordRequestDto } from '@/modules/user/dto/reset-password.request.dto';
+import { UserChangePasswordRequestDto } from '@/modules/user/dto/user-change-password.request.dto';
+import { UserResetPasswordRequestDto } from '@/modules/user/dto/user-reset-password.request.dto';
 import { UserCreateRequestDto } from './dto/user.create.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { UserUpdateRequestDto } from './dto/user.update.request.dto';
@@ -56,13 +57,23 @@ export class UserController {
 
   @Patch('reset-password')
   @Public()
-  @ApiBody({ type: ResetPasswordRequestDto })
-  @ApiOkResponse({ description: 'Logout was succeed' })
-  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiBody({ type: UserResetPasswordRequestDto })
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
   @ApiBadRequestResponse()
   @ApiInternalServerErrorResponse()
   public resetPassword(@Body('email') email: string): Promise<void> {
     return this.userService.resetPassword(email);
+  }
+
+  @Patch('change-password')
+  @Public()
+  @ApiBody({ type: UserChangePasswordRequestDto })
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
+  @ApiBadRequestResponse()
+  public changePassword(@Body() { requestId, password, confirmPassword }: UserChangePasswordRequestDto): Promise<void> {
+    return this.userService.changePassword(requestId, password, confirmPassword);
   }
 
   @Patch(':id')

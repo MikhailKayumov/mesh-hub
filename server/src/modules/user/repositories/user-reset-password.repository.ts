@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { addSeconds } from 'date-fns';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import { UserResetPasswordEntity } from '@/database/entities/user/user-reset-password.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { ConfigService } from '@/modules/common/config/config.service';
@@ -14,6 +14,13 @@ export class UserResetPasswordRepository extends Repository<UserResetPasswordEnt
     private readonly configService: ConfigService,
   ) {
     super(repository.target, repository.manager, repository.queryRunner);
+  }
+
+  public async getById(id: string) {
+    return this.repository.findOne({
+      relations: { user: true },
+      where: { id, expiredAt: MoreThan(new Date()) },
+    });
   }
 
   public async createRequest(user: UserEntity) {

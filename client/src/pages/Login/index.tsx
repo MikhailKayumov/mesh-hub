@@ -38,7 +38,7 @@ export default function LoginPage() {
             </Anchor>
           </Flex>
         </div>
-        <Button fullWidth type="submit" size="md" mt={24} loading={isSubmitting}>
+        <Button fullWidth type="submit" size="md" mt={32} loading={isSubmitting}>
           Войти
         </Button>
       </form>

@@ -7,11 +7,10 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { addSeconds } from 'date-fns';
 import { QueryFailedError } from 'typeorm';
-import { UserResetPasswordEntity } from '@/database/entities/user/user-reset-password.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
+import { ConfigService } from '@/modules/common/config/config.service';
 import { NotificationsService } from '@/modules/common/notifications/notifications.service';
 import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { UserResponseDto } from '@/modules/user/dto/user.response.dto';
@@ -29,6 +28,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userResetPasswordRepository: UserResetPasswordRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly configService: ConfigService,
   ) {}
 
   public async getUsers({ size, skip, sort }: PaginationDto): Promise<PaginationResponseDto<UserResponseDto>> {
@@ -142,18 +142,34 @@ export class UserService {
       const request = await this.userResetPasswordRepository.createRequest(user);
 
       this.notificationsService.sendEmail(
-        'mkaumov056@gmail.com',
+        user.email,
         'Сброс пароля',
-        `Для создания нового пароля перейдите по ссылке:\nhttp://localhost:8000/auth/change-password?request=${request.id}`,
+        `Для создания нового пароля перейдите по ссылке:\n${this.configService.app.frontendUrl}/auth/change-password?request=${request.id}`,
       );
     } catch (e) {
       if (e instanceof QueryFailedError) {
-        throw new BadRequestException('Запрос на сброс пароля можно создать только один раз в 5 минут');
+        throw new BadRequestException('Запрос на сброс пароля можно создать только один раз в 30 минут');
       } else {
         throw new InternalServerErrorException('Не удалось создать запрос на сброс пароля');
       }
     }
   }
 
-  public async changePassword() {}
+  public async changePassword(id: string, password: string, confirmPassword: string): Promise<void> {
+    if (password !== confirmPassword) {
+      throw new BadRequestException('Пароли должны совпадать');
+    }
+
+    const request = await this.userResetPasswordRepository.getById(id);
+    if (!request || !request.user) {
+      throw new NotFoundException('Заявка на сброс пароля не найдена или устарела');
+    }
+
+    const encodedPassword = await this.encodePassword(password);
+    request.user.password = encodedPassword.hash;
+    request.user.salt = encodedPassword.salt;
+
+    await this.userRepository.save(request.user);
+    await this.userResetPasswordRepository.delete({ id: request.id });
+  }
 }

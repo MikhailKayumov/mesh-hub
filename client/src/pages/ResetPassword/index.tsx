@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
             mb={12}
           />
         )}
-        <Group align="center" justify="space-between" mt={24}>
+        <Group align="center" justify="space-between" mt={32}>
           {!isSuccess && (
             <Anchor c="dimmed" component={Link} size="md" to={buildAbsolutePath([RouterPaths.Auth, RouterPaths.Login])}>
               <Center inline>

@@ -1,6 +1,6 @@
 const ApiUrls = {
   // auth
-  Register: 'auth/register',
+  Register: 'auth/signup',
   Login: 'auth/login',
   Logout: 'auth/logout',
   Refresh: 'auth/refresh',

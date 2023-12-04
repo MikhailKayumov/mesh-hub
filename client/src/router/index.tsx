@@ -29,11 +29,15 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Register,
-            lazy: async () => ({ Component: (await import('@/pages/Login')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/Register')).default }),
           },
           {
             path: RouterPaths.ResetPassword,
             lazy: async () => ({ Component: (await import('@/pages/ResetPassword')).default }),
+          },
+          {
+            path: RouterPaths.ChangePassword,
+            lazy: async () => ({ Component: (await import('@/pages/ChangePassword')).default }),
           },
         ],
       },

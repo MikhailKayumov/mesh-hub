@@ -22,6 +22,7 @@ export class ConfigService {
       port: this.getNumber('APP_PORT'),
       mode: this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT'),
       prefix: this.get('APP_GLOBAL_PREFIX', ''),
+      frontendUrl: this.get('APP_FRONTEND_URL'),
     };
   }
 
@@ -129,7 +130,7 @@ export class ConfigService {
         secure: true,
         port: this.getNumber('SMTP_YANDEX_PORT', 465),
         auth: { user, pass },
-        jsonTransport: enabled || undefined, // for testing
+        jsonTransport: !enabled || undefined,
       },
       defaults: {
         from: `"${name}" <${user}>`,

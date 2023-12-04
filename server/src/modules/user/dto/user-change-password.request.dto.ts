@@ -1,21 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, IsUUID, Matches, MinLength } from 'class-validator';
 import { AppRegexp, ValidationErrorMessages } from '@/constants';
 
-export class UserCreateRequestDto {
+export class UserChangePasswordRequestDto {
   @ApiProperty()
-  @IsEmail()
-  public email: string;
-
-  @ApiProperty()
-  @IsNotEmpty({ message: ValidationErrorMessages.RequiredField })
-  @IsString()
-  public firstName: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  public lastName?: string;
+  @IsUUID(undefined, { message: ValidationErrorMessages.UUID })
+  public requestId: string;
 
   @ApiProperty()
   @IsNotEmpty({ message: ValidationErrorMessages.RequiredField })

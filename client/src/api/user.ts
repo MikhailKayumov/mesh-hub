@@ -1,5 +1,5 @@
 import Api from './base';
-import { UserResponseDto } from './dto';
+import { UserChangePasswordRequestDto, UserResponseDto } from './dto';
 import ApiTags from './tags';
 import ApiUrls from './urls';
 
@@ -13,16 +13,23 @@ const UserApi = Api.injectEndpoints({
       }),
     }),
     resetPassword: build.mutation<void, string>({
-      query: (email: string) => ({
+      query: (email) => ({
         method: 'PATCH',
         url: `${ApiUrls.ResetPassword}`,
         body: { email },
+      }),
+    }),
+    changePassword: build.mutation<void, UserChangePasswordRequestDto>({
+      query: (body) => ({
+        method: 'PATCH',
+        url: `${ApiUrls.ChangePassword}`,
+        body,
       }),
     }),
   }),
   overrideExisting: true,
 });
 
-export const { useCurrentUserQuery, useResetPasswordMutation } = UserApi;
+export const { useCurrentUserQuery, useResetPasswordMutation, useChangePasswordMutation } = UserApi;
 
 export default UserApi;

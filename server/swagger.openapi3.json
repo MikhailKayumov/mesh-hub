@@ -243,14 +243,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ResetPasswordRequestDto"
+                "$ref": "#/components/schemas/UserResetPasswordRequestDto"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Logout was succeed"
+            "description": ""
           },
           "400": {
             "description": ""
@@ -259,9 +259,42 @@
             "description": "Unauthorized"
           },
           "404": {
-            "description": "User not found"
+            "description": ""
           },
           "500": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/change-password": {
+      "patch": {
+        "operationId": "UserController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserChangePasswordRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "403": {
+            "description": "Unauthorized"
+          },
+          "404": {
             "description": ""
           }
         },
@@ -500,31 +533,27 @@
           "email": {
             "type": "string"
           },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 24,
-            "pattern": "/^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/"
-          },
           "firstName": {
-            "type": "string"
-          },
-          "middleName": {
             "type": "string"
           },
           "lastName": {
             "type": "string"
           },
-          "nickname": {
+          "password": {
+            "type": "string"
+          },
+          "confirmPassword": {
             "type": "string"
           }
         },
         "required": [
           "email",
-          "password"
+          "firstName",
+          "password",
+          "confirmPassword"
         ]
       },
-      "ResetPasswordRequestDto": {
+      "UserResetPasswordRequestDto": {
         "type": "object",
         "properties": {
           "email": {
@@ -533,6 +562,25 @@
         },
         "required": [
           "email"
+        ]
+      },
+      "UserChangePasswordRequestDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "confirmPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requestId",
+          "password",
+          "confirmPassword"
         ]
       },
       "UserUpdateRequestDto": {
@@ -560,8 +608,7 @@
           },
           "password": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "passwordRegExp"
+            "minLength": 6
           }
         },
         "required": [

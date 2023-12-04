@@ -3,7 +3,6 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import zod from 'zod';
-import { LoginRequestDto } from '@/api/dto.ts';
 import { useResetPasswordMutation } from '@/api/user.ts';
 import { isValidationException } from '@/api/utils.ts';
 import { ValidationErrorMessages } from '@/constants';
@@ -40,7 +39,7 @@ export default function useResetPasswordForm() {
         submitStart();
         await resetPassword(email).unwrap();
       } catch (e) {
-        if (isValidationException<keyof LoginRequestDto>(e)) {
+        if (isValidationException<keyof { email: string }>(e)) {
           e.data.forEach((i) => form.setFieldError(i.property, i.errors.join('. ')));
         } else {
           notifications.show({

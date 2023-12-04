@@ -1,5 +1,3 @@
- 
-
 export interface PaginationDtoSortItem {
   field: string;
   by: 'ASC' | 'DESC';
@@ -33,11 +31,20 @@ export interface SessionResponseDto {
 
 export interface UserCreateRequestDto {
   email: string;
-  password: string;
-  firstName?: string;
-  middleName?: string;
+  firstName: string;
   lastName?: string;
-  nickname?: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface UserResetPasswordRequestDto {
+  email: string;
+}
+
+export interface UserChangePasswordRequestDto {
+  requestId: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface UserUpdateRequestDto {

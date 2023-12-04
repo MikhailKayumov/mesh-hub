@@ -9,8 +9,8 @@ export class UserMapper {
 
     user.email = dto.email;
     user.firstName = dto.firstName;
-    user.middleName = dto.middleName;
     user.lastName = dto.lastName;
+    user.isConfirmed = true;
 
     return user;
   }

@@ -27,9 +27,13 @@ export class AuthService {
   ) {}
 
   public async signup(dto: UserCreateRequestDto, request: Request): Promise<SessionResponseDto> {
-    return AuthMapper.sessionEntityToResponse(
-      await this.createSession(request, await this.userService.createUserEntity(dto)),
-    );
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException('Пароли не совпадают');
+    }
+
+    request.session = await this.createSession(request, await this.userService.createUserEntity(dto));
+
+    return AuthMapper.sessionEntityToResponse(request.session);
   }
 
   public async login({ email, password }: LoginRequestDto, request: Request): Promise<SessionResponseDto> {
@@ -45,9 +49,8 @@ export class AuthService {
   }
 
   public async logout(session: SessionEntity, request: Request): Promise<void> {
-    throw new Error('no logout');
-    // await this.authRepository.delete(session.id);
-    // request.session = undefined;
+    request.session = null;
+    this.authRepository.delete(session.id);
   }
 
   public async validateSession(token: string, userId: string, silent = false): Promise<SessionEntity | null> {

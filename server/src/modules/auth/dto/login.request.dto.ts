@@ -1,20 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
-
-export const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/;
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { ValidationErrorMessages } from '@/constants';
 
 export class LoginRequestDto {
   @ApiProperty()
-  @IsNotEmpty({ message: 'Обязательное поле' })
-  @IsEmail({}, { message: 'Не корректный электронный адрес' })
+  @IsNotEmpty({ message: ValidationErrorMessages.RequiredField })
+  @IsEmail({}, { message: ValidationErrorMessages.Email })
   public email: string;
 
   @ApiProperty()
-  @IsNotEmpty({ message: 'Обязательное поле' })
+  @IsNotEmpty({ message: ValidationErrorMessages.RequiredField })
   @IsString()
-  @MinLength(6, { message: 'Длина пароля должна быть более 6 символов' })
-  @Matches(passwordRegExp, {
-    message: 'Пароль должен содержать строчные и прописные буквы латинского алфавита и цифры',
-  })
+  @MinLength(6, { message: ValidationErrorMessages.PasswordLength })
   public password: string;
 }

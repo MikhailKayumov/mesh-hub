@@ -1,19 +1,35 @@
 import { pbkdf2, randomBytes } from 'node:crypto';
-import { PaginationDto, PaginationResponseDto } from '@decorators/pagination';
-import { UserEntity } from '@entities/user/user.entity';
-import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
-import { UserResponseDto } from '@modules/user/dto/user.response.dto';
-import { UserUpdateRequestDto } from '@modules/user/dto/user.update.request.dto';
-import { UserMapper } from '@modules/user/user.mapper';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { isNil } from '../../utils';
-import { UserRepository } from './user.repository';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { addSeconds } from 'date-fns';
+import { QueryFailedError } from 'typeorm';
+import { UserResetPasswordEntity } from '@/database/entities/user/user-reset-password.entity';
+import { UserEntity } from '@/database/entities/user/user.entity';
+import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
+import { NotificationsService } from '@/modules/common/notifications/notifications.service';
+import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
+import { UserResponseDto } from '@/modules/user/dto/user.response.dto';
+import { UserUpdateRequestDto } from '@/modules/user/dto/user.update.request.dto';
+import { UserResetPasswordRepository } from '@/modules/user/repositories/user-reset-password.repository';
+import { UserMapper } from '@/modules/user/user.mapper';
+import { isNil } from '@/utils';
+import { UserRepository } from './repositories/user.repository';
 
 @Injectable()
 export class UserService {
   private readonly logger: Logger = new Logger('UserService');
 
-  public constructor(private readonly userRepository: UserRepository) {}
+  public constructor(
+    private readonly userRepository: UserRepository,
+    private readonly userResetPasswordRepository: UserResetPasswordRepository,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   public async getUsers({ size, skip, sort }: PaginationDto): Promise<PaginationResponseDto<UserResponseDto>> {
     const qb = this.userRepository
@@ -40,20 +56,40 @@ export class UserService {
   }
 
   public async getUser(id: string): Promise<UserResponseDto> {
-    const user = await this.findUserById(id);
+    const user = await this.getUserById(id);
     return UserMapper.userEntityToUserResponse(user);
   }
 
+  public async getUserById(id: string): Promise<UserEntity> {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException(`Пользователь не найден`);
+    }
+
+    return user;
+  }
+
   public async createUser(dto: UserCreateRequestDto): Promise<UserResponseDto> {
+    return UserMapper.userEntityToUserResponse(await this.createUserEntity(dto));
+  }
+
+  public async createUserEntity(dto: UserCreateRequestDto): Promise<UserEntity> {
+    const exist = await this.userRepository.findByEmail(dto.email);
+    if (exist) {
+      throw new ConflictException('Пользователь уже зарегистрирован');
+    }
+
     const { hash, salt } = await this.encodePassword(dto.password);
 
-    const user = await this.userRepository.createUser(dto, hash, salt);
+    const user = UserMapper.createRequestToUserEntity(dto);
+    user.password = hash;
+    user.salt = salt;
 
-    return UserMapper.userEntityToUserResponse(await user.save());
+    return await this.userRepository.save(user);
   }
 
   public async updateUser(id: string, dto: UserUpdateRequestDto): Promise<UserResponseDto> {
-    const user = await this.findUserById(id);
+    const user = await this.getUserById(id);
 
     const updates = Object.entries(dto) as [keyof UserUpdateRequestDto, any][];
     updates.forEach(([name, value]) => {
@@ -63,17 +99,12 @@ export class UserService {
     return UserMapper.userEntityToUserResponse(await user.save());
   }
 
-  public async deleteUser(id: string) {
-    return this.userRepository.delete({ id });
-  }
+  public async deleteUser(id: string): Promise<void> {
+    const result = await this.userRepository.delete({ id });
 
-  public async findUserById(id: string): Promise<UserEntity> {
-    const user = await this.userRepository.findUser({ id });
-    if (!user) {
-      throw new HttpException(`User with id (${id}) not found!`, HttpStatus.NOT_FOUND);
+    if (!result.affected) {
+      throw new NotFoundException('Пользователь не найден!');
     }
-
-    return user;
   }
 
   public async encodePassword(password: string, salt?: string): Promise<{ hash: string; salt: string }> {
@@ -99,4 +130,30 @@ export class UserService {
     const { hash } = await this.encodePassword(password, salt);
     return hash === passwordHash;
   }
+
+  public async resetPassword(email: string): Promise<void> {
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
+
+    try {
+      await this.userResetPasswordRepository.deleteExpiredByUser(user);
+      const request = await this.userResetPasswordRepository.createRequest(user);
+
+      this.notificationsService.sendEmail(
+        'mkaumov056@gmail.com',
+        'Сброс пароля',
+        `Для создания нового пароля перейдите по ссылке:\nhttp://localhost:8000/auth/change-password?request=${request.id}`,
+      );
+    } catch (e) {
+      if (e instanceof QueryFailedError) {
+        throw new BadRequestException('Запрос на сброс пароля можно создать только один раз в 5 минут');
+      } else {
+        throw new InternalServerErrorException('Не удалось создать запрос на сброс пароля');
+      }
+    }
+  }
+
+  public async changePassword() {}
 }

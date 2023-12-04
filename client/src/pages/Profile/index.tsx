@@ -1,9 +1,9 @@
-import Container from '@/components/Container';
+import { Container, Title } from '@mantine/core';
 
 export default function ProfilePage() {
   return (
-    <Container as="main" className="py-4">
-      <h1>Профиль</h1>
+    <Container>
+      <Title>Профиль</Title>
     </Container>
   );
 }

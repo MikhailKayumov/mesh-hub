@@ -1,6 +1,6 @@
 import { Color, PCFSoftShadowMap, WebGLRenderer, WebGLRendererParameters } from 'three';
-import { World } from './World';
 import { CameraController } from './Camera';
+import { World } from './World';
 
 export interface RendererParameters extends WebGLRendererParameters {
   world: World;

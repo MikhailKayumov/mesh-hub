@@ -1,5 +1,6 @@
-import { useCallback, useRef } from 'react';
+import { Box } from '@mantine/core';
 import { clsx } from 'clsx';
+import { useCallback, useRef } from 'react';
 import { run } from './classes';
 
 export interface ViewerProps {
@@ -21,5 +22,5 @@ export default function Viewer({ className }: ViewerProps) {
     });
   }, []);
 
-  return <div className={clsx('relative h-full w-full', className)} ref={getRootRef}></div>;
+  return <Box className={clsx(className)} w="100%" h="100%" ref={getRootRef}></Box>;
 }

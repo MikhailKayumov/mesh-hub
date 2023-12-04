@@ -1,12 +1,7 @@
-import { createBrowserRouter, RouteObject } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import BasePage from '@/pages';
-import LoginPage from '@/pages/Login';
-import ProfilePage from '@/pages/Profile';
-import UiKitPage from '@/pages/UiKit';
-import UiKitButtonsPage from '@/pages/UiKit/pages/Buttons';
-import UiKitTypographyPage from '@/pages/UiKit/pages/Typography';
-import MainPage from '../pages/Main';
+import BasePage from '@/pages/Base';
+import MainPage from '@/pages/Main';
 import RouterPaths from './paths';
 
 const routes: RouteObject[] = [
@@ -19,38 +14,40 @@ const routes: RouteObject[] = [
         index: true,
         element: <MainPage />,
       },
-      // user
-      {
-        path: RouterPaths.Profile,
-        element: <ProfilePage />,
-      },
       // auth
       {
-        path: RouterPaths.Login,
-        element: <LoginPage />,
-      },
-      // ui-kit
-      {
-        path: RouterPaths.UiKit,
-        element: <UiKitPage />,
+        path: RouterPaths.Auth,
+        lazy: async () => ({ Component: (await import('@/pages/Auth')).default }),
         children: [
           {
-            path: RouterPaths.UiKitButtons,
-            element: <UiKitButtonsPage />,
+            index: true,
+            element: <Navigate replace to={RouterPaths.Login} />,
           },
           {
-            path: RouterPaths.UiKitTypography,
-            element: <UiKitTypographyPage />,
+            path: RouterPaths.Login,
+            lazy: async () => ({ Component: (await import('@/pages/Login')).default }),
+          },
+          {
+            path: RouterPaths.Register,
+            lazy: async () => ({ Component: (await import('@/pages/Login')).default }),
+          },
+          {
+            path: RouterPaths.ResetPassword,
+            lazy: async () => ({ Component: (await import('@/pages/ResetPassword')).default }),
           },
         ],
       },
+      // user
+      // {
+      //   path: RouterPaths.Profile,
+      //   element: <ProfilePage />,
+      // },
     ],
   },
-  {
-    path: 'editor',
-    // element: <EditorPage />,
-    lazy: () => import('@/pages/Editor'),
-  },
+  // {
+  //   path: 'editor',
+  //   lazy: () => import('@/pages/Editor'),
+  // },
 ];
 
 const router = createBrowserRouter(routes);

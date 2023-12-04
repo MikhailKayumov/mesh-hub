@@ -1,8 +1,8 @@
 import { BoxGeometry, Color, Object3D, Vector3, Mesh, MeshStandardMaterial } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
-import { World } from './World';
-import { Renderer } from './Renderer';
 import { CameraController } from './Camera';
+import { Renderer } from './Renderer';
+import { World } from './World';
 
 // setting up axis
 Object3D.DEFAULT_UP = new Vector3(0, 0, 1);

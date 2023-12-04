@@ -2,17 +2,21 @@ const RouterPaths = {
   // common
   Base: '/',
 
-  // pages
+  // auth
+  Auth: 'auth',
   Login: 'login',
-  Profile: 'profile',
+  Register: 'register',
+  ResetPassword: 'reset-password',
+  ChangePassword: 'change-password',
+
+  // user
+  User: 'user',
+  MyProfile: 'my-profile',
+  MyModels: 'my-models',
+  MySettings: 'my-settings',
 
   // editor
   Editor: 'editor',
-
-  // uikit
-  UiKit: 'uikit',
-  UiKitButtons: 'buttons',
-  UiKitTypography: 'typography',
 } as const;
 
 export type RouterPathName = keyof typeof RouterPaths;

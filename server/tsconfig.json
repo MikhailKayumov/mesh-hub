@@ -12,16 +12,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@decorators/*": ["src/decorators/*"],
-      "@exceptions/*": ["src/exceptions/*"],
-      "@guards/*": ["src/guards/*"],
-      "@interceptors/*": ["src/interceptors/*"],
-      "@config/*": ["src/modules/common/config/*"],
-      "@modules/*": ["src/modules/*"],
-      "@swagger/*": ["src/swagger/*"],
-      "@entities/*": ["src/database/entities/*"],
-      "@database/*": ["src/database/*"],
-      "@utils/*": ["src/utils/*"]
+      "@/*": ["src/*"],
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -14,3 +14,6 @@ yarn-error.log*
 
 .env*.local
 .env
+
+/logo/*.log
+/logo/SVG

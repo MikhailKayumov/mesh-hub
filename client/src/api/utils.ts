@@ -1,5 +1,5 @@
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { AnyAction, isRejectedWithValue, Middleware } from '@reduxjs/toolkit';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { HttpException, ValidationHttpException } from './dto';
 
 export const isFetchQueryError = (error: unknown): error is FetchBaseQueryError => {
@@ -8,6 +8,10 @@ export const isFetchQueryError = (error: unknown): error is FetchBaseQueryError 
 
 export const isHttpException = (error: unknown): error is HttpException => {
   return isFetchQueryError(error) && typeof error.status === 'number';
+};
+
+export const isUnauthorizedHttpException = (error: unknown): error is HttpException => {
+  return isHttpException(error) && error.status === 401;
 };
 
 export const isValidationException = <Property extends string = string>(

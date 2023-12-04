@@ -1,4 +1,4 @@
- 
+/* eslint-disable */
 /* tslint:disable */
 /*
  * ---------------------------------------------------------------
@@ -33,12 +33,15 @@ export interface UserResponseDto {
   middleName?: string;
   lastName?: string;
   nickname?: string;
+  isConfirmed: boolean;
   sessions?: SessionResponseDto[];
 }
 
 export interface SessionResponseDto {
   id: string;
-  user?: UserResponseDto;
+  user: UserResponseDto;
+  ip: string;
+  userAgent?: string;
 }
 
 export interface UserCreateRequestDto {
@@ -65,8 +68,7 @@ export interface UserUpdateRequestDto {
 export interface LoginRequestDto {
   email: string;
   /**
-   * @minLength 8
-   * @maxLength 24
+   * @minLength 6
    * @pattern passwordRegExp
    */
   password: string;

@@ -1,7 +1,7 @@
 import Api from './base';
+import { UserResponseDto } from './dto';
 import ApiTags from './tags';
 import ApiUrls from './urls';
-import { UserResponseDto } from './dto';
 
 const UserApi = Api.injectEndpoints({
   endpoints: (build) => ({
@@ -12,10 +12,17 @@ const UserApi = Api.injectEndpoints({
         url: ApiUrls.CurrentUser,
       }),
     }),
+    resetPassword: build.mutation<void, string>({
+      query: (email: string) => ({
+        method: 'PATCH',
+        url: `${ApiUrls.ResetPassword}`,
+        body: { email },
+      }),
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useCurrentUserQuery } = UserApi;
+export const { useCurrentUserQuery, useResetPasswordMutation } = UserApi;
 
 export default UserApi;

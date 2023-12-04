@@ -35,15 +35,12 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'text', name: 'last_name', nullable: true })
   public lastName?: string;
 
+  @Column({ type: 'boolean', name: 'is_confirmed', default: false })
+  public isConfirmed: boolean;
+
   @OneToMany(() => SessionEntity, (session) => session.user)
   @JoinColumn()
   public sessions: SessionEntity[];
-
-  // @Column({ type: 'boolean', name: 'is_confirmed', default: false })
-  // public isConfirmed: boolean;
-
-  // @Column({ type: 'boolean', name: 'is_active', default: true })
-  // public isActive: boolean;
 
   // @Column({ type: 'smallint', nullable: false, default: 1, unsigned: true })
   // public role: number;

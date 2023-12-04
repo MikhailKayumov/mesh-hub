@@ -1,3 +1,5 @@
+ 
+
 export interface PaginationDtoSortItem {
   field: string;
   by: 'ASC' | 'DESC';
@@ -24,7 +26,9 @@ export interface UserResponseDto {
 
 export interface SessionResponseDto {
   id: string;
-  user?: UserResponseDto;
+  user: UserResponseDto;
+  ip: string;
+  userAgent?: string;
 }
 
 export interface UserCreateRequestDto {

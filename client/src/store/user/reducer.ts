@@ -1,23 +1,24 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import { ThemeMode } from '@/layouts/components/ThemeSwitcher/model';
+import { SessionResponseDto } from '@/api/dto.ts';
 
 export interface UserState {
-  theme: ThemeMode;
+  session: SessionResponseDto | null;
 }
 
 const initialState: UserState = {
-  theme: 'system',
+  session: null,
 };
 
 export const userSlice = createSlice({
   name: '@mesh_hub/user',
   initialState,
   reducers: {
-    setTheme(state, { payload }: PayloadAction<ThemeMode>) {
-      state.theme = payload;
+    setSession(state, { payload }: PayloadAction<UserState['session']>) {
+      state.session = payload;
     },
+    reset: () => initialState,
   },
 });
 

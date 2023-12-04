@@ -1,6 +1,6 @@
-import { PaginationResponseDto } from '@decorators/pagination/pagination.response.dto';
 import { createParamDecorator, ExecutionContext, Type, applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiQuery, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { PaginationResponseDto } from '@/decorators/pagination/pagination.response.dto';
 import { PaginationDto, PaginationDtoSortItem, PaginationSortOrder } from './pagination.dto';
 
 export const PaginatedRequest = createParamDecorator(

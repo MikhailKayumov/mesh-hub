@@ -1,15 +1,14 @@
-import { ConfigService } from '@config/config.service';
-import { SessionEntity } from '@entities/session/session.entity';
-import { UserEntity } from '@entities/user/user.entity';
-import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
-import { UserRepository } from '@modules/user/user.repository';
-import { UserService } from '@modules/user/user.service';
-import { HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Request } from 'express';
 import { LessThan, MoreThanOrEqual } from 'typeorm';
-import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
+import { SessionEntity } from '@/database/entities/session/session.entity';
+import { UserEntity } from '@/database/entities/user/user.entity';
+import { ConfigService } from '@/modules/common/config/config.service';
+import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
+import { UserRepository } from '@/modules/user/repositories/user.repository';
+import { UserService } from '@/modules/user/user.service';
 import { AuthMapper } from './auth.mapper';
 import { AuthRepository } from './auth.repository';
 import { LoginRequestDto } from './dto/login.request.dto';
@@ -27,32 +26,35 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  public async signup(dto: UserCreateRequestDto): Promise<SessionResponseDto> {
-    const { hash, salt } = await this.userService.encodePassword(dto.password);
-    const user = await this.userRepository.createUser(dto, hash, salt);
-
-    return AuthMapper.sessionEntityToResponse(await this.createSession(user));
+  public async signup(dto: UserCreateRequestDto, request: Request): Promise<SessionResponseDto> {
+    return AuthMapper.sessionEntityToResponse(
+      await this.createSession(request, await this.userService.createUserEntity(dto)),
+    );
   }
 
   public async login({ email, password }: LoginRequestDto, request: Request): Promise<SessionResponseDto> {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user || !(await this.userService.comparePassword(password, user.salt, user.password))) {
-      throw new HttpException('Неверные логин или пароль', HttpStatus.NOT_FOUND);
+      throw new BadRequestException('Неверные email или пароль');
     }
 
-    request.session = await this.createSession(user);
+    request.session = await this.createSession(request, user);
 
     return AuthMapper.sessionEntityToResponse(request.session);
   }
 
   public async logout(session: SessionEntity, request: Request): Promise<void> {
-    await this.authRepository.delete(session.id);
-    request.session = undefined;
+    throw new Error('no logout');
+    // await this.authRepository.delete(session.id);
+    // request.session = undefined;
   }
 
-  public async validateSession(token: string, userId: string): Promise<SessionEntity> {
-    const session = await this.authRepository.findOne({
+  public async validateSession(token: string, userId: string, silent = false): Promise<SessionEntity | null> {
+    let session = await this.authRepository.findOne({
+      relations: {
+        user: true,
+      },
       where: {
         accessToken: token,
         user: {
@@ -60,12 +62,14 @@ export class AuthService {
         },
         expiredAt: MoreThanOrEqual(new Date()),
       },
-      relations: {
-        user: true,
-      },
     });
-    if (!session || !session.user) {
-      throw new UnauthorizedException();
+    if ((!session || !session.user) && !silent) {
+      throw new UnauthorizedException('Сессия не найдена или устарела');
+    }
+
+    const isValid = this.validateAccessToken(token);
+    if (session && !isValid) {
+      session = await this.refreshSession(session);
     }
 
     return session;
@@ -78,21 +82,42 @@ export class AuthService {
         algorithms: [this.configService.jwt.algorithm],
       });
 
-      return this.createSession(session.user, session.id);
+      const [accessToken, refreshToken] = await this.createTokens(session.user);
+
+      const result = await this.authRepository.update(
+        { id: session.id },
+        {
+          accessToken,
+          refreshToken,
+        },
+      );
+
+      console.log(result.raw);
+
+      return result.raw;
     } catch (e) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Сессия устарела');
     }
   }
 
-  private async createSession(user: UserEntity, sessionId?: string): Promise<SessionEntity> {
-    const where: FindOptionsWhere<SessionEntity> = { user: { id: user.id } };
-    if (sessionId) {
-      (where as any).id = sessionId;
-    }
-    await this.authRepository.delete(where);
+  private async createSession(request: Request, user: UserEntity): Promise<SessionEntity> {
+    await this.authRepository.delete({ user: { id: user.id } });
 
+    const [accessToken, refreshToken] = await this.createTokens(user);
+
+    return this.authRepository.createSession(
+      accessToken,
+      refreshToken,
+      user,
+      request.ip,
+      request.headers['user-agent'],
+    );
+  }
+
+  public async createTokens(user: UserEntity) {
     const payload = { userId: user.id, userEmail: user.email };
-    const [accessToken, refreshToken] = await Promise.all([
+
+    return await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, {
         secret: this.configService.jwt.refreshSecret,
@@ -100,11 +125,19 @@ export class AuthService {
         expiresIn: this.configService.jwt.refreshExpiresIn,
       }),
     ]);
-
-    return this.authRepository.createSession(accessToken, refreshToken, user);
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  private async validateAccessToken(token: string): Promise<boolean> {
+    try {
+      await this.jwtService.verifyAsync(token);
+      return true;
+    } catch (e: unknown) {
+      this.logger.warn('Access token has been expire');
+      return false;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
   private async clearSessions(): Promise<void> {
     const { affected } = await this.authRepository.delete({
       expiredAt: LessThan(new Date()),

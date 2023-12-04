@@ -1,9 +1,9 @@
-import { JwtAuth } from '@decorators/auth/auth.decorator';
-import { SessionEntity } from '@entities/session/session.entity';
-import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, Session } from '@nestjs/common';
 import { ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Request } from 'express';
+import { SessionEntity } from '@/database/entities/session/session.entity';
+import { JwtAuth } from '@/decorators/auth/auth.decorator';
+import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/login.request.dto';
 import { SessionResponseDto } from './dto/session.response.dto';
@@ -16,8 +16,8 @@ export class AuthController {
   @Post('signup')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: () => SessionResponseDto })
-  public async signup(@Body() dto: UserCreateRequestDto): Promise<SessionResponseDto> {
-    return this.authService.signup(dto);
+  public async signup(@Body() dto: UserCreateRequestDto, @Req() request: Request): Promise<SessionResponseDto> {
+    return this.authService.signup(dto, request);
   }
 
   @Post('login')

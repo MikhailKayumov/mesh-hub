@@ -1,8 +1,8 @@
-import { PaginationDtoSortItem } from '@decorators/pagination/pagination.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import validateDto from '@utils/validate-dto';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsNumber, Min } from 'class-validator';
+import { PaginationDtoSortItem } from '@/decorators/pagination/pagination.dto';
+import validateDto from '@/utils/validate-dto';
 
 export class PaginationResponseDto<T = unknown> {
   @ApiProperty({ isArray: true, type: Object })

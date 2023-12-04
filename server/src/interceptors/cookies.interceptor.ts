@@ -1,4 +1,3 @@
-import { ConfigService } from '@config/config.service';
 import {
   Injectable,
   NestInterceptor,
@@ -9,6 +8,7 @@ import {
 import { subMilliseconds } from 'date-fns';
 import { Request, Response } from 'express';
 import { map, Observable } from 'rxjs';
+import { ConfigService } from '@/modules/common/config/config.service';
 
 @Injectable()
 export class CookiesInterceptor implements NestInterceptor {

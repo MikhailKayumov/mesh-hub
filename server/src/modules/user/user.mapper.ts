@@ -1,7 +1,7 @@
-import { UserEntity } from '@entities/user/user.entity';
-import { AuthMapper } from '@modules/auth/auth.mapper';
-import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
-import { UserResponseDto } from '@modules/user/dto/user.response.dto';
+import { UserEntity } from '@/database/entities/user/user.entity';
+import { AuthMapper } from '@/modules/auth/auth.mapper';
+import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
+import { UserResponseDto } from '@/modules/user/dto/user.response.dto';
 
 export class UserMapper {
   public static createRequestToUserEntity(dto: UserCreateRequestDto): UserEntity {
@@ -23,7 +23,8 @@ export class UserMapper {
       middleName: user.middleName,
       lastName: user.lastName,
       nickname: user.nickname,
-      sessions: user?.sessions?.map((s) => AuthMapper.sessionEntityToResponse(s)),
+      isConfirmed: user.isConfirmed,
+      sessions: user.sessions?.map((s) => AuthMapper.sessionEntityToResponse(s)),
     };
   }
 }

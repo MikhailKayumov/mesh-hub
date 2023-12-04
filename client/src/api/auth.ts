@@ -1,7 +1,7 @@
 import Api from './base';
+import { LoginRequestDto, SessionResponseDto, UserCreateRequestDto } from './dto';
 import ApiTags from './tags';
 import ApiUrls from './urls';
-import { LoginRequestDto, SessionResponseDto, UserCreateRequestDto } from './dto';
 
 const AuthApi = Api.injectEndpoints({
   endpoints: (build) => ({

@@ -1,12 +1,13 @@
-import { ConfigService } from '@config/config.service';
-import { AppHttpException } from '@exceptions/app-http.exception';
-import { CookiesInterceptor } from '@interceptors/cookies.interceptor';
-import { LoggingInterceptor } from '@interceptors/logging.interceptor';
 import { ValidationPipe, ValidationError, HttpStatus } from '@nestjs/common';
 import { NestApplication, NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
-import { SwaggerService } from '@swagger/swagger.service';
 import * as cookieParser from 'cookie-parser';
+import { AppHttpException } from '@/exceptions/app-http.exception';
+import { CookiesInterceptor } from '@/interceptors/cookies.interceptor';
+import { LoggingInterceptor } from '@/interceptors/logging.interceptor';
+import { ConfigService } from '@/modules/common/config/config.service';
+import { LoggerService } from '@/modules/common/logger/logger.service';
+import { SwaggerService } from '@/swagger/swagger.service';
 import { AppModule } from './app.module';
 
 export default class AppBootstrap {
@@ -22,7 +23,7 @@ export default class AppBootstrap {
       return this.application;
     }
 
-    this.application = await NestFactory.create(AppModule);
+    this.application = await NestFactory.create(AppModule, { bufferLogs: true });
     this.configService = this.application.get(ConfigService);
 
     this.application.use(cookieParser());
@@ -47,8 +48,8 @@ export default class AppBootstrap {
         enableDebugMessages: !this.configService.isProduction,
       }),
     );
-    this.application.useGlobalInterceptors(new LoggingInterceptor());
-    this.application.useGlobalInterceptors(new CookiesInterceptor(this.configService));
+    this.application.useGlobalInterceptors(new CookiesInterceptor(this.configService), new LoggingInterceptor());
+    this.application.useLogger(this.application.get(LoggerService));
 
     return this.application;
   }
@@ -57,7 +58,7 @@ export default class AppBootstrap {
     await this.initApp();
 
     const swaggerService = new SwaggerService(this.application, this.configService);
-    SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument());
+    SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument(true));
 
     this.application.listen(this.configService.app.port, this.configService.app.host);
 

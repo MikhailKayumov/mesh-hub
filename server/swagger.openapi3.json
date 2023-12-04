@@ -224,6 +224,45 @@
           },
           "403": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/reset-password": {
+      "patch": {
+        "operationId": "UserController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Logout was succeed"
+          },
+          "400": {
+            "description": ""
+          },
+          "403": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": ""
           }
         },
         "tags": [
@@ -313,7 +352,7 @@
   },
   "info": {
     "title": "MeshHub Swagger",
-    "description": "Описания API эндпоинтов для приложения MeshHub",
+    "description": "API приложения MeshHub",
     "version": "1.0",
     "contact": {}
   },
@@ -417,6 +456,9 @@
           "nickname": {
             "type": "string"
           },
+          "isConfirmed": {
+            "type": "boolean"
+          },
           "sessions": {
             "type": "array",
             "items": {
@@ -426,7 +468,8 @@
         },
         "required": [
           "id",
-          "email"
+          "email",
+          "isConfirmed"
         ]
       },
       "SessionResponseDto": {
@@ -437,10 +480,18 @@
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "userAgent": {
+            "type": "string"
           }
         },
         "required": [
-          "id"
+          "id",
+          "user",
+          "ip"
         ]
       },
       "UserCreateRequestDto": {
@@ -473,6 +524,17 @@
           "password"
         ]
       },
+      "ResetPasswordRequestDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
       "UserUpdateRequestDto": {
         "type": "object",
         "properties": {
@@ -498,8 +560,7 @@
           },
           "password": {
             "type": "string",
-            "minLength": 8,
-            "maxLength": 24,
+            "minLength": 6,
             "pattern": "passwordRegExp"
           }
         },

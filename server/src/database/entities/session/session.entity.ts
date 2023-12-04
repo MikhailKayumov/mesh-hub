@@ -25,4 +25,10 @@ export class SessionEntity extends BaseEntity {
     nullable: false,
   })
   public expiredAt: Date;
+
+  @Column({ type: 'inet', nullable: false })
+  public ip: string;
+
+  @Column({ type: 'text', name: 'user_agent', nullable: true })
+  public userAgent?: string;
 }

@@ -17,21 +17,21 @@ export default function User() {
       <Menu.Dropdown>
         <Menu.Item
           component={Link}
-          to={buildAbsolutePath([RouterPaths.User, RouterPaths.MyModels])}
+          to={buildAbsolutePath([RouterPaths.User, RouterPaths.Models])}
           leftSection={<IconCube size={16} />}
         >
           Модели
         </Menu.Item>
         <Menu.Item
           component={Link}
-          to={buildAbsolutePath([RouterPaths.User, RouterPaths.MyProfile])}
+          to={buildAbsolutePath([RouterPaths.User, RouterPaths.Profile])}
           leftSection={<IconUser size={16} />}
         >
           Профиль
         </Menu.Item>
         <Menu.Item
           component={Link}
-          to={buildAbsolutePath([RouterPaths.User, RouterPaths.MySettings])}
+          to={buildAbsolutePath([RouterPaths.User, RouterPaths.Settings])}
           leftSection={<IconSettings size={16} />}
         >
           Настройки

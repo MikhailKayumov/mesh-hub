@@ -1,0 +1,9 @@
+.root {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  padding-top: rem(100px);
+  max-width: rem(510px);
+}

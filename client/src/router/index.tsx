@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import BaseErrorBoundary from '@/components/BaseErrorBoundary';
 import BasePage from '@/pages/Base';
 import MainPage from '@/pages/Main';
 import RouterPaths from './paths';
@@ -8,7 +8,7 @@ const routes: RouteObject[] = [
   {
     path: RouterPaths.Base,
     element: <BasePage />,
-    errorElement: <ErrorBoundary />,
+    ErrorBoundary: BaseErrorBoundary,
     children: [
       {
         index: true,
@@ -42,10 +42,28 @@ const routes: RouteObject[] = [
         ],
       },
       // user
-      // {
-      //   path: RouterPaths.Profile,
-      //   element: <ProfilePage />,
-      // },
+      {
+        path: RouterPaths.User,
+        lazy: async () => ({ Component: (await import('@/pages/User')).default }),
+        children: [
+          {
+            index: true,
+            element: <Navigate replace to={RouterPaths.Models} />,
+          },
+          {
+            path: RouterPaths.Models,
+            lazy: async () => ({ Component: (await import('@/pages/Profile')).default }),
+          },
+          {
+            path: RouterPaths.Profile,
+            lazy: async () => ({ Component: (await import('@/pages/Profile')).default }),
+          },
+          {
+            path: RouterPaths.Settings,
+            lazy: async () => ({ Component: (await import('@/pages/Profile')).default }),
+          },
+        ],
+      },
     ],
   },
   // {

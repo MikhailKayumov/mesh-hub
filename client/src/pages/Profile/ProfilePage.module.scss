@@ -1,0 +1,11 @@
+.root {
+  .form {
+    max-width: 100%;
+    min-width: 100%;
+
+    @media (min-width: em(992px)) {
+      max-width: 54%;
+      min-width: rem(420px);
+    }
+  }
+}

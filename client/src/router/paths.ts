@@ -11,9 +11,9 @@ const RouterPaths = {
 
   // user
   User: 'user',
-  MyProfile: 'my-profile',
-  MyModels: 'my-models',
-  MySettings: 'my-settings',
+  Profile: 'profile',
+  Models: 'models',
+  Settings: 'settings',
 
   // editor
   Editor: 'editor',

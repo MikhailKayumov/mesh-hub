@@ -56,4 +56,6 @@
 .main-page-content {
   display: flex;
   flex-direction: column;
+
+  --app-shell-padding: var(--mantine-spacing-xl);
 }

@@ -30,6 +30,7 @@ const UserApi = Api.injectEndpoints({
   overrideExisting: true,
 });
 
-export const { useCurrentUserQuery, useResetPasswordMutation, useChangePasswordMutation } = UserApi;
+export const { useCurrentUserQuery, useLazyCurrentUserQuery, useResetPasswordMutation, useChangePasswordMutation } =
+  UserApi;
 
 export default UserApi;

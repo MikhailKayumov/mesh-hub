@@ -30,6 +30,7 @@ const theme = mergeMantineTheme(
       Container: Container.extend({
         defaultProps: {
           size: 'responsive',
+          px: 'xl',
         },
         classNames: (_, { size, fluid }) => ({
           root: clsx({ 'responsive-container': size === 'responsive' && !fluid }),

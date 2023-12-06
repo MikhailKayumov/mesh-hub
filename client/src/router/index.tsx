@@ -36,8 +36,8 @@ const routes: RouteObject[] = [
             lazy: async () => ({ Component: (await import('@/pages/ResetPassword')).default }),
           },
           {
-            path: RouterPaths.ChangePassword,
-            lazy: async () => ({ Component: (await import('@/pages/ChangePassword')).default }),
+            path: RouterPaths.NewPassword,
+            lazy: async () => ({ Component: (await import('../pages/NewPassword')).default }),
           },
         ],
       },

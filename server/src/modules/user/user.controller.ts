@@ -13,8 +13,10 @@ import { UserEntity } from '@/database/entities/user/user.entity';
 import { JwtAuth, Public } from '@/decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { User } from '@/decorators/user/user.decorator';
-import { UserChangePasswordRequestDto } from '@/modules/user/dto/user-change-password.request.dto';
-import { UserResetPasswordRequestDto } from '@/modules/user/dto/user-reset-password.request.dto';
+import { UserChangePasswordRequestDto } from '@/modules/user/dto/user.change.password.request.dto';
+import { UserCurrentUpdateRequestDto } from '@/modules/user/dto/user.current.update.request.dto';
+import { UserNewPasswordRequestDto } from '@/modules/user/dto/user.new.password.request.dto';
+import { UserResetPasswordRequestDto } from '@/modules/user/dto/user.reset.password.request.dto';
 import { UserCreateRequestDto } from './dto/user.create.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { UserUpdateRequestDto } from './dto/user.update.request.dto';
@@ -43,14 +45,26 @@ export class UserController {
 
   @Get('current')
   @ApiOkResponse({ type: () => UserResponseDto })
-  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiNotFoundResponse()
   public getCurrentUser(@User() user: UserEntity): Promise<UserResponseDto> {
+    return this.userService.getUser(user.id);
+  }
+
+  @Patch('current')
+  @ApiOkResponse({ type: () => UserResponseDto })
+  @ApiBadRequestResponse()
+  @ApiNotFoundResponse()
+  public updateCurrentUser(
+    @User() user: UserEntity,
+    @Body() body: UserCurrentUpdateRequestDto,
+  ): Promise<UserResponseDto> {
+    console.log(body);
     return this.userService.getUser(user.id);
   }
 
   @Get(':id')
   @ApiOkResponse({ type: () => UserResponseDto })
-  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiNotFoundResponse()
   public getUser(@Param('id', ParseUUIDPipe) id: string): Promise<UserResponseDto> {
     return this.userService.getUser(id);
   }
@@ -66,14 +80,25 @@ export class UserController {
     return this.userService.resetPassword(email);
   }
 
-  @Patch('change-password')
+  @Patch('new-password')
   @Public()
-  @ApiBody({ type: UserChangePasswordRequestDto })
+  @ApiBody({ type: UserNewPasswordRequestDto })
   @ApiOkResponse()
   @ApiNotFoundResponse()
   @ApiBadRequestResponse()
-  public changePassword(@Body() { requestId, password, confirmPassword }: UserChangePasswordRequestDto): Promise<void> {
-    return this.userService.changePassword(requestId, password, confirmPassword);
+  public newPassword(@Body() { requestId, password, confirmPassword }: UserNewPasswordRequestDto): Promise<void> {
+    return this.userService.newPassword(requestId, password, confirmPassword);
+  }
+
+  @Patch('change-password')
+  @ApiBody({ type: UserChangePasswordRequestDto })
+  @ApiOkResponse()
+  @ApiBadRequestResponse()
+  public changePassword(
+    @User() user: UserEntity,
+    @Body() { oldPassword, password, confirmPassword }: UserChangePasswordRequestDto,
+  ): Promise<void> {
+    return this.userService.changePassword(user, oldPassword, password, confirmPassword);
   }
 
   @Patch(':id')
@@ -86,8 +111,8 @@ export class UserController {
   }
 
   @Delete(':id')
-  @ApiOkResponse({ description: 'Logout was succeed' })
-  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
   public deleteUser(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.userService.deleteUser(id);
   }

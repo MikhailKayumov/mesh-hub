@@ -17,9 +17,6 @@ export class UserResponseDto {
   @ApiPropertyOptional()
   public lastName?: string;
 
-  @ApiPropertyOptional()
-  public nickname?: string;
-
   @ApiProperty()
   public isConfirmed: boolean;
 

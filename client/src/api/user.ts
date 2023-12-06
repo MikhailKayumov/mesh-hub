@@ -1,5 +1,10 @@
 import Api from './base';
-import { UserChangePasswordRequestDto, UserResponseDto } from './dto';
+import {
+  UserChangePasswordRequestDto,
+  UserNewPasswordRequestDto,
+  UserResponseDto,
+  UserCurrentUpdateRequestDto,
+} from './dto';
 import ApiTags from './tags';
 import ApiUrls from './urls';
 
@@ -12,17 +17,32 @@ const UserApi = Api.injectEndpoints({
         url: ApiUrls.CurrentUser,
       }),
     }),
+    updateCurrentUser: build.mutation<void, UserCurrentUpdateRequestDto>({
+      invalidatesTags: [ApiTags.CurrentUser],
+      query: (body) => ({
+        method: 'PATCH',
+        url: ApiUrls.CurrentUser,
+        body,
+      }),
+    }),
     resetPassword: build.mutation<void, string>({
       query: (email) => ({
         method: 'PATCH',
-        url: `${ApiUrls.ResetPassword}`,
+        url: ApiUrls.ResetPassword,
         body: { email },
+      }),
+    }),
+    newPassword: build.mutation<void, UserNewPasswordRequestDto>({
+      query: (body) => ({
+        method: 'PATCH',
+        url: ApiUrls.NewPassword,
+        body,
       }),
     }),
     changePassword: build.mutation<void, UserChangePasswordRequestDto>({
       query: (body) => ({
         method: 'PATCH',
-        url: `${ApiUrls.ChangePassword}`,
+        url: ApiUrls.ChangePassword,
         body,
       }),
     }),
@@ -30,7 +50,13 @@ const UserApi = Api.injectEndpoints({
   overrideExisting: true,
 });
 
-export const { useCurrentUserQuery, useLazyCurrentUserQuery, useResetPasswordMutation, useChangePasswordMutation } =
-  UserApi;
+export const {
+  useCurrentUserQuery,
+  useLazyCurrentUserQuery,
+  useResetPasswordMutation,
+  useNewPasswordMutation,
+  useChangePasswordMutation,
+  useUpdateCurrentUserMutation,
+} = UserApi;
 
 export default UserApi;

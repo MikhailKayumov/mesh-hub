@@ -7,6 +7,7 @@ const ApiUrls = {
   // user
   CurrentUser: 'user/current',
   ResetPassword: 'user/reset-password',
+  NewPassword: 'user/new-password',
   ChangePassword: 'user/change-password',
 } as const;
 

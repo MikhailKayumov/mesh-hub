@@ -22,7 +22,6 @@ export class UserMapper {
       firstName: user.firstName,
       middleName: user.middleName,
       lastName: user.lastName,
-      nickname: user.nickname,
       isConfirmed: user.isConfirmed,
       sessions: user.sessions?.map((s) => AuthMapper.sessionEntityToResponse(s)),
     };

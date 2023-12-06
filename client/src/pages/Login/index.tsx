@@ -15,14 +15,7 @@ export default function LoginPage() {
       <Title mb={24}>Вход</Title>
 
       <form onSubmit={onSubmit}>
-        <TextInput
-          size="md"
-          label="Email"
-          placeholder="your@email.ru"
-          withAsterisk
-          {...form.getInputProps('email')}
-          mb={16}
-        />
+        <TextInput label="Email" placeholder="your@email.ru" withAsterisk {...form.getInputProps('email')} mb={16} />
         <div>
           <PasswordInput
             label="Пароль"
@@ -30,7 +23,6 @@ export default function LoginPage() {
             withAsterisk
             {...form.getInputProps('password')}
             translate="yes"
-            size="md"
           />
           <Flex justify="flex-end" mt={8}>
             <Anchor component={Link} size="sm" to={buildAbsolutePath([RouterPaths.Auth, RouterPaths.ResetPassword])}>
@@ -38,12 +30,12 @@ export default function LoginPage() {
             </Anchor>
           </Flex>
         </div>
-        <Button fullWidth type="submit" size="md" mt={32} loading={isSubmitting}>
+        <Button fullWidth type="submit" mt={24} loading={isSubmitting}>
           Войти
         </Button>
       </form>
 
-      <Center mt={16}>
+      <Center mt={12}>
         <Text size="sm" c="dimmed">
           Нет личного кабинета?{' '}
           <Anchor component={Link} to={buildAbsolutePath([RouterPaths.Auth, RouterPaths.Register])}>

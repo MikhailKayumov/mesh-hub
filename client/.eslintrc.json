@@ -39,7 +39,7 @@
       }
     ],
     "react-refresh/only-export-components": ["warn", { "allowConstantExport": true }],
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": ["warn", { "allow": ["warn", "error", "clear"] }],
     "react-hooks/exhaustive-deps": 0
 }
 }

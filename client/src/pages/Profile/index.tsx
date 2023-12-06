@@ -1,4 +1,5 @@
 import { Paper, Title, TextInput, Button, Textarea, Group, Tooltip, TagsInput, Loader, Center } from '@mantine/core';
+import ChangePasswordModal from '@/components/ChangePasswordModal';
 import PhoneInput from '@/components/PhoneInput';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
 import { softwares } from '@/pages/Profile/constants.ts';
@@ -59,9 +60,7 @@ export default function ProfilePage() {
               <Button type="submit" loading={isSubmitting} disabled={!form.isDirty()}>
                 Сохранить
               </Button>
-              <Button variant="transparent" disabled={isSubmitting}>
-                Изменить пароль
-              </Button>
+              <ChangePasswordModal />
             </Group>
           </form>
         </Paper>

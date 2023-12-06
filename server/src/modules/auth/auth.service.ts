@@ -70,7 +70,7 @@ export class AuthService {
       throw new UnauthorizedException('Сессия не найдена или устарела');
     }
 
-    const isValid = this.validateAccessToken(token);
+    const isValid = await this.validateAccessToken(token);
     if (session && !isValid) {
       session = await this.refreshSession(session);
     }
@@ -87,24 +87,24 @@ export class AuthService {
 
       const [accessToken, refreshToken] = await this.createTokens(session.user);
 
-      const result = await this.authRepository.update(
-        { id: session.id },
-        {
-          accessToken,
-          refreshToken,
-        },
-      );
+      session.accessToken = accessToken;
+      session.refreshToken = refreshToken;
 
-      console.log(result.raw);
-
-      return result.raw;
+      return await this.authRepository.save(session);
     } catch (e) {
       throw new UnauthorizedException('Сессия устарела');
     }
   }
 
   private async createSession(request: Request, user: UserEntity): Promise<SessionEntity> {
-    await this.authRepository.delete({ user: { id: user.id } });
+    const exitingSession = await this.authRepository.findOne({
+      relations: { user: true },
+      where: { user: { id: user.id }, ip: request.ip },
+    });
+
+    if (exitingSession) {
+      return exitingSession;
+    }
 
     const [accessToken, refreshToken] = await this.createTokens(user);
 

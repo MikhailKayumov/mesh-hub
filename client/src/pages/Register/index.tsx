@@ -16,35 +16,20 @@ export default function RegisterPage() {
 
       <form onSubmit={onSubmit}>
         <TextInput
-          size="md"
           label="Имя"
           placeholder="Введите ваше имя"
           withAsterisk
           {...form.getInputProps('firstName')}
           mb={16}
         />
-        <TextInput
-          size="md"
-          label="Фамилия"
-          placeholder="Введите вашу фамилию"
-          {...form.getInputProps('lastName')}
-          mb={16}
-        />
-        <TextInput
-          size="md"
-          label="Email"
-          placeholder="your@email.ru"
-          withAsterisk
-          {...form.getInputProps('email')}
-          mb={16}
-        />
+        <TextInput label="Фамилия" placeholder="Введите вашу фамилию" {...form.getInputProps('lastName')} mb={16} />
+        <TextInput label="Email" placeholder="your@email.ru" withAsterisk {...form.getInputProps('email')} mb={16} />
         <PasswordInput
           label="Пароль"
           placeholder="Введите пароль"
           withAsterisk
           {...form.getInputProps('password')}
           translate="yes"
-          size="md"
           mb={16}
         />
         <PasswordInput
@@ -53,14 +38,13 @@ export default function RegisterPage() {
           withAsterisk
           {...form.getInputProps('confirmPassword')}
           translate="yes"
-          size="md"
         />
-        <Button fullWidth type="submit" size="md" mt={32} loading={isSubmitting}>
+        <Button fullWidth type="submit" mt={24} loading={isSubmitting}>
           Зарегистрироваться
         </Button>
       </form>
 
-      <Center mt={16}>
+      <Center mt={12}>
         <Text size="sm" c="dimmed">
           Есть личный кабинет?{' '}
           <Anchor component={Link} to={buildAbsolutePath([RouterPaths.Auth, RouterPaths.Login])}>

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { subMilliseconds } from 'date-fns';
 import { Request, Response } from 'express';
-import { map, Observable } from 'rxjs';
+import { finalize, map, Observable } from 'rxjs';
 import { ConfigService } from '@/modules/common/config/config.service';
 
 @Injectable()
@@ -17,10 +17,8 @@ export class CookiesInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (context.getType() === 'http') {
       return next.handle().pipe(
-        map((data: unknown) => {
-          this.setAuthCookie(context);
-          return data;
-        }),
+        map((data: unknown) => data),
+        finalize(() => this.setAuthCookie(context)),
       );
     } else {
       throw new InternalServerErrorException();

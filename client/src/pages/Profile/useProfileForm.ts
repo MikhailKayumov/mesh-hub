@@ -1,22 +1,20 @@
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import { useEffect } from 'react';
+import { UserCurrentUpdateRequestDto } from '@/api/dto.ts';
+import { useUpdateCurrentUserMutation } from '@/api/user.ts';
 import useCurrentUser from '@/hooks/useCurrentUser.ts';
 import getFormDirtyFields from '@/utils/getFormDirtyFields.ts';
-import sleep from '@/utils/sleep.ts';
+import processFormSubmitError from '@/utils/processFormSubmitError.ts';
 
-export interface ProfileFormData {
-  lastName?: string;
-  firstName?: string;
-  middleName?: string;
-  phone?: string;
+export interface ProfileFormData extends UserCurrentUpdateRequestDto {
   email?: string;
-  aboutYourself?: string;
-  favoriteSoft?: string[];
 }
 
 export default function useProfileForm() {
   const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);
+  const [update] = useUpdateCurrentUserMutation();
   const { user, isUserLoading } = useCurrentUser();
 
   const form = useForm<ProfileFormData>({
@@ -29,15 +27,18 @@ export default function useProfileForm() {
       aboutYourself: '',
       favoriteSoft: [],
     },
-    transformValues: (values) => ({
-      lastName: values.lastName?.trim(),
-      firstName: values.firstName?.trim(),
-      middleName: values.middleName?.trim(),
-      phone: values.phone?.trim(),
-      email: values.email?.trim(),
-      aboutYourself: values.aboutYourself?.trim(),
-      favoriteSoft: values.favoriteSoft,
-    }),
+    transformValues: (values) => {
+      const phone = values.phone?.trim();
+
+      return {
+        lastName: values.lastName?.trim(),
+        firstName: values.firstName?.trim(),
+        middleName: values.middleName?.trim(),
+        phone: phone ? `+7${phone}` : undefined,
+        aboutYourself: values.aboutYourself?.trim(),
+        favoriteSoft: values.favoriteSoft,
+      };
+    },
   });
 
   useEffect(() => {
@@ -60,14 +61,17 @@ export default function useProfileForm() {
     form,
     isSubmitting,
     isLoading: isUserLoading,
-    onSubmit: form.onSubmit(async (data) => {
+    onSubmit: form.onSubmit(async (rawData) => {
+      const [data, count] = getFormDirtyFields(form, rawData);
+      if (!count) return;
+
       try {
         submitStart();
+        await update(data).unwrap();
 
-        await sleep(0.5);
-        console.log(getFormDirtyFields(form, data));
+        notifications.show({ message: 'Данные профиля успешно изменены', color: 'green', autoClose: 3000 });
       } catch (e) {
-        console.log(e);
+        processFormSubmitError<ProfileFormData>(form, e);
       } finally {
         submitEnd();
       }

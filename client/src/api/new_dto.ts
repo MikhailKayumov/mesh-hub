@@ -32,7 +32,6 @@ export interface UserResponseDto {
   firstName?: string;
   middleName?: string;
   lastName?: string;
-  nickname?: string;
   isConfirmed: boolean;
   sessions?: SessionResponseDto[];
 }
@@ -52,21 +51,37 @@ export interface UserCreateRequestDto {
   confirmPassword: string;
 }
 
+export interface UserCurrentUpdateRequestDto {
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  phone?: string;
+  aboutYourself?: string;
+  favoriteSoft?: string[];
+}
+
 export interface UserResetPasswordRequestDto {
   email: string;
 }
 
-export interface UserChangePasswordRequestDto {
+export interface UserNewPasswordRequestDto {
   requestId: string;
   password: string;
   confirmPassword: string;
 }
 
+export interface UserChangePasswordRequestDto {
+  oldPassword: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface UserUpdateRequestDto {
+  /** @minLength 1 */
   firstName?: string;
   middleName?: string;
+  /** @minLength 1 */
   lastName?: string;
-  nickname?: string;
 }
 
 export interface LoginRequestDto {

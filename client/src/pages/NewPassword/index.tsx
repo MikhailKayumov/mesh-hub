@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
 import RouterPaths from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import useChangePasswordForm from './useChangePasswordForm.ts';
+import useNewPasswordForm from './useNewPasswordForm.ts';
 
-export default function ChangePasswordPage() {
+export default function NewPasswordPage() {
   useDocumentTitle('Новый пароль');
 
-  const { form, isSubmitting, onSubmit } = useChangePasswordForm();
+  const { form, isSubmitting, onSubmit } = useNewPasswordForm();
 
   return (
     <>
@@ -20,7 +20,6 @@ export default function ChangePasswordPage() {
           placeholder="Введите пароль"
           withAsterisk
           {...form.getInputProps('password')}
-          size="md"
           mb={16}
         />
         <PasswordInput
@@ -28,22 +27,17 @@ export default function ChangePasswordPage() {
           placeholder="Введите пароль еще раз"
           withAsterisk
           {...form.getInputProps('confirmPassword')}
-          size="md"
         />
-        <Group align="center" justify="space-between" mt={32}>
-          <Anchor
-            c="dimmed"
-            component={Link}
-            size="md"
-            to={buildAbsolutePath([RouterPaths.Auth, RouterPaths.Login])}
-            replace
-          >
+        <Group align="center" justify="space-between" mt={24}>
+          <Anchor c="dimmed" component={Link} to={buildAbsolutePath([RouterPaths.Auth, RouterPaths.Login])} replace>
             <Center inline>
-              <IconArrowLeft style={{ width: rem(15), height: rem(15) }} stroke={2} />
-              <Box ml={6}>Назад</Box>
+              <IconArrowLeft style={{ width: rem(12), height: rem(12) }} stroke={1.5} />
+              <Box ml={6} fz={14}>
+                Назад
+              </Box>
             </Center>
           </Anchor>
-          <Button type="submit" size="md" ml="auto" loading={isSubmitting}>
+          <Button type="submit" ml="auto" loading={isSubmitting}>
             Сохранить
           </Button>
         </Group>

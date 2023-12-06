@@ -7,7 +7,7 @@ const RouterPaths = {
   Login: 'login',
   Register: 'register',
   ResetPassword: 'reset-password',
-  ChangePassword: 'change-password',
+  NewPassword: 'new-password',
 
   // user
   User: 'user',

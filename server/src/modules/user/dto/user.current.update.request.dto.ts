@@ -1,8 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { ArrayMinSize, IsArray, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 import { AppRegexp, ValidationErrorMessages } from '@/constants';
 
-export class UserUpdateRequestDto {
+export class UserCurrentUpdateRequestDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -24,4 +24,16 @@ export class UserUpdateRequestDto {
   @IsString()
   @Matches(AppRegexp.RussianPhone, { message: ValidationErrorMessages.Phone })
   public phone?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  public aboutYourself?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMinSize(1)
+  public favoriteSoft?: string[];
 }

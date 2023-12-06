@@ -32,23 +32,23 @@
   width: 100%;
   --container-size-responsive: 100%;
 
-  @media (min-width: em(576px)) {
+  @media (min-width: $mantine-breakpoint-xs) {
     --container-size-responsive: rem(576px);
   }
 
-  @media (min-width: em(768px)) {
+  @media (min-width: $mantine-breakpoint-sm) {
     --container-size-responsive: rem(768px);
   }
 
-  @media (min-width: em(992px)) {
+  @media (min-width: $mantine-breakpoint-md) {
     --container-size-responsive: rem(992px);
   }
 
-  @media (min-width: em(1200px)) {
+  @media (min-width: $mantine-breakpoint-lg) {
     --container-size-responsive: rem(1200px);
   }
 
-  @media (min-width: em(1408px)) {
+  @media (min-width: $mantine-breakpoint-xl) {
     --container-size-responsive: rem(1408px);
   }
 }

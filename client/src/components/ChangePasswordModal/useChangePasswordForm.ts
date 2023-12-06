@@ -1,0 +1,34 @@
+import { useForm, zodResolver } from '@mantine/form';
+import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
+import { UserChangePasswordRequestDto } from '@/api/dto.ts';
+import { useChangePasswordMutation } from '@/api/user.ts';
+import processFormSubmitError from '@/utils/processFormSubmitError.ts';
+import { initialValues, transformValues, validationSchema } from './constants.ts';
+
+export default function useChangePasswordForm() {
+  const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);
+  const [changePassword] = useChangePasswordMutation();
+
+  const form = useForm<UserChangePasswordRequestDto>({
+    initialValues,
+    validate: zodResolver(validationSchema),
+    transformValues,
+  });
+
+  return {
+    form,
+    isSubmitting,
+    onSubmit: form.onSubmit(async (data) => {
+      try {
+        submitStart();
+        await changePassword(data).unwrap();
+        notifications.show({ message: 'Пароль успешно изменен', color: 'green', autoClose: 3000 });
+      } catch (e) {
+        processFormSubmitError<UserChangePasswordRequestDto>(form, e);
+      } finally {
+        submitEnd();
+      }
+    }),
+  };
+}

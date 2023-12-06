@@ -131,6 +131,14 @@ export class UserService {
     return hash === passwordHash;
   }
 
+  public async changePassword(user: UserEntity, oldPassword: string, password: string, confirmPassword: string) {
+    if (!(await this.comparePassword(oldPassword, user.salt, user.password))) {
+      throw new BadRequestException('Текущий пароль неверен');
+    }
+
+    await this.updatePassword(user, password, confirmPassword);
+  }
+
   public async resetPassword(email: string): Promise<void> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
@@ -144,7 +152,7 @@ export class UserService {
       this.notificationsService.sendEmail(
         user.email,
         'Сброс пароля',
-        `Для создания нового пароля перейдите по ссылке:\n${this.configService.app.frontendUrl}/auth/change-password?request=${request.id}`,
+        `Для создания нового пароля перейдите по ссылке:\n${this.configService.app.frontendUrl}/auth/new-password?request=${request.id}`,
       );
     } catch (e) {
       if (e instanceof QueryFailedError) {
@@ -155,21 +163,25 @@ export class UserService {
     }
   }
 
-  public async changePassword(id: string, password: string, confirmPassword: string): Promise<void> {
-    if (password !== confirmPassword) {
-      throw new BadRequestException('Пароли должны совпадать');
-    }
-
+  public async newPassword(id: string, password: string, confirmPassword: string): Promise<void> {
     const request = await this.userResetPasswordRepository.getById(id);
     if (!request || !request.user) {
       throw new NotFoundException('Заявка на сброс пароля не найдена или устарела');
     }
 
-    const encodedPassword = await this.encodePassword(password);
-    request.user.password = encodedPassword.hash;
-    request.user.salt = encodedPassword.salt;
-
-    await this.userRepository.save(request.user);
+    await this.updatePassword(request.user, password, confirmPassword);
     await this.userResetPasswordRepository.delete({ id: request.id });
+  }
+
+  private async updatePassword(user: UserEntity, password: string, confirmPassword: string): Promise<void> {
+    if (password !== confirmPassword) {
+      throw new BadRequestException('Пароли должны совпадать');
+    }
+
+    const encodedPassword = await this.encodePassword(password);
+    user.password = encodedPassword.hash;
+    user.salt = encodedPassword.salt;
+
+    await this.userRepository.save(user);
   }
 }

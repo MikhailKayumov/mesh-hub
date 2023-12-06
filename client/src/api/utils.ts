@@ -14,7 +14,7 @@ export const isUnauthorizedHttpException = (error: unknown): error is HttpExcept
   return isHttpException(error) && error.status === 401;
 };
 
-export const isValidationException = <Property extends string = string>(
+export const isValidationException = <Property extends string | number | symbol = string>(
   error: unknown,
 ): error is ValidationHttpException<Property> => {
   return isHttpException(error) && error.type === 'ValidationError';

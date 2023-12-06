@@ -14,7 +14,7 @@ export interface PhoneInputProps extends InputProps {
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ label, error, onChange, mask = '+7 (000) 000-00-00', value, ...props }, ref) => {
+  ({ label, error, onChange, mask = '+7 (000) 000-00-00', value, m, mb, mt, ml, mr, ...props }, ref) => {
     const [localValue, setLocalValue] = useState(value ?? '');
 
     const onAccept: IMaskInputProps<HTMLInputElement>['onAccept'] = (_, maskRef) => {
@@ -26,11 +26,12 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     };
 
     return (
-      <Input.Wrapper label={label} error={error}>
+      <Input.Wrapper label={label} error={error} m={m} mb={mb} mt={mt} ml={ml} mr={mr}>
         <Input
           {...props}
           value={value ?? localValue}
           ref={ref}
+          error={error}
           component={IMaskInput}
           mask={mask}
           onAccept={onAccept}

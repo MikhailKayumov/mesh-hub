@@ -1,4 +1,5 @@
 import { Paper, Title, TextInput, Button, Textarea, Group, Tooltip, TagsInput, Loader, Center } from '@mantine/core';
+import { useCgSoftQuery } from '@/api/resources.ts';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 import PhoneInput from '@/components/PhoneInput';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
@@ -9,6 +10,8 @@ import useProfileForm from './useProfileForm.ts';
 export default function ProfilePage() {
   useDocumentTitle('Профиль');
 
+  const { data } = useCgSoftQuery();
+  console.log(data);
   const { form, isSubmitting, isLoading, onSubmit } = useProfileForm();
 
   return (

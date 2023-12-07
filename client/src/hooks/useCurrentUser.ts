@@ -1,16 +1,16 @@
-import { UserResponseDto } from '@/api/dto.ts';
+import { UserCurrentResponseDto } from '@/api/dto.ts';
 import { useCurrentUserQuery } from '@/api/user.ts';
 import useSession from './useSession.ts';
 
 export interface UseCurrentUserReturn {
   isUserLoading: boolean;
-  user?: UserResponseDto;
+  user: UserCurrentResponseDto | null;
 }
 
 export default function useCurrentUser(): UseCurrentUserReturn {
   const session = useSession();
   const { data, isLoading } = useCurrentUserQuery(undefined, { skip: !session });
-  const user = session && data ? data : session?.user;
+  const user = session && data ? data : null;
 
   return {
     user,

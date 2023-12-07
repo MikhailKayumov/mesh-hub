@@ -2,7 +2,7 @@ import Api from './base';
 import {
   UserChangePasswordRequestDto,
   UserNewPasswordRequestDto,
-  UserResponseDto,
+  UserCurrentResponseDto,
   UserCurrentUpdateRequestDto,
 } from './dto';
 import ApiTags from './tags';
@@ -10,7 +10,7 @@ import ApiUrls from './urls';
 
 const UserApi = Api.injectEndpoints({
   endpoints: (build) => ({
-    currentUser: build.query<UserResponseDto, void>({
+    currentUser: build.query<UserCurrentResponseDto, void>({
       providesTags: [ApiTags.Reset, ApiTags.CurrentUser],
       query: () => ({
         method: 'GET',

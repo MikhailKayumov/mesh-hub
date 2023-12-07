@@ -17,7 +17,7 @@ export class UserResetPasswordRepository extends Repository<UserResetPasswordEnt
   }
 
   public async getById(id: string) {
-    return this.repository.findOne({
+    return this.findOne({
       relations: { user: true },
       where: { id, expiredAt: MoreThan(new Date()) },
     });
@@ -30,11 +30,11 @@ export class UserResetPasswordRepository extends Repository<UserResetPasswordEnt
     request.user = user;
     request.expiredAt = addSeconds(new Date(), Math.max(1, addedSeconds));
 
-    return this.repository.save(request);
+    return this.save(request);
   }
 
   public async deleteExpiredByUser(user: UserEntity) {
-    await this.repository.delete({
+    await this.delete({
       user: { id: user.id },
       expiredAt: LessThanOrEqual(new Date()),
     });

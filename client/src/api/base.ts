@@ -33,7 +33,7 @@ const Api = createApi({
   reducerPath: '@mesh_hub/api',
   baseQuery: query,
   endpoints: () => ({}),
-  tagTypes: [ApiTags.Reset, ApiTags.CurrentUser],
+  tagTypes: [ApiTags.Reset, ApiTags.CurrentUser, ApiTags.CGSoft],
 });
 
 export default Api;

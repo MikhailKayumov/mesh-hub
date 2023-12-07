@@ -45,11 +45,11 @@ export default function useProfileForm() {
     if (!user) return;
 
     form.setInitialValues({
-      lastName: user.lastName,
-      firstName: user.firstName,
-      middleName: user.middleName,
+      lastName: user.lastName ?? '',
+      firstName: user.firstName ?? '',
+      middleName: user.middleName ?? '',
       phone: '',
-      email: user.email,
+      email: user.email ?? '',
       aboutYourself: '',
       favoriteSoft: [],
     });

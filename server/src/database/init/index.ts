@@ -2,11 +2,13 @@ require('module-alias/register');
 import { Logger } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { Client } from 'pg';
-import { databases, schemas } from './constants';
+import { Databases, DatabaseSchemas } from '../constants';
 
 dotenv.config();
 
-const logger = new Logger('Init Database');
+const DROP_SCHEMAS = process.env['DROP_SCHEMAS'] === 'true';
+
+const logger = new Logger('DatabaseInitialization');
 
 const createClient = (database = 'postgres') => {
   return new Client({
@@ -24,22 +26,25 @@ export const initSchemas = async (database: string): Promise<void> => {
   try {
     await client.connect();
 
-    for (const schema of schemas) {
+    for (const schema of Object.values(DatabaseSchemas)) {
       try {
-        logger.debug(`Initializing schema ${schema}`);
-        logger.debug('Drop old schema if exists ...');
-        await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
-        logger.debug('Dropped!');
+        logger.log(`Initializing schema "${schema}"`);
 
-        logger.debug(`Create schema ${schema} ...`);
-        await client.query(`CREATE SCHEMA "${schema}"`);
-        logger.debug(`Schema ${schema} successfully created`);
+        if (DROP_SCHEMAS) {
+          logger.log('Drop old schema if exists ...');
+          await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+          logger.log('Schema "${schema}" successfully dropped');
+        }
+
+        logger.log(`Create schema if not exists "${schema}"`);
+        await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+        logger.log(`Schema "${schema}" successfully created`);
       } catch (e) {
-        logger.error(`Error on create schema ${schema}${e?.message ? ` (${e.message})` : ''}`, e.stack);
+        logger.log(`Error on create schema "${schema}": ${e?.message ? ` (${e.message})` : ''}`, e.stack);
       }
     }
   } catch (e) {
-    logger.error(`Error on init schemes for ${database}${e?.message ? ` (${e.message})` : ''}`, e.stack);
+    logger.log(`Error on init schemes for "${database}": ${e?.message ? ` (${e.message})` : ''}`, e.stack);
   } finally {
     client?.end();
   }
@@ -51,23 +56,23 @@ export const initDatabases = async () => {
   try {
     await client.connect();
 
-    for await (const database of databases) {
+    for await (const database of Databases) {
       try {
         const oid = await client.query(`SELECT oid FROM pg_database WHERE datname = '${database}'`);
         if (!oid.rowCount) {
-          logger.log(`Creating database ${database}`);
+          logger.log(`Creating database "${database}"`);
           await client.query(`CREATE DATABASE "${database}"`);
         } else {
-          logger.log(`Database ${database} already exists`);
+          logger.log(`Database "${database}" already exists`);
         }
 
         await initSchemas(database);
       } catch (e) {
-        logger.error(`Error on create database ${database}${e?.message ? ` (${e.message})` : ''}`, e.stack);
+        logger.error(`Error on create database "${database}": ${e?.message ? ` (${e.message})` : ''}`, e.stack);
       }
     }
   } catch (e) {
-    logger.error(`Error on create databases${e?.message ? ` (${e.message})` : ''}`, e.stack);
+    logger.error(`Error on create databases: ${e?.message ? ` (${e.message})` : ''}`, e.stack);
   } finally {
     await client?.end();
   }

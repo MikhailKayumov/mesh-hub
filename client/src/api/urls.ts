@@ -9,6 +9,8 @@ const ApiUrls = {
   ResetPassword: 'user/reset-password',
   NewPassword: 'user/new-password',
   ChangePassword: 'user/change-password',
+  // resources
+  ResourcesCGSoft: 'resources/cg-soft/all',
 } as const;
 
 export type ApiUrl = keyof typeof ApiUrls;

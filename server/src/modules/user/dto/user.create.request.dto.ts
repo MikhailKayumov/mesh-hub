@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from 'class-validator';
-import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { AppRegexp, UserRole, UserRoles, ValidationErrorMessages } from '@/constants';
 
 export class UserCreateRequestDto {
   @ApiProperty()
@@ -15,19 +15,23 @@ export class UserCreateRequestDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  public middleName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   public lastName?: string;
 
-  @ApiProperty()
-  @IsNotEmpty({ message: ValidationErrorMessages.RequiredField })
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  @MinLength(6, { message: ValidationErrorMessages.PasswordLength })
-  @Matches(AppRegexp.Password, { message: ValidationErrorMessages.PasswordContent })
-  public password: string;
+  @Matches(AppRegexp.RussianPhone, { message: ValidationErrorMessages.Phone })
+  public phone?: string;
 
-  @ApiProperty()
-  @IsNotEmpty({ message: ValidationErrorMessages.RequiredField })
-  @IsString()
-  @MinLength(6, { message: ValidationErrorMessages.PasswordLength })
-  @Matches(AppRegexp.Password, { message: ValidationErrorMessages.PasswordContent })
-  public confirmPassword: string;
+  @ApiPropertyOptional({ enum: UserRoles, isArray: true, enumName: 'UserRoles' })
+  @IsOptional()
+  @IsEnum(UserRoles, { each: true })
+  public roles?: UserRole[];
+
+  public password?: string;
 }

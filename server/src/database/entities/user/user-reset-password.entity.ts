@@ -1,12 +1,12 @@
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { DatabaseSchemas } from '../../utils/constants';
-import { BaseEntity } from '../base';
-import { UserEntity } from '../user/user.entity';
+import { DatabaseSchemas, UserSchemaTables } from '@/database/constants';
+import { GuidIdEntityBase } from '@/database/entities/base';
+import { UserEntity } from '@/database/entities/user/user.entity';
 
-@Entity({ name: 'user_reset_password', schema: DatabaseSchemas.User })
-export class UserResetPasswordEntity extends BaseEntity {
-  @OneToOne(() => UserEntity, { nullable: false })
-  @JoinColumn()
+@Entity({ name: UserSchemaTables.UserResetPassword, schema: DatabaseSchemas.Users })
+export class UserResetPasswordEntity extends GuidIdEntityBase {
+  @OneToOne(() => UserEntity, { nullable: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   public user: UserEntity;
 
   @Column({ type: 'timestamp with time zone', name: 'expired_at', nullable: false })

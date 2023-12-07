@@ -2,7 +2,6 @@ export interface PaginationDtoSortItem {
   field: string;
   by: 'ASC' | 'DESC';
 }
-
 export interface PaginationResponseDto<T = any> {
   data: T[];
   skip: number;
@@ -12,29 +11,36 @@ export interface PaginationResponseDto<T = any> {
   hasMore: boolean;
 }
 
-export interface UserResponseDto {
+export interface CgSoftResponse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface UserMetaResponseDto {
+  id: string;
+  aboutYourself?: string;
+  favoriteSoft?: CgSoftResponse[];
+}
+
+export interface UserCurrentResponseDto {
   id: string;
   email: string;
+  phone?: string;
   firstName?: string;
   middleName?: string;
   lastName?: string;
-  nickname?: string;
-  sessions?: SessionResponseDto[];
+  isConfirmed: boolean;
+  meta: UserMetaResponseDto;
 }
 
-export interface SessionResponseDto {
-  id: string;
-  user: UserResponseDto;
-  ip: string;
-  userAgent?: string;
-}
-
-export interface UserCreateRequestDto {
-  email: string;
-  firstName: string;
+export interface UserCurrentUpdateRequestDto {
+  firstName?: string;
+  middleName?: string;
   lastName?: string;
-  password: string;
-  confirmPassword: string;
+  phone?: string;
+  aboutYourself?: string;
+  favoriteSoft?: string[];
 }
 
 export interface UserResetPasswordRequestDto {
@@ -53,19 +59,18 @@ export interface UserChangePasswordRequestDto {
   confirmPassword: string;
 }
 
-export interface UserUpdateRequestDto {
-  firstName?: string;
-  middleName?: string;
+export interface SignupRequestDto {
+  email: string;
+  firstName: string;
   lastName?: string;
+  password: string;
+  confirmPassword: string;
 }
 
-export interface UserCurrentUpdateRequestDto {
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  phone?: string;
-  aboutYourself?: string;
-  favoriteSoft?: string[];
+export interface SessionResponseDto {
+  id: string;
+  ip: string;
+  userAgent?: string;
 }
 
 export interface LoginRequestDto {
@@ -83,7 +88,6 @@ export interface HttpException {
   error: string;
   data?: any;
 }
-
 export interface ValidationHttpException<Property = string> {
   status: 400;
   type: 'ValidationError';

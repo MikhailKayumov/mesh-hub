@@ -1,15 +1,11 @@
-import { CreateDateColumn, JoinColumn, ManyToOne } from 'typeorm';
-import { Column } from 'typeorm/decorator/columns/Column';
-import { Entity } from 'typeorm/decorator/entity/Entity';
-import { DatabaseSchemas } from '../../utils/constants';
-import { BaseEntity } from '../base';
-import { UserEntity } from '../user/user.entity';
+import { CreateDateColumn, JoinColumn, ManyToOne, Column, Entity } from 'typeorm';
+import { AuthSchemaTables, DatabaseSchemas } from '@/database/constants';
+import { GuidIdEntityBase } from '@/database/entities/base';
+import { UserEntity } from '@/database/entities/user/user.entity';
 
-@Entity({ name: 'session', schema: DatabaseSchemas.Auth })
-export class SessionEntity extends BaseEntity {
-  @ManyToOne(() => UserEntity, (user) => user.sessions, {
-    onDelete: 'CASCADE',
-  })
+@Entity({ name: AuthSchemaTables.Session, schema: DatabaseSchemas.Auth })
+export class SessionEntity extends GuidIdEntityBase {
+  @ManyToOne(() => UserEntity, (user) => user.sessions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   public user: UserEntity;
 

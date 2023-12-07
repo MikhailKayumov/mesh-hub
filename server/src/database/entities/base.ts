@@ -12,27 +12,24 @@ export abstract class BaseEntity extends TypeOrmBaseEntity {
     this.createdAt = new Date();
   }
 
-  @PrimaryGeneratedColumn('uuid', { name: 'id' })
-  public readonly id: string;
+  abstract id: string | number;
 
-  @CreateDateColumn({
-    type: 'timestamp with time zone',
-    name: 'created_at',
-    nullable: false,
-  })
+  @CreateDateColumn({ type: 'timestamp with time zone', name: 'created_at', nullable: false })
   public readonly createdAt: Date;
 
-  @DeleteDateColumn({
-    type: 'timestamp with time zone',
-    name: 'deleted_at',
-    nullable: true,
-  })
+  @DeleteDateColumn({ type: 'timestamp with time zone', name: 'deleted_at', nullable: true })
   public deletedAt?: Date;
 
-  @UpdateDateColumn({
-    type: 'timestamp with time zone',
-    name: 'updated_at',
-    nullable: true,
-  })
-  public readonly updatedAt?: Date;
+  @UpdateDateColumn({ type: 'timestamp with time zone', name: 'updated_at', nullable: true })
+  public updatedAt?: Date;
+}
+
+export abstract class IntIdBaseEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('increment', { name: 'id' })
+  public readonly id: number;
+}
+
+export abstract class GuidIdEntityBase extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  public readonly id: string;
 }

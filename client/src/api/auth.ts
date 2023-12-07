@@ -1,11 +1,11 @@
 import Api from './base';
-import { LoginRequestDto, SessionResponseDto, UserCreateRequestDto } from './dto';
+import { LoginRequestDto, SessionResponseDto, SignupRequestDto } from './dto';
 import ApiTags from './tags';
 import ApiUrls from './urls';
 
 const AuthApi = Api.injectEndpoints({
   endpoints: (build) => ({
-    register: build.mutation<SessionResponseDto, UserCreateRequestDto>({
+    register: build.mutation<SessionResponseDto, SignupRequestDto>({
       invalidatesTags: [ApiTags.CurrentUser],
       query: (body) => ({
         body,

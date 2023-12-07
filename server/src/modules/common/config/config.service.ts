@@ -67,6 +67,10 @@ export class ConfigService {
     return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'PRODUCTION';
   }
 
+  public get isDevelopment() {
+    return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'DEVELOPMENT';
+  }
+
   public get isTest() {
     return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'TEST';
   }
@@ -121,8 +125,6 @@ export class ConfigService {
     const name = this.get('SMTP_YANDEX_SENDER_NAME', !enabled ? '' : undefined);
     const user = this.get('SMTP_YANDEX_AUTH_USER', !enabled ? '' : undefined);
     const pass = this.get('SMTP_YANDEX_AUTH_PASS', !enabled ? '' : undefined);
-
-    this.logger.debug(`name: ${name}; user: ${user}; pass=${pass}`);
 
     return {
       transport: {

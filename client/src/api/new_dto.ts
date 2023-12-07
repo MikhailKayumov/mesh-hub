@@ -9,46 +9,27 @@
  * ---------------------------------------------------------------
  */
 
-export interface PaginationDtoSortItem {
-  field: string;
-  by: "ASC" | "DESC";
+export interface CgSoftResponse {
+  id: number;
+  name: string;
+  description?: string;
 }
 
-export interface PaginationResponseDto {
-  data: object[];
-  /** @min 0 */
-  skip: number;
-  /** @min 0 */
-  size: number;
-  sort: PaginationDtoSortItem[];
-  /** @min 0 */
-  totalCount: number;
-  hasMore: boolean;
+export interface UserMetaResponseDto {
+  id: string;
+  aboutYourself?: string;
+  favoriteSoft?: CgSoftResponse[];
 }
 
-export interface UserResponseDto {
+export interface UserCurrentResponseDto {
   id: string;
   email: string;
+  phone?: string;
   firstName?: string;
   middleName?: string;
   lastName?: string;
   isConfirmed: boolean;
-  sessions?: SessionResponseDto[];
-}
-
-export interface SessionResponseDto {
-  id: string;
-  user: UserResponseDto;
-  ip: string;
-  userAgent?: string;
-}
-
-export interface UserCreateRequestDto {
-  email: string;
-  firstName: string;
-  lastName?: string;
-  password: string;
-  confirmPassword: string;
+  meta: UserMetaResponseDto;
 }
 
 export interface UserCurrentUpdateRequestDto {
@@ -76,12 +57,18 @@ export interface UserChangePasswordRequestDto {
   confirmPassword: string;
 }
 
-export interface UserUpdateRequestDto {
-  /** @minLength 1 */
-  firstName?: string;
-  middleName?: string;
-  /** @minLength 1 */
+export interface SignupRequestDto {
+  email: string;
+  firstName: string;
   lastName?: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface SessionResponseDto {
+  id: string;
+  ip: string;
+  userAgent?: string;
 }
 
 export interface LoginRequestDto {

@@ -5,10 +5,10 @@ import { Request } from 'express';
 import { LessThan, MoreThanOrEqual } from 'typeorm';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
+import { SignupRequestDto } from '@/modules/auth/dto/signup.request.dto';
 import { ConfigService } from '@/modules/common/config/config.service';
-import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { UserRepository } from '@/modules/user/repositories/user.repository';
-import { UserService } from '@/modules/user/user.service';
+import { UserService } from '@/modules/user/services/user.service';
 import { AuthMapper } from './auth.mapper';
 import { AuthRepository } from './auth.repository';
 import { LoginRequestDto } from './dto/login.request.dto';
@@ -26,26 +26,25 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  public async signup(dto: UserCreateRequestDto, request: Request): Promise<SessionResponseDto> {
-    if (dto.password !== dto.confirmPassword) {
+  public async signup({ confirmPassword, ...dto }: SignupRequestDto, request: Request): Promise<SessionResponseDto> {
+    if (dto.password !== confirmPassword) {
       throw new BadRequestException('Пароли не совпадают');
     }
 
     request.session = await this.createSession(request, await this.userService.createUserEntity(dto));
 
-    return AuthMapper.sessionEntityToResponse(request.session);
+    return AuthMapper.toSessionResponse(request.session);
   }
 
   public async login({ email, password }: LoginRequestDto, request: Request): Promise<SessionResponseDto> {
     const user = await this.userRepository.findByEmail(email);
-
     if (!user || !(await this.userService.comparePassword(password, user.salt, user.password))) {
       throw new BadRequestException('Неверные email или пароль');
     }
 
     request.session = await this.createSession(request, user);
 
-    return AuthMapper.sessionEntityToResponse(request.session);
+    return AuthMapper.toSessionResponse(request.session);
   }
 
   public async logout(session: SessionEntity, request: Request): Promise<void> {
@@ -53,22 +52,11 @@ export class AuthService {
     this.authRepository.delete(session.id);
   }
 
-  public async validateSession(token: string, userId: string, silent = false): Promise<SessionEntity | null> {
+  public async getSession(token: string, userId: string): Promise<SessionEntity | null> {
     let session = await this.authRepository.findOne({
-      relations: {
-        user: true,
-      },
-      where: {
-        accessToken: token,
-        user: {
-          id: userId,
-        },
-        expiredAt: MoreThanOrEqual(new Date()),
-      },
+      relations: { user: { roles: true } },
+      where: { accessToken: token, user: { id: userId }, expiredAt: MoreThanOrEqual(new Date()) },
     });
-    if ((!session || !session.user) && !silent) {
-      throw new UnauthorizedException('Сессия не найдена или устарела');
-    }
 
     const isValid = await this.validateAccessToken(token);
     if (session && !isValid) {
@@ -98,13 +86,16 @@ export class AuthService {
 
   private async createSession(request: Request, user: UserEntity): Promise<SessionEntity> {
     const exitingSession = await this.authRepository.findOne({
-      relations: { user: true },
-      where: { user: { id: user.id }, ip: request.ip },
+      relations: {
+        user: true,
+      },
+      where: {
+        user: { id: user.id },
+        ip: request.ip,
+      },
     });
 
-    if (exitingSession) {
-      return exitingSession;
-    }
+    if (exitingSession) return exitingSession;
 
     const [accessToken, refreshToken] = await this.createTokens(user);
 
@@ -117,7 +108,7 @@ export class AuthService {
     );
   }
 
-  public async createTokens(user: UserEntity) {
+  private async createTokens(user: UserEntity) {
     const payload = { userId: user.id, userEmail: user.email };
 
     return await Promise.all([
@@ -145,7 +136,6 @@ export class AuthService {
     const { affected } = await this.authRepository.delete({
       expiredAt: LessThan(new Date()),
     });
-
     this.logger.log(`${affected ?? 0} expired session${(affected ?? 0) > 2 ? 's' : ''} has been removed`);
   }
 }

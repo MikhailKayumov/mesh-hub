@@ -1,8 +1,8 @@
 import zod from 'zod';
-import { UserCreateRequestDto } from '@/api/dto.ts';
+import { SignupRequestDto } from '@/api/dto.ts';
 import { AppRegexp, ValidationErrorMessages } from '@/constants';
 
-export const initialValues: UserCreateRequestDto = {
+export const initialValues: SignupRequestDto = {
   firstName: '',
   lastName: '',
   email: '',
@@ -10,7 +10,7 @@ export const initialValues: UserCreateRequestDto = {
   confirmPassword: '',
 };
 
-export const transformValues = (values: UserCreateRequestDto) => ({
+export const transformValues = (values: SignupRequestDto) => ({
   firstName: values.firstName.trim(),
   lastName: values.lastName?.trim() ?? '',
   email: values.email.trim(),

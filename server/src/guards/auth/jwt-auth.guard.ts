@@ -1,42 +1,47 @@
-import { ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthGuard as PassportAuthGuard, IAuthModuleOptions } from '@nestjs/passport';
 import { Request } from 'express';
 import { UserRole } from '@/constants';
 import { SessionEntity } from '@/database/entities/session/session.entity';
-import { ALLOWED_ROLES_KEY, IS_PUBLIC_KEY } from '@/decorators/auth/auth.decorator';
+import { ALLOWED_ROLES_KEY, IS_PUBLIC_KEY, IS_REFRESH_KEY } from '@/decorators/auth/auth.decorator';
+import { AuthService } from '@/modules/auth/auth.service';
+import { ConfigService } from '@/modules/common/config/config.service';
 import { UserRoleHelper } from '@/utils/user-role.helper';
 
 @Injectable()
-export class JwtAuthGuard extends PassportAuthGuard('jwt') {
-  constructor(private reflector: Reflector) {
-    super();
-  }
-
-  public getAuthenticateOptions(): IAuthModuleOptions | undefined {
-    return {
-      defaultStrategy: 'jwt',
-      property: 'jwtPayload',
-    };
-  }
+export class JwtAuthGuard implements CanActivate {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
+  ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = <Request>context.switchToHttp().getRequest();
+
+    const [session, isValid] = await this.authService.validateSession(
+      request?.cookies?.[this.configService.jwt.cookieName],
+    );
+    request.session = session;
+
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
     if (isPublic) return true;
 
-    await super.canActivate(context);
+    const isRefresh = this.reflector.getAllAndOverride<boolean>(IS_REFRESH_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
-    const { session } = this.getRequest(context) as Request;
-    if (!session || !session.user) {
+    if ((!isValid && !isRefresh) || !request.session || !request.session.user) {
       throw new UnauthorizedException();
     }
 
-    // if (!session.user.isActive || !this.validateRoles(session, context)) {
-    //   throw new ForbiddenException();
-    // }
+    if (!request.session.user.isActive || !this.validateRoles(request.session, context)) {
+      throw new ForbiddenException();
+    }
 
     return true;
   }

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtAuthGuard } from '@/guards/auth/jwt-auth.guard';
+import { CookiesInterceptor } from '@/interceptors/cookies.interceptor';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { ConfigModule } from '@/modules/common/config/config.module';
 import { ConfigService } from '@/modules/common/config/config.service';
@@ -38,6 +39,10 @@ import { UserModule } from '@/modules/user/user.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CookiesInterceptor,
     },
   ],
 })

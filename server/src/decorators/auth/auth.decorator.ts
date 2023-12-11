@@ -4,10 +4,13 @@ import { UserRole } from '@/constants';
 import { JwtAuthGuard } from '@/guards/auth/jwt-auth.guard';
 
 export const IS_PUBLIC_KEY = 'isPublic';
+export const IS_REFRESH_KEY = 'isRefresh';
 export const ALLOWED_ROLES_KEY = 'allowedRoles';
 export const ALLOWED_ROLES_MODE_KEY = 'allowedRolesMode';
 
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+
+export const Refresh = () => SetMetadata(IS_REFRESH_KEY, true);
 
 export const Roles = (roles: UserRole[], mode: 'weights' | 'some' | 'every' = 'some') => {
   return applyDecorators(

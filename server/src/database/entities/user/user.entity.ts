@@ -40,7 +40,7 @@ export class UserEntity extends GuidIdEntityBase {
   @OneToMany(() => SessionEntity, (session) => session.user)
   public sessions: SessionEntity[];
 
-  @OneToOne(() => UserMetaEntity, { nullable: false, cascade: true })
+  @OneToOne(() => UserMetaEntity, { nullable: false, cascade: true, eager: true })
   @JoinColumn({ name: 'user_meta_id' })
   public userMeta: UserMetaEntity;
 

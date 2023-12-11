@@ -6,6 +6,7 @@ import { LessThan, MoreThanOrEqual } from 'typeorm';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { SignupRequestDto } from '@/modules/auth/dto/signup.request.dto';
+import { JwtPayload } from '@/modules/auth/types';
 import { ConfigService } from '@/modules/common/config/config.service';
 import { UserRepository } from '@/modules/user/repositories/user.repository';
 import { UserService } from '@/modules/user/services/user.service';
@@ -19,11 +20,11 @@ export class AuthService {
   private readonly logger = new Logger('AuthService');
 
   public constructor(
-    private readonly authRepository: AuthRepository,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
-    private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
+    private readonly authRepository: AuthRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   public async signup({ confirmPassword, ...dto }: SignupRequestDto, request: Request): Promise<SessionResponseDto> {
@@ -52,21 +53,7 @@ export class AuthService {
     this.authRepository.delete(session.id);
   }
 
-  public async getSession(token: string, userId: string): Promise<SessionEntity | null> {
-    let session = await this.authRepository.findOne({
-      relations: { user: { roles: true } },
-      where: { accessToken: token, user: { id: userId }, expiredAt: MoreThanOrEqual(new Date()) },
-    });
-
-    const isValid = await this.validateAccessToken(token);
-    if (session && !isValid) {
-      session = await this.refreshSession(session);
-    }
-
-    return session;
-  }
-
-  public async refreshSession(session: SessionEntity): Promise<SessionEntity> {
+  public async refresh(session: SessionEntity, request: Request): Promise<SessionResponseDto> {
     try {
       await this.jwtService.verifyAsync(session.refreshToken, {
         secret: this.configService.jwt.refreshSecret,
@@ -78,10 +65,37 @@ export class AuthService {
       session.accessToken = accessToken;
       session.refreshToken = refreshToken;
 
-      return await this.authRepository.save(session);
+      request.session = await this.authRepository.save(session);
+
+      return AuthMapper.toSessionResponse(request.session);
     } catch (e) {
-      throw new UnauthorizedException('Сессия устарела');
+      throw new UnauthorizedException();
     }
+  }
+
+  public async validateSession(token: string | null): Promise<[SessionEntity | null, boolean]> {
+    const verifiedToken = await this.verifyAccessToken(token ?? '');
+
+    if (!verifiedToken) return [null, false];
+
+    const isValid = Math.floor(Date.now() * 0.001) < (verifiedToken?.exp ?? 0);
+    const session = await this.authRepository.findOne({
+      relations: {
+        user: {
+          roles: true,
+        },
+      },
+      where: {
+        accessToken: token!,
+        user: {
+          id: verifiedToken.userId,
+          email: verifiedToken.userEmail,
+        },
+        expiredAt: MoreThanOrEqual(new Date()),
+      },
+    });
+
+    return [session, isValid];
   }
 
   private async createSession(request: Request, user: UserEntity): Promise<SessionEntity> {
@@ -90,8 +104,11 @@ export class AuthService {
         user: true,
       },
       where: {
-        user: { id: user.id },
+        user: {
+          id: user.id,
+        },
         ip: request.ip,
+        expiredAt: MoreThanOrEqual(new Date()),
       },
     });
 
@@ -109,7 +126,7 @@ export class AuthService {
   }
 
   private async createTokens(user: UserEntity) {
-    const payload = { userId: user.id, userEmail: user.email };
+    const payload = { userId: user.id, userEmail: user.email, createAt: Date.now() };
 
     return await Promise.all([
       this.jwtService.signAsync(payload),
@@ -121,13 +138,12 @@ export class AuthService {
     ]);
   }
 
-  private async validateAccessToken(token: string): Promise<boolean> {
+  private async verifyAccessToken(token: string): Promise<JwtPayload | null> {
     try {
-      await this.jwtService.verifyAsync(token);
-      return true;
+      return <JwtPayload>await this.jwtService.verifyAsync(token, { ignoreExpiration: true });
     } catch (e: unknown) {
       this.logger.warn('Access token has been expire');
-      return false;
+      return null;
     }
   }
 

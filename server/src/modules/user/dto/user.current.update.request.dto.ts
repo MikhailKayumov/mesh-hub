@@ -1,6 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ArrayMinSize, IsArray, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsNotEmpty, IsOptional, IsString, Matches, ValidateNested } from 'class-validator';
 import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { CgSoftRequest } from '@/modules/common/resources/dto/cg-soft.request';
 
 export class UserCurrentUpdateRequestDto {
   @ApiPropertyOptional()
@@ -30,10 +32,10 @@ export class UserCurrentUpdateRequestDto {
   @IsString()
   public aboutYourself?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: () => CgSoftRequest, isArray: true })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  @ArrayMinSize(1)
-  public favoriteSoft?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => CgSoftRequest)
+  public favoriteSoft?: CgSoftRequest[];
 }

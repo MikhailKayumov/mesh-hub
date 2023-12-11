@@ -14,7 +14,7 @@ import { ConfigService } from '@/modules/common/config/config.service';
 export class CookiesInterceptor implements NestInterceptor {
   public constructor(private readonly configService: ConfigService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (context.getType() === 'http') {
       return next.handle().pipe(
         map((data: unknown) => data),

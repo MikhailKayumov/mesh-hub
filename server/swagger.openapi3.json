@@ -233,6 +233,27 @@
         ]
       }
     },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/auth/logout": {
       "post": {
         "operationId": "AuthController_logout",
@@ -347,6 +368,28 @@
           "meta"
         ]
       },
+      "CgSoftRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
       "UserCurrentUpdateRequestDto": {
         "type": "object",
         "properties": {
@@ -368,7 +411,7 @@
           "favoriteSoft": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/CgSoftRequest"
             }
           }
         }

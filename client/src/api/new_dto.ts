@@ -32,13 +32,18 @@ export interface UserCurrentResponseDto {
   meta: UserMetaResponseDto;
 }
 
+export interface CgSoftRequest {
+  id: string | number;
+  name: string;
+}
+
 export interface UserCurrentUpdateRequestDto {
   firstName?: string;
   middleName?: string;
   lastName?: string;
   phone?: string;
   aboutYourself?: string;
-  favoriteSoft?: string[];
+  favoriteSoft?: CgSoftRequest[];
 }
 
 export interface UserResetPasswordRequestDto {

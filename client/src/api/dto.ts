@@ -2,6 +2,7 @@ export interface PaginationDtoSortItem {
   field: string;
   by: 'ASC' | 'DESC';
 }
+
 export interface PaginationResponseDto<T = any> {
   data: T[];
   skip: number;
@@ -9,6 +10,11 @@ export interface PaginationResponseDto<T = any> {
   sort: PaginationDtoSortItem[];
   totalCount: number;
   hasMore: boolean;
+}
+
+export interface CgSoftRequest {
+  id: string | number;
+  name: string;
 }
 
 export interface CgSoftResponse {
@@ -40,7 +46,7 @@ export interface UserCurrentUpdateRequestDto {
   lastName?: string;
   phone?: string;
   aboutYourself?: string;
-  favoriteSoft?: string[];
+  favoriteSoft?: CgSoftRequest[];
 }
 
 export interface UserResetPasswordRequestDto {

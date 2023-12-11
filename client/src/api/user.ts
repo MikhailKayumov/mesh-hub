@@ -18,7 +18,7 @@ const UserApi = Api.injectEndpoints({
       }),
     }),
     updateCurrentUser: build.mutation<void, UserCurrentUpdateRequestDto>({
-      invalidatesTags: [ApiTags.CurrentUser],
+      invalidatesTags: [ApiTags.CurrentUser, ApiTags.CGSoft],
       query: (body) => ({
         method: 'PATCH',
         url: ApiUrls.CurrentUser,

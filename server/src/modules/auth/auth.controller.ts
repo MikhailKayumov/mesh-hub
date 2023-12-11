@@ -2,7 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Post, Req, Session } from '@nes
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { SessionEntity } from '@/database/entities/session/session.entity';
-import { Public } from '@/decorators/auth/auth.decorator';
+import { Public, Refresh } from '@/decorators/auth/auth.decorator';
 import { AuthService } from '@/modules/auth/auth.service';
 import { LoginRequestDto } from '@/modules/auth/dto/login.request.dto';
 import { SessionResponseDto } from '@/modules/auth/dto/session.response.dto';
@@ -27,6 +27,14 @@ export class AuthController {
   @ApiOkResponse({ type: () => SessionResponseDto })
   public async login(@Body() dto: LoginRequestDto, @Req() request: Request): Promise<SessionResponseDto> {
     return this.authService.login(dto, request);
+  }
+
+  @Post('refresh')
+  @Refresh()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: () => SessionResponseDto })
+  public async refresh(@Session() session: SessionEntity, @Req() request: Request): Promise<SessionResponseDto> {
+    return this.authService.refresh(session, request);
   }
 
   @Post('logout')

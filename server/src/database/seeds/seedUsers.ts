@@ -15,6 +15,15 @@ const data: UserCreateRequestDto[] = [
     password: '!pass4First!',
     roles: [UserRoles.SuperUser, UserRoles.Admin, UserRoles.User],
   },
+  {
+    email: 'mkayumov@softmedialab.com',
+    phone: '+79920009895',
+    firstName: 'Михаил',
+    middleName: 'Линарович',
+    lastName: 'Каюмов',
+    password: '!pass4First!',
+    roles: [UserRoles.Admin, UserRoles.User],
+  },
 ];
 
 export default async function seedUsers(app: INestApplication) {
@@ -23,8 +32,12 @@ export default async function seedUsers(app: INestApplication) {
   const userService = app.get(UserService);
 
   for (const user of data) {
-    logger.log(`Create user "${user.firstName} ${user.lastName}" (${user.email})`);
-    await userService.createUserEntity(user);
-    logger.log(`User "${user.firstName} ${user.lastName}" successfully created`);
+    try {
+      logger.log(`Create user "${user.firstName} ${user.lastName}" (${user.email})`);
+      await userService.createUserEntity(user);
+      logger.log(`User "${user.firstName} ${user.lastName}" successfully created`);
+    } catch (e) {
+      logger.log(e);
+    }
   }
 }

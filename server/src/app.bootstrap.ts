@@ -48,7 +48,7 @@ export default class AppBootstrap {
         enableDebugMessages: !this.configService.isProduction,
       }),
     );
-    this.application.useGlobalInterceptors(new CookiesInterceptor(this.configService), new LoggingInterceptor());
+    this.application.useGlobalInterceptors(new LoggingInterceptor());
     this.application.useLogger(this.application.get(LoggerService));
 
     return this.application;

@@ -7,12 +7,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { QueryFailedError } from 'typeorm';
+import { In, QueryFailedError } from 'typeorm';
 import { UserRoles } from '@/constants';
 import { UserMetaEntity } from '@/database/entities/user/user-meta.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { ConfigService } from '@/modules/common/config/config.service';
 import { NotificationsService } from '@/modules/common/notifications/notifications.service';
+import { CgSoftRepository } from '@/modules/common/resources/repositories/cg-soft.repository';
 import { UserChangePasswordRequestDto } from '@/modules/user/dto/user.change.password.request.dto';
 import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { UserCurrentResponseDto } from '@/modules/user/dto/user.current.response.dto';
@@ -33,6 +34,7 @@ export class UserService {
     private readonly userMetaRepository: UserMetaRepository,
     private readonly roleRepository: RoleRepository,
     private readonly userResetPasswordRepository: UserResetPasswordRepository,
+    private readonly cgSoftRepository: CgSoftRepository,
     private readonly notificationsService: NotificationsService,
     private readonly configService: ConfigService,
   ) {}
@@ -47,12 +49,19 @@ export class UserService {
       throw new ConflictException('Номер телефона уже занят другим пользователем');
     }
 
-    // const updates = Object.entries(dto) as [keyof UserCurrentUpdateRequestDto, any][];
-    // updates.forEach(([name, value]) => {
-    //   user[name] = value;
-    // });
+    const { favoriteSoft, ...updates } = UserMapper.fromUserCurrentUpdaterRequest(dto);
+    const entity = this.userRepository.merge(await this.getUserById(user.id), updates);
 
-    return UserMapper.toCurrentUserResponse(await user.save());
+    if (favoriteSoft) {
+      const newSoft = favoriteSoft.new.length ? await this.cgSoftRepository.createManyCGSoft(favoriteSoft.new) : [];
+      const existSoft = favoriteSoft.exist.length
+        ? await this.cgSoftRepository.findBy({ id: In(favoriteSoft.exist.map((s) => s.id)) })
+        : [];
+
+      entity.userMeta.favoriteSoft = existSoft.concat(newSoft);
+    }
+
+    return UserMapper.toCurrentUserResponse(await this.userRepository.save(entity));
   }
 
   public async createUserEntity(dto: UserCreateRequestDto): Promise<UserEntity> {
@@ -158,15 +167,36 @@ export class UserService {
   }
 
   private async getUserById(id: string): Promise<UserEntity> {
-    const user = await this.userRepository.findById(id, {
-      relations: {
-        roles: true,
-        userMeta: true,
-      },
-    });
-    if (!user) {
-      throw new NotFoundException(`Пользователь не найден`);
-    }
+    const qb = this.userRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.middleName',
+        'user.lastName',
+        'user.email',
+        'user.phone',
+        'user.isConfirmed',
+        'user.isActive',
+        'user.password',
+        'user.salt',
+        'role.id',
+        'role.name',
+        'role.description',
+        'meta.id',
+        'meta.aboutYourself',
+        'favoriteSoft.id',
+        'favoriteSoft.name',
+        'favoriteSoft.description',
+      ])
+      .innerJoin('user.roles', 'role')
+      .innerJoin('user.userMeta', 'meta')
+      .leftJoin('meta.favoriteSoft', 'favoriteSoft')
+      .where({ id });
+
+    const user = await qb.getOne();
+
+    if (!user) throw new NotFoundException(`Пользователь не найден`);
 
     return user;
   }

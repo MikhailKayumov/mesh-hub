@@ -1,18 +1,14 @@
 import { Paper, Title, TextInput, Button, Textarea, Group, Tooltip, TagsInput, Loader, Center } from '@mantine/core';
-import { useCgSoftQuery } from '@/api/resources.ts';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
 import PhoneInput from '@/components/PhoneInput';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
-import { softwares } from '@/pages/Profile/constants.ts';
 import classes from './ProfilePage.module.scss';
 import useProfileForm from './useProfileForm.ts';
 
 export default function ProfilePage() {
   useDocumentTitle('Профиль');
 
-  const { data } = useCgSoftQuery();
-  console.log(data);
-  const { form, isSubmitting, isLoading, onSubmit } = useProfileForm();
+  const { form, software, isSubmitting, isLoading, onSubmit } = useProfileForm();
 
   return (
     <>
@@ -57,10 +53,14 @@ export default function ProfilePage() {
               maxDropdownHeight={102}
               clearable
               clearButtonProps={{ 'aria-label': 'Clear input' }}
-              data={softwares}
+              data={software}
             />
             <Group mt={24} gap={16}>
-              <Button type="submit" loading={isSubmitting} disabled={!form.isDirty()}>
+              <Button
+                type="submit" //
+                loading={isSubmitting}
+                // disabled={!form.isDirty()}
+              >
                 Сохранить
               </Button>
               <ChangePasswordModal />

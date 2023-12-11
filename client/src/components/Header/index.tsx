@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import ColorSchemeSelect from '@/components/ColorSchemeSelect';
 import Logo from '@/components/Logo';
 import useSession from '@/hooks/useSession.ts';
-import User from '@/modules/Header/components/User';
 import RouterPaths from '@/router/paths.ts';
 import AuthButtons from './components/AuthButtons';
+import User from './components/User';
 import classes from './Header.module.scss';
 
 export default function Header() {

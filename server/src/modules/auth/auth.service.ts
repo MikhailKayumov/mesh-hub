@@ -80,17 +80,10 @@ export class AuthService {
 
     const isValid = Math.floor(Date.now() * 0.001) < (verifiedToken?.exp ?? 0);
     const session = await this.authRepository.findOne({
-      relations: {
-        user: {
-          roles: true,
-        },
-      },
+      relations: { user: { roles: true } },
       where: {
         accessToken: token!,
-        user: {
-          id: verifiedToken.userId,
-          email: verifiedToken.userEmail,
-        },
+        user: { id: verifiedToken.userId, email: verifiedToken.userEmail },
         expiredAt: MoreThanOrEqual(new Date()),
       },
     });

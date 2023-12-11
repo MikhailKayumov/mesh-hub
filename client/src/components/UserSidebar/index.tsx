@@ -26,7 +26,7 @@ export default function UserSidebar({ className }: UserSidebarProps) {
           h="100%"
         />
       </Skeleton>
-      <Skeleton visible={isUserLoading} mb={32}>
+      <Skeleton visible={isUserLoading} mb={32} h={42}>
         <Tooltip label={user ? userService.getUserFullname(user, true) : ''} position="right" openDelay={500} fz={12}>
           <Text ta="center">{user ? userService.getUserFullname(user) : ''}</Text>
         </Tooltip>

@@ -1,7 +1,7 @@
 import { AppShell } from '@mantine/core';
 import { PropsWithChildren } from 'react';
+import Header from '@/components/Header';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
-import Header from '@/modules/Header';
 
 export default function BaseLayout({ children }: PropsWithChildren) {
   const { isLight } = useCurrentColorScheme();

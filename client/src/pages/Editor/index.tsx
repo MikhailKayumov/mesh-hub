@@ -1,6 +1,6 @@
 import { Button } from '@mantine/core';
 import { useState } from 'react';
-import Viewer from '@/modules/Viewer';
+import Viewer from '@/components/Viewer';
 
 export function Component() {
   const [count, setCount] = useState(0);

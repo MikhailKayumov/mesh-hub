@@ -25,19 +25,19 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Login,
-            lazy: async () => ({ Component: (await import('@/pages/Login')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/Login')).default }),
           },
           {
             path: RouterPaths.Register,
-            lazy: async () => ({ Component: (await import('@/pages/Register')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/Register')).default }),
           },
           {
             path: RouterPaths.ResetPassword,
-            lazy: async () => ({ Component: (await import('@/pages/ResetPassword')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/ResetPassword')).default }),
           },
           {
             path: RouterPaths.NewPassword,
-            lazy: async () => ({ Component: (await import('../pages/NewPassword')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/NewPassword')).default }),
           },
         ],
       },
@@ -52,15 +52,15 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Models,
-            lazy: async () => ({ Component: (await import('@/pages/Profile')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/User/pages/Models')).default }),
           },
           {
             path: RouterPaths.Profile,
-            lazy: async () => ({ Component: (await import('@/pages/Profile')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/User/pages/Profile')).default }),
           },
           {
             path: RouterPaths.Settings,
-            lazy: async () => ({ Component: (await import('@/pages/Settings')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/User/pages/Settings')).default }),
           },
         ],
       },

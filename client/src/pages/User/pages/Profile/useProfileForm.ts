@@ -10,8 +10,8 @@ import {
   transformValuesFromFormToRequest,
   transformValuesFromUserToForm,
   validationSchema,
-} from '@/pages/Profile/constants.ts';
-import { ProfileFormData } from '@/pages/Profile/model.ts';
+} from '@/pages/User/pages/Profile/constants.ts';
+import { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
 import getFormDirtyFields from '@/utils/getFormDirtyFields.ts';
 import processFormSubmitError from '@/utils/processFormSubmitError.ts';
 

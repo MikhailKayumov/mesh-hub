@@ -1,8 +1,8 @@
 import { Anchor, Flex, Title, Text, Center, Button, PasswordInput, TextInput } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
-import useLoginForm from '@/pages/Login/useLoginForm.ts';
-import RouterPaths from '@/router/paths';
+import useLoginForm from '@/pages/Auth/pages/Login/useLoginForm.ts';
+import RouterPaths from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
 
 export default function LoginPage() {

@@ -2,7 +2,7 @@ import { Text, Tooltip } from '@mantine/core';
 import dayjs from 'dayjs';
 import { DataTableColumn } from 'mantine-datatable';
 import { SessionResponseDto } from '@/api/dto.ts';
-import CloseSessionColumn from '@/pages/Settings/components/SessionTable/CloseSessionColumn.tsx';
+import CloseSessionColumn from './CloseSessionColumn.tsx';
 
 const columns: DataTableColumn<SessionResponseDto>[] = [
   {

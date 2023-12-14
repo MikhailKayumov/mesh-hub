@@ -1,7 +1,7 @@
 import { Paper, Title } from '@mantine/core';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
-import ColorThemeSwitcher from '@/pages/Settings/components/ColorThemeSwitcher';
-import SessionTable from '@/pages/Settings/components/SessionTable';
+import ColorThemeSwitcher from './components/ColorThemeSwitcher';
+import SessionTable from './components/SessionTable';
 
 export default function SettingsPage() {
   useDocumentTitle('Настройки');

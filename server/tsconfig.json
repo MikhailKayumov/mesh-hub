@@ -7,20 +7,12 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "target": "ES2021",
+    "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@modules/*": ["src/modules/*"],
-      "@config/*": ["src/modules/common/config/*"],
-      "@entities/*": ["src/database/entities/*"],
-      "@decorators/*": ["src/decorators/*"],
-      "@guards/*": ["src/guards/*"],
-      "@utils/*": ["src/utils/*"],
-      "@interceptors/*": ["src/interceptors/*"],
-      "@exceptions/*": ["src/exceptions/*"],
-      "@swagger/*": ["src/swagger/*"],
+      "@/*": ["src/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -29,5 +21,8 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
   }
 }

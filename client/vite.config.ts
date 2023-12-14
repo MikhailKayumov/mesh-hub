@@ -1,6 +1,6 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { defineConfig, loadEnv } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -14,10 +14,42 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, 'src'),
       },
     },
+    build: {
+      manifest: true,
+    },
     server: {
+      open: true,
       port,
+      strictPort: true,
       proxy: {
-        [env.VITE_APP_API_URL ?? '/api']: env.API_PROXY_URL,
+        '/api': {
+          ws: false,
+          secure: false,
+          changeOrigin: true,
+          target: env.API_PROXY_URL,
+          rewrite: (path) => path.replace(/^\/api/, '/api'),
+        },
+        '/socket.io': {
+          target: env.WS_PROXY,
+          ws: true,
+          secure: false,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/socket.io/, '/socket.io'),
+        },
+        '/files': {
+          ws: false,
+          secure: false,
+          changeOrigin: true,
+          target: env.API_PROXY_URL,
+          rewrite: (path) => path.replace(/^\/files/, '/'),
+        },
+      },
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@import "./src/theme/_mantine";`,
+        },
       },
     },
   };

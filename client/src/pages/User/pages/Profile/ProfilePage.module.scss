@@ -1,0 +1,19 @@
+.root {
+  .form {
+    max-width: 100%;
+    min-width: 100%;
+
+    @media (min-width: $mantine-breakpoint-md) {
+      max-width: 58%;
+      min-width: rem(420px);
+    }
+
+    @media (min-width: $mantine-breakpoint-lg) {
+      max-width: 54%;
+    }
+
+    @media (min-width: $mantine-breakpoint-xl) {
+      max-width: 50%;
+    }
+  }
+}

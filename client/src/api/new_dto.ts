@@ -9,6 +9,85 @@
  * ---------------------------------------------------------------
  */
 
+export interface CgSoftResponse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface UserMetaResponseDto {
+  id: string;
+  aboutYourself?: string;
+  favoriteSoft?: CgSoftResponse[];
+}
+
+export interface UserCurrentResponseDto {
+  id: string;
+  email: string;
+  phone?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  isConfirmed: boolean;
+  meta: UserMetaResponseDto;
+}
+
+export interface CgSoftRequest {
+  id: string | number;
+  name: string;
+}
+
+export interface UserCurrentUpdateRequestDto {
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  phone?: string;
+  aboutYourself?: string;
+  favoriteSoft?: CgSoftRequest[];
+}
+
+export interface UserResetPasswordRequestDto {
+  email: string;
+}
+
+export interface UserNewPasswordRequestDto {
+  requestId: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface UserChangePasswordRequestDto {
+  oldPassword: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface SignupRequestDto {
+  email: string;
+  firstName: string;
+  lastName?: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface SessionResponseDto {
+  id: string;
+  ip: string;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt?: string;
+  /** @format date-time */
+  expireAt: string;
+  userAgent?: string;
+}
+
+export interface LoginRequestDto {
+  email: string;
+  /** @minLength 6 */
+  password: string;
+}
+
 export interface PaginationDtoSortItem {
   field: string;
   by: "ASC" | "DESC";
@@ -24,50 +103,4 @@ export interface PaginationResponseDto {
   /** @min 0 */
   totalCount: number;
   hasMore: boolean;
-}
-
-export interface UserResponseDto {
-  id: string;
-  email: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
-  sessions?: SessionResponseDto[];
-}
-
-export interface SessionResponseDto {
-  id: string;
-  user?: UserResponseDto;
-}
-
-export interface UserCreateRequestDto {
-  email: string;
-  /**
-   * @minLength 8
-   * @maxLength 24
-   * @pattern /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/
-   */
-  password: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
-}
-
-export interface UserUpdateRequestDto {
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
-}
-
-export interface LoginRequestDto {
-  email: string;
-  /**
-   * @minLength 8
-   * @maxLength 24
-   * @pattern passwordRegExp
-   */
-  password: string;
 }

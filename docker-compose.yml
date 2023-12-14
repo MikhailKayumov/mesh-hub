@@ -24,11 +24,11 @@ services:
     container_name: s3
     volumes:
       - s3:/data
-    command: server --console-address ":9001" /data/
+    command: server --console-address ":8881" /data/
     restart: unless-stopped
     ports:
-      - 9001:9000
-      - 9002:9001
+      - "8881:9000"
+      - "8882:8881"
     environment:
       - MINIO_ROOT_USER=ROOTNAME
       - MINIO_ROOT_PASSWORD=ROOTPASSWORD

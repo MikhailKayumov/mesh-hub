@@ -1,15 +1,19 @@
-import { TypeOrmNamingStrategy } from '@config/typeorm-naming-strategy';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { type CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { ThrottlerModuleOptions } from '@nestjs/throttler';
+import { MailerOptions } from '@nestjs-modules/mailer';
 import { Algorithm } from 'jsonwebtoken';
 import { DataSourceOptions } from 'typeorm';
+import { isNil } from '@/utils';
+import { TypeOrmNamingStrategy } from './typeorm-naming-strategy';
 
 export type APP_MODE = 'PRODUCTION' | 'DEVELOPMENT' | 'TEST';
 
 @Injectable()
 export class ConfigService {
+  private readonly logger = new Logger('ConfigService');
+
   public constructor(private readonly config: NestConfigService) {}
 
   public get app() {
@@ -18,6 +22,7 @@ export class ConfigService {
       port: this.getNumber('APP_PORT'),
       mode: this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT'),
       prefix: this.get('APP_GLOBAL_PREFIX', ''),
+      frontendUrl: this.get('APP_FRONTEND_URL'),
     };
   }
 
@@ -62,6 +67,10 @@ export class ConfigService {
     return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'PRODUCTION';
   }
 
+  public get isDevelopment() {
+    return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'DEVELOPMENT';
+  }
+
   public get isTest() {
     return this.get<APP_MODE>('APP_MODE', 'DEVELOPMENT') === 'TEST';
   }
@@ -103,8 +112,36 @@ export class ConfigService {
     };
   }
 
+  public get logging() {
+    return {
+      level: this.get('LOGS_LEVEL', 'silly'),
+      fileLoggingEnabled: this.getBoolean('LOGS_TO_FILE_ENABLED', false),
+    };
+  }
+
+  public get mailerConfig(): MailerOptions {
+    const enabled = this.getBoolean('SMTP_YANDEX_ENABLED', false);
+
+    const name = this.get('SMTP_YANDEX_SENDER_NAME', !enabled ? '' : undefined);
+    const user = this.get('SMTP_YANDEX_AUTH_USER', !enabled ? '' : undefined);
+    const pass = this.get('SMTP_YANDEX_AUTH_PASS', !enabled ? '' : undefined);
+
+    return {
+      transport: {
+        host: this.get('SMTP_YANDEX_HOST', 'smtp.yandex.ru'),
+        secure: true,
+        port: this.getNumber('SMTP_YANDEX_PORT', 465),
+        auth: { user, pass },
+        jsonTransport: !enabled || undefined,
+      },
+      defaults: {
+        from: `"${name}" <${user}>`,
+      },
+    };
+  }
+
   public get<T = string>(name: string, defaultValue?: T): T {
-    return defaultValue ? this.config.get<T>(name, defaultValue) : this.config.getOrThrow(name);
+    return !isNil(defaultValue) ? this.config.get<T>(name, defaultValue) : this.config.getOrThrow(name);
   }
 
   public getNumber(name: string, defaultValue?: number): number {
@@ -114,5 +151,14 @@ export class ConfigService {
     }
 
     return value;
+  }
+
+  public getBoolean(name: string, defaultValue?: boolean): boolean {
+    const value = this.get<string>(name, '');
+    if (!value && typeof defaultValue !== 'boolean') {
+      throw new Error(`Variable ${name} must be boolean`);
+    }
+
+    return value ? ['1', 'true', 'on'].includes(value) : defaultValue!;
   }
 }

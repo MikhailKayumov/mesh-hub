@@ -1,33 +1,102 @@
-import { useState } from 'react';
-import Viewer from '@/modules/viewer';
-import Button from '@/components/Button';
+import { Blockquote, Button, Code, ColorSwatch, Container, Group, Mark, Paper, Text, Title } from '@mantine/core';
+import { useDispatch } from 'react-redux';
+import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
+import { userActions } from '@/store/user/reducer.ts';
+import { themes } from '@/theme/themes.ts';
 
 export default function MainPage() {
-  const [count, setCount] = useState(0);
+  useDocumentTitle('Главная');
 
-  const onClick = () => {
-    setCount((prev) => prev + 1);
-  };
+  const dispatch = useDispatch();
+  // console.log(themes);
 
   return (
-    <div className="grid h-full w-full grid-rows-[1fr_auto] flex-col gap-4 overflow-hidden p-4">
-      <div className="flex-1 overflow-hidden rounded border border-white bg-white shadow dark:border-slate-600 dark:bg-transparent dark:shadow-none">
-        <Viewer />
-      </div>
-      <div
-        className={`
-          flex h-full w-full items-center gap-3 rounded border
-          border-white bg-white p-3 text-xs shadow dark:border-slate-600
-          dark:bg-transparent dark:shadow-none
-        `}
-      >
-        <div>MainPageReRenders: {count}</div>
-        <div>
-          <Button size="sm" className="py-0.5" onClick={onClick}>
-            Rerender
+    <Container>
+      <Paper withBorder p="md" mb="md">
+        <Group>
+          {Object.entries(themes).map(([name, theme]) => {
+            const color = theme.colors[theme.primaryColor][theme.primaryShade];
+            return (
+              <ColorSwatch
+                onClick={() => {
+                  dispatch(userActions.setTheme(name as any));
+                }}
+                key={name}
+                color={color}
+              />
+            );
+          })}
+        </Group>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Group>
+          <Button
+            onClick={() => {
+              // todo: persist store
+              localStorage.setItem('mantine-scale', '1');
+              document.documentElement.dataset.mantineScale = '1';
+            }}
+          >
+            Scale 1
           </Button>
-        </div>
-      </div>
-    </div>
+          <Button
+            onClick={() => {
+              localStorage.setItem('mantine-scale', '1.5');
+              document.documentElement.dataset.mantineScale = '1.5';
+            }}
+          >
+            Scale 1.5
+          </Button>
+          <Button
+            onClick={() => {
+              localStorage.setItem('mantine-scale', '2');
+              document.documentElement.dataset.mantineScale = '2';
+            }}
+          >
+            Scale 2
+          </Button>
+        </Group>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Title>Главная</Title>
+        <Title order={2}>Главная</Title>
+        <Title order={3}>Главная</Title>
+        <Title order={4}>Главная</Title>
+        <Title order={5}>Главная</Title>
+        <Title order={6}>Главная</Title>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Text>
+          Широкая электрификация<Mark> южных губерний даст </Mark>мощный толчок подъёму сельского хозяйства
+        </Text>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Code>Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства</Code>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Blockquote color="blue" cite="– Я">
+          Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства
+        </Blockquote>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Title>Главная</Title>
+        <Title order={2}>Главная</Title>
+        <Title order={3}>Главная</Title>
+        <Title order={4}>Главная</Title>
+        <Title order={5}>Главная</Title>
+        <Title order={6}>Главная</Title>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Text>Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства</Text>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Code>Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства</Code>
+      </Paper>
+      <Paper withBorder p="md" mb="md">
+        <Blockquote color="blue" cite="– Я">
+          Широкая электрификация южных губерний даст мощный толчок подъёму сельского хозяйства
+        </Blockquote>
+      </Paper>
+    </Container>
   );
 }

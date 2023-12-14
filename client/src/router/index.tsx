@@ -1,26 +1,75 @@
-import { createBrowserRouter, RouteObject } from 'react-router-dom';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import BasePage from '@/pages';
-import LoginPage from '@/pages/Login';
-import MainPage from '../pages/Main';
+import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
+import BaseErrorBoundary from '@/components/BaseErrorBoundary';
+import BasePage from '@/pages/Base';
+import MainPage from '@/pages/Main';
 import RouterPaths from './paths';
 
 const routes: RouteObject[] = [
   {
     path: RouterPaths.Base,
     element: <BasePage />,
-    errorElement: <ErrorBoundary />,
+    ErrorBoundary: BaseErrorBoundary,
     children: [
       {
         index: true,
         element: <MainPage />,
       },
+      // auth
       {
-        path: RouterPaths.Login,
-        element: <LoginPage />,
+        path: RouterPaths.Auth,
+        lazy: async () => ({ Component: (await import('@/pages/Auth')).default }),
+        children: [
+          {
+            index: true,
+            element: <Navigate replace to={RouterPaths.Login} />,
+          },
+          {
+            path: RouterPaths.Login,
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/Login')).default }),
+          },
+          {
+            path: RouterPaths.Register,
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/Register')).default }),
+          },
+          {
+            path: RouterPaths.ResetPassword,
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/ResetPassword')).default }),
+          },
+          {
+            path: RouterPaths.NewPassword,
+            lazy: async () => ({ Component: (await import('@/pages/Auth/pages/NewPassword')).default }),
+          },
+        ],
+      },
+      // user
+      {
+        path: RouterPaths.User,
+        lazy: async () => ({ Component: (await import('@/pages/User')).default }),
+        children: [
+          {
+            index: true,
+            element: <Navigate replace to={RouterPaths.Models} />,
+          },
+          {
+            path: RouterPaths.Models,
+            lazy: async () => ({ Component: (await import('@/pages/User/pages/Models')).default }),
+          },
+          {
+            path: RouterPaths.Profile,
+            lazy: async () => ({ Component: (await import('@/pages/User/pages/Profile')).default }),
+          },
+          {
+            path: RouterPaths.Settings,
+            lazy: async () => ({ Component: (await import('@/pages/User/pages/Settings')).default }),
+          },
+        ],
       },
     ],
   },
+  // {
+  //   path: 'editor',
+  //   lazy: () => import('@/pages/Editor'),
+  // },
 ];
 
 const router = createBrowserRouter(routes);

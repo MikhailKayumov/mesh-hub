@@ -1,8 +1,8 @@
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { ConfigService } from '@config/config.service';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@/modules/common/config/config.service';
 
 export class SwaggerService {
   private readonly path: string = join(process.cwd(), 'swagger.openapi3.json');

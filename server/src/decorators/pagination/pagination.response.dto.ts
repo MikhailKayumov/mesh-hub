@@ -1,8 +1,8 @@
-import { PaginationDtoSortItem } from '@decorators/pagination/pagination.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import validateDto from '@utils/validate-dto';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsNumber, Min } from 'class-validator';
+import { PaginationDtoSortItem } from '@/decorators/pagination/pagination.dto';
+import validateDto from '@/utils/validate-dto';
 
 export class PaginationResponseDto<T = unknown> {
   @ApiProperty({ isArray: true, type: Object })
@@ -36,7 +36,7 @@ export class PaginationResponseDto<T = unknown> {
   @IsBoolean()
   public hasMore: boolean;
 
-  constructor(data: T[], totalCount: number, size?: number, skip = 0, sort: PaginationDtoSortItem[] = []) {
+  public constructor(data: T[], totalCount: number, size?: number, skip = 0, sort: PaginationDtoSortItem[] = []) {
     this.data = data;
     this.skip = skip;
     this.size = size || data.length;

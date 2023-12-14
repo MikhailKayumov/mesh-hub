@@ -1,15 +1,21 @@
-import { ConfigService } from '@config/config.service';
-import { SessionEntity } from '@entities/session/session.entity';
-import { UserEntity } from '@entities/user/user.entity';
-import { UserCreateRequestDto } from '@modules/user/dto/user.create.request.dto';
-import { UserRepository } from '@modules/user/user.repository';
-import { UserService } from '@modules/user/user.service';
-import { HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Request } from 'express';
 import { LessThan, MoreThanOrEqual } from 'typeorm';
-import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
+import { SessionEntity } from '@/database/entities/session/session.entity';
+import { UserEntity } from '@/database/entities/user/user.entity';
+import {
+  PaginationDto,
+  PaginationDtoSortItem,
+  PaginationResponseDto,
+  PaginationSortOrder,
+} from '@/decorators/pagination';
+import { SignupRequestDto } from '@/modules/auth/dto/signup.request.dto';
+import { JwtPayload } from '@/modules/auth/types';
+import { ConfigService } from '@/modules/common/config/config.service';
+import { UserRepository } from '@/modules/user/repositories/user.repository';
+import { UserService } from '@/modules/user/services/user.service';
 import { AuthMapper } from './auth.mapper';
 import { AuthRepository } from './auth.repository';
 import { LoginRequestDto } from './dto/login.request.dto';
@@ -20,79 +26,145 @@ export class AuthService {
   private readonly logger = new Logger('AuthService');
 
   public constructor(
-    private readonly authRepository: AuthRepository,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
-    private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
+    private readonly authRepository: AuthRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
-  public async signup(dto: UserCreateRequestDto): Promise<SessionResponseDto> {
-    const { hash, salt } = await this.userService.encodePassword(dto.password);
-    const user = await this.userRepository.createUser(dto, hash, salt);
+  public async getCurrentUserSessions(
+    user: UserEntity,
+    { size = 10, skip = 0, sort }: PaginationDto,
+  ): Promise<PaginationResponseDto<SessionResponseDto>> {
+    const { field = 'updatedAt', by = 'DESC' } = sort?.[0] ?? {};
 
-    return AuthMapper.sessionEntityToResponse(await this.createSession(user));
+    const [sessions, count] = await this.authRepository.findAndCount({
+      where: { user: { id: user.id } },
+      skip,
+      take: size,
+      order: { [field]: by },
+    });
+
+    return PaginationResponseDto.build(
+      sessions.map(AuthMapper.toSessionResponse),
+      count,
+      size,
+      skip,
+      sort?.length ? sort : [await PaginationDtoSortItem.build('updatedAt', PaginationSortOrder.DESC)],
+    );
+  }
+
+  public async closeCurrentUserSession(user: UserEntity, sessionId: string): Promise<void> {
+    await this.authRepository.delete({ id: sessionId, user: { id: user.id } });
+  }
+
+  public async closeCurrentUserSessions(user: UserEntity): Promise<void> {
+    await this.authRepository.delete({ user: { id: user.id } });
+  }
+
+  public async signup({ confirmPassword, ...dto }: SignupRequestDto, request: Request): Promise<SessionResponseDto> {
+    if (dto.password !== confirmPassword) {
+      throw new BadRequestException('Пароли не совпадают');
+    }
+
+    request.session = await this.createSession(request, await this.userService.createUserEntity(dto));
+
+    return AuthMapper.toSessionResponse(request.session);
   }
 
   public async login({ email, password }: LoginRequestDto, request: Request): Promise<SessionResponseDto> {
     const user = await this.userRepository.findByEmail(email);
-
     if (!user || !(await this.userService.comparePassword(password, user.salt, user.password))) {
-      throw new HttpException('Неверные логин или пароль', HttpStatus.NOT_FOUND);
+      throw new BadRequestException('Неверные email или пароль');
     }
 
-    request.session = await this.createSession(user);
+    request.session = await this.createSession(request, user);
 
-    return AuthMapper.sessionEntityToResponse(request.session);
+    return AuthMapper.toSessionResponse(request.session);
   }
 
   public async logout(session: SessionEntity, request: Request): Promise<void> {
-    await this.authRepository.delete(session.id);
-    request.session = undefined;
+    request.session = null;
+    this.authRepository.delete(session.id);
   }
 
-  public async validateSession(token: string, userId: string): Promise<SessionEntity> {
-    const session = await this.authRepository.findOne({
-      where: {
-        accessToken: token,
-        user: {
-          id: userId,
-        },
-        expiredAt: MoreThanOrEqual(new Date()),
-      },
-      relations: {
-        user: true,
-      },
-    });
-    if (!session || !session.user) {
-      throw new UnauthorizedException();
-    }
-
-    return session;
-  }
-
-  public async refreshSession(session: SessionEntity): Promise<SessionEntity> {
+  public async refresh(session: SessionEntity, request: Request): Promise<SessionResponseDto> {
     try {
       await this.jwtService.verifyAsync(session.refreshToken, {
         secret: this.configService.jwt.refreshSecret,
         algorithms: [this.configService.jwt.algorithm],
       });
 
-      return this.createSession(session.user, session.id);
+      const [accessToken, refreshToken] = await this.createTokens(session.user);
+
+      session.accessToken = accessToken;
+      session.refreshToken = refreshToken;
+
+      request.session = await this.authRepository.save(session);
+
+      return AuthMapper.toSessionResponse(request.session);
     } catch (e) {
       throw new UnauthorizedException();
     }
   }
 
-  private async createSession(user: UserEntity, sessionId?: string): Promise<SessionEntity> {
-    const where: FindOptionsWhere<SessionEntity> = { user: { id: user.id } };
-    if (sessionId) {
-      (where as any).id = sessionId;
-    }
-    await this.authRepository.delete(where);
+  public async validateSession(
+    token: string | null,
+    ip: string,
+    userAgent: string | undefined,
+  ): Promise<[SessionEntity | null, boolean]> {
+    const verifiedToken = await this.verifyAccessToken(token ?? '');
 
-    const payload = { userId: user.id, userEmail: user.email };
-    const [accessToken, refreshToken] = await Promise.all([
+    if (!verifiedToken) return [null, false];
+
+    const isValid = Math.floor(Date.now() * 0.001) < (verifiedToken?.exp ?? 0);
+    const session = await this.authRepository.findOne({
+      relations: { user: { roles: true } },
+      where: {
+        ip,
+        userAgent,
+        accessToken: token!,
+        user: { id: verifiedToken.userId, email: verifiedToken.userEmail },
+        expiredAt: MoreThanOrEqual(new Date()),
+      },
+    });
+
+    return [session, isValid];
+  }
+
+  private async createSession(request: Request, user: UserEntity): Promise<SessionEntity> {
+    const exitingSession = await this.authRepository.findOne({
+      relations: {
+        user: true,
+      },
+      where: {
+        user: {
+          id: user.id,
+        },
+        ip: request.ip,
+        userAgent: request.headers['user-agent'],
+        expiredAt: MoreThanOrEqual(new Date()),
+      },
+    });
+
+    if (exitingSession) return exitingSession;
+
+    const [accessToken, refreshToken] = await this.createTokens(user);
+
+    return this.authRepository.createSession(
+      accessToken,
+      refreshToken,
+      user,
+      request.ip,
+      request.headers['user-agent'],
+    );
+  }
+
+  private async createTokens(user: UserEntity) {
+    const payload = { userId: user.id, userEmail: user.email, createAt: Date.now() };
+
+    return await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, {
         secret: this.configService.jwt.refreshSecret,
@@ -100,16 +172,22 @@ export class AuthService {
         expiresIn: this.configService.jwt.refreshExpiresIn,
       }),
     ]);
-
-    return this.authRepository.createSession(accessToken, refreshToken, user);
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  private async verifyAccessToken(token: string): Promise<JwtPayload | null> {
+    try {
+      return <JwtPayload>await this.jwtService.verifyAsync(token, { ignoreExpiration: true });
+    } catch (e: unknown) {
+      this.logger.warn('Access token has been expire');
+      return null;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_4_HOURS)
   private async clearSessions(): Promise<void> {
     const { affected } = await this.authRepository.delete({
       expiredAt: LessThan(new Date()),
     });
-
     this.logger.log(`${affected ?? 0} expired session${(affected ?? 0) > 2 ? 's' : ''} has been removed`);
   }
 }

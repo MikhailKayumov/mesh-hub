@@ -1,1 +1,7 @@
-export type JwtStrategyType = 'JwtAccess' | 'JwtRefresh';
+export interface JwtPayload {
+  userId: string;
+  userEmail: string;
+  createdAt: number;
+  iat: number;
+  exp: number;
+}

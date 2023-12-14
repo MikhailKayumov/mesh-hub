@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import validateDto from '@utils/validate-dto';
 import { Type } from 'class-transformer';
 import { IsInt, Min, IsOptional, IsNumber, IsString, IsEnum, IsArray, IsNotEmpty } from 'class-validator';
+import validateDto from '@/utils/validate-dto';
 
 export enum PaginationSortOrder {
   ASC = 'ASC',
@@ -16,7 +16,7 @@ export class PaginationDtoSortItem {
   @IsEnum(PaginationSortOrder)
   public by: PaginationSortOrder;
 
-  constructor(field: string, by: PaginationSortOrder) {
+  public constructor(field: string, by: PaginationSortOrder) {
     this.field = field;
     this.by = by;
   }

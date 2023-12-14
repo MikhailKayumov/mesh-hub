@@ -1,105 +1,27 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/api/user": {
+    "/api/resources/cg-soft/all": {
       "get": {
-        "operationId": "UserController_getUsers",
-        "parameters": [
-          {
-            "name": "skip",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "size",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "minimum": 1
-            }
-          },
-          {
-            "name": "sort",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "description": "Sorting fields in format: [+-][fieldName]"
-            }
-          }
-        ],
+        "operationId": "ResourcesController_getCGSoft",
+        "parameters": [],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/PaginationResponseDto"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "type": "array",
-                          "readOnly": true,
-                          "nullable": false,
-                          "items": {
-                            "$ref": "#/components/schemas/UserResponseDto"
-                          }
-                        }
-                      },
-                      "required": [
-                        "data"
-                      ]
-                    }
-                  ]
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CgSoftResponse"
+                  }
                 }
               }
             }
-          },
-          "403": {
-            "description": "Unauthorized"
           }
         },
         "tags": [
-          "user"
-        ]
-      },
-      "post": {
-        "operationId": "UserController_createUser",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserCreateRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Unauthorized"
-          }
-        },
-        "tags": [
-          "user"
+          "resources"
         ]
       }
     },
@@ -113,52 +35,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserCurrentResponseDto"
                 }
               }
             }
           },
-          "403": {
-            "description": "Unauthorized"
-          },
           "404": {
-            "description": "User not found"
-          }
-        },
-        "tags": [
-          "user"
-        ]
-      }
-    },
-    "/api/user/{id}": {
-      "get": {
-        "operationId": "UserController_getUser",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "User not found"
+            "description": ""
           }
         },
         "tags": [
@@ -166,23 +49,14 @@
         ]
       },
       "patch": {
-        "operationId": "UserController_updateUser",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "UserController_updateCurrentUser",
+        "parameters": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserUpdateRequestDto"
+                "$ref": "#/components/schemas/UserCurrentUpdateRequestDto"
               }
             }
           }
@@ -193,37 +67,103 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
+                  "$ref": "#/components/schemas/UserCurrentResponseDto"
                 }
               }
             }
           },
-          "403": {
-            "description": "Unauthorized"
+          "400": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
           }
         },
         "tags": [
           "user"
         ]
-      },
-      "delete": {
-        "operationId": "UserController_deleteUser",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
+      }
+    },
+    "/api/user/reset-password": {
+      "patch": {
+        "operationId": "UserController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserResetPasswordRequestDto"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Logout was succeed"
+            "description": ""
           },
-          "403": {
-            "description": "Unauthorized"
+          "400": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/new-password": {
+      "patch": {
+        "operationId": "UserController_newPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserNewPasswordRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/user/change-password": {
+      "patch": {
+        "operationId": "UserController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserChangePasswordRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
           }
         },
         "tags": [
@@ -240,7 +180,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserCreateRequestDto"
+                "$ref": "#/components/schemas/SignupRequestDto"
               }
             }
           }
@@ -293,6 +233,27 @@
         ]
       }
     },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/auth/logout": {
       "post": {
         "operationId": "AuthController_logout",
@@ -300,9 +261,109 @@
         "responses": {
           "200": {
             "description": "Logout was succeed"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/current-user-sessions": {
+      "get": {
+        "operationId": "AuthController_getCurrentUserSessions",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0
+            }
           },
-          "401": {
-            "description": "Unauthorized"
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Sorting fields in format: [+-][fieldName]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "readOnly": true,
+                          "nullable": false,
+                          "items": {
+                            "$ref": "#/components/schemas/SessionResponseDto"
+                          }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      },
+      "delete": {
+        "operationId": "AuthController_closeCurrentUserSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/current-user-sessions/{id}": {
+      "delete": {
+        "operationId": "AuthController_closeCurrentUserSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
           }
         },
         "tags": [
@@ -313,7 +374,7 @@
   },
   "info": {
     "title": "MeshHub Swagger",
-    "description": "Описания API эндпоинтов для приложения MeshHub",
+    "description": "API приложения MeshHub",
     "version": "1.0",
     "contact": {}
   },
@@ -337,6 +398,250 @@
       }
     },
     "schemas": {
+      "CgSoftResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "UserMetaResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "aboutYourself": {
+            "type": "string"
+          },
+          "favoriteSoft": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CgSoftResponse"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "UserCurrentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "middleName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "isConfirmed": {
+            "type": "boolean"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/UserMetaResponseDto"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "isConfirmed",
+          "meta"
+        ]
+      },
+      "CgSoftRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "UserCurrentUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "middleName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "aboutYourself": {
+            "type": "string"
+          },
+          "favoriteSoft": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CgSoftRequest"
+            }
+          }
+        }
+      },
+      "UserResetPasswordRequestDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "UserNewPasswordRequestDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "confirmPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requestId",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "UserChangePasswordRequestDto": {
+        "type": "object",
+        "properties": {
+          "oldPassword": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "confirmPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldPassword",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "SignupRequestDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "confirmPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "password",
+          "confirmPassword"
+        ]
+      },
+      "SessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expireAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userAgent": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ip",
+          "createdAt",
+          "expireAt"
+        ]
+      },
+      "LoginRequestDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
       "PaginationDtoSortItem": {
         "type": "object",
         "properties": {
@@ -394,118 +699,6 @@
           "sort",
           "totalCount",
           "hasMore"
-        ]
-      },
-      "UserResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "middleName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string"
-          },
-          "sessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SessionResponseDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "email"
-        ]
-      },
-      "SessionResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserResponseDto"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "UserCreateRequestDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 24,
-            "pattern": "/^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).*$/"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "middleName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "email",
-          "password"
-        ]
-      },
-      "UserUpdateRequestDto": {
-        "type": "object",
-        "properties": {
-          "firstName": {
-            "type": "string"
-          },
-          "middleName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string"
-          }
-        }
-      },
-      "LoginRequestDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "maxLength": 24,
-            "pattern": "passwordRegExp"
-          }
-        },
-        "required": [
-          "email",
-          "password"
         ]
       }
     }

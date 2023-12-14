@@ -3,6 +3,13 @@ export interface PaginationDtoSortItem {
   by: 'ASC' | 'DESC';
 }
 
+export interface PaginationDto<T = any> {
+  skip?: number;
+  size?: number;
+  sort?: string[];
+  body?: T;
+}
+
 export interface PaginationResponseDto<T = any> {
   data: T[];
   skip: number;
@@ -12,35 +19,74 @@ export interface PaginationResponseDto<T = any> {
   hasMore: boolean;
 }
 
-export interface UserResponseDto {
+export interface CgSoftRequest {
+  id: string | number;
+  name: string;
+}
+
+export interface CgSoftResponse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface UserMetaResponseDto {
+  id: string;
+  aboutYourself?: string;
+  favoriteSoft?: CgSoftResponse[];
+}
+
+export interface UserCurrentResponseDto {
   id: string;
   email: string;
+  phone?: string;
   firstName?: string;
   middleName?: string;
   lastName?: string;
-  nickname?: string;
-  sessions?: SessionResponseDto[];
+  isConfirmed: boolean;
+  meta: UserMetaResponseDto;
+}
+
+export interface UserCurrentUpdateRequestDto {
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  phone?: string;
+  aboutYourself?: string;
+  favoriteSoft?: CgSoftRequest[];
+}
+
+export interface UserResetPasswordRequestDto {
+  email: string;
+}
+
+export interface UserNewPasswordRequestDto {
+  requestId: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface UserChangePasswordRequestDto {
+  oldPassword: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface SignupRequestDto {
+  email: string;
+  firstName: string;
+  lastName?: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export interface SessionResponseDto {
   id: string;
-  user?: UserResponseDto;
-}
-
-export interface UserCreateRequestDto {
-  email: string;
-  password: string;
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
-}
-
-export interface UserUpdateRequestDto {
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  nickname?: string;
+  ip: string;
+  createdAt: string;
+  updatedAt?: string;
+  expireAt: string;
+  userAgent?: string;
 }
 
 export interface LoginRequestDto {
@@ -58,7 +104,6 @@ export interface HttpException {
   error: string;
   data?: any;
 }
-
 export interface ValidationHttpException<Property = string> {
   status: 400;
   type: 'ValidationError';

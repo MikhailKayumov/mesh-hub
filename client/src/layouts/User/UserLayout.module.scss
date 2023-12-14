@@ -1,0 +1,15 @@
+.root {
+  position: relative;
+  flex: 1;
+
+  .wrapper {
+    width: 100%;
+  }
+
+  .main {
+    flex: 1;
+    overflow: hidden;
+  }
+}
+
+

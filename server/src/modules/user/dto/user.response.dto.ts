@@ -1,5 +1,5 @@
-import { SessionResponseDto } from '@modules/auth/dto/session.response.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SessionResponseDto } from '@/modules/auth/dto/session.response.dto';
 
 export class UserResponseDto {
   @ApiProperty()
@@ -17,8 +17,8 @@ export class UserResponseDto {
   @ApiPropertyOptional()
   public lastName?: string;
 
-  @ApiPropertyOptional()
-  public nickname?: string;
+  @ApiProperty()
+  public isConfirmed: boolean;
 
   @ApiPropertyOptional({ type: () => SessionResponseDto, isArray: true })
   public sessions?: SessionResponseDto[];

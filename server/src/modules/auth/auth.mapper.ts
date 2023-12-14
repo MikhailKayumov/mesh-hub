@@ -1,12 +1,15 @@
-import { SessionEntity } from '@entities/session/session.entity';
-import { SessionResponseDto } from '@modules/auth/dto/session.response.dto';
-import { UserMapper } from '@modules/user/user.mapper';
+import { SessionEntity } from '@/database/entities/session/session.entity';
+import { SessionResponseDto } from '@/modules/auth/dto/session.response.dto';
 
 export class AuthMapper {
-  public static sessionEntityToResponse(sessionEntity: SessionEntity): SessionResponseDto {
+  public static toSessionResponse(sessionEntity: SessionEntity): SessionResponseDto {
     return {
       id: sessionEntity.id,
-      user: sessionEntity.user ? UserMapper.userEntityToUserResponse(sessionEntity.user) : undefined,
+      ip: sessionEntity.ip,
+      createdAt: sessionEntity.createdAt,
+      updatedAt: sessionEntity.updatedAt,
+      expireAt: sessionEntity.expiredAt,
+      userAgent: sessionEntity.userAgent,
     };
   }
 }

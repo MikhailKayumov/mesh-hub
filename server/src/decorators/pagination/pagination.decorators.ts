@@ -1,10 +1,10 @@
-import { PaginationResponseDto } from '@decorators/pagination/pagination.response.dto';
 import { createParamDecorator, ExecutionContext, Type, applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiQuery, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { PaginationResponseDto } from '@/decorators/pagination/pagination.response.dto';
 import { PaginationDto, PaginationDtoSortItem, PaginationSortOrder } from './pagination.dto';
 
 export const PaginatedRequest = createParamDecorator(
-  async (data: unknown, ctx: ExecutionContext): Promise<PaginationDto> => {
+  async (_: unknown, ctx: ExecutionContext): Promise<PaginationDto> => {
     const request = ctx.switchToHttp().getRequest();
 
     const skip = parseInt(request.query.skip);
@@ -31,7 +31,7 @@ export const PaginatedRequest = createParamDecorator(
     (target: any, key: string) => {
       ApiQuery({
         name: 'skip',
-        schema: { type: 'number' },
+        schema: { type: 'number', minimum: 0 },
         required: false,
       })(target, key, Object.getOwnPropertyDescriptor(target, key) as any);
       ApiQuery({
@@ -71,41 +71,6 @@ export const PaginatedResponse = <T extends Type>(Model: T, status: HttpStatus =
             required: ['data'],
           },
         ],
-        // properties: {
-        //   data: {
-        //     type: 'array',
-        //     readOnly: true,
-        //     nullable: false,
-        //     items: { $ref: getSchemaPath(Model) },
-        //   },
-        //   skip: {
-        //     type: 'number',
-        //     readOnly: true,
-        //     nullable: false,
-        //   },
-        //   size: {
-        //     type: 'number',
-        //     readOnly: true,
-        //     nullable: false,
-        //   },
-        //   sort: {
-        //     type: 'array',
-        //     readOnly: true,
-        //     nullable: false,
-        //     items: { $ref: getSchemaPath(PaginationDtoSortItem) },
-        //   },
-        //   totalCount: {
-        //     type: 'number',
-        //     readOnly: true,
-        //     nullable: false,
-        //   },
-        //   hasMore: {
-        //     type: 'boolean',
-        //     readOnly: true,
-        //     nullable: false,
-        //   },
-        // },
-        // required: ['data', 'skip', 'size', 'sort', 'totalCount', 'hasMore'],
       },
     }),
   );

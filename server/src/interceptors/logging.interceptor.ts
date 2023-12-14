@@ -13,7 +13,7 @@ import { tap } from 'rxjs/operators';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger('Logging Interceptor');
+  private readonly logger = new Logger('LoggingInterceptor');
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (context.getType() === 'http') {
@@ -30,13 +30,11 @@ export class LoggingInterceptor implements NestInterceptor {
 
     this.logger.log(`${method} ${url} ${userAgent} ${ip}: ${context.getClass().name}::${context.getHandler().name}`);
 
-    const now = performance.now();
-
     return next.handle().pipe(
       tap({
         next: () => {
           const response = context.switchToHttp().getResponse();
-          this.logger.log(`${method} ${url} ${response?.statusCode ?? ''} ${Math.ceil(performance.now() - now)} ms`);
+          this.logger.log(`${method} ${url} ${response?.statusCode ?? ''}`);
         },
         error: (err: unknown) => {
           let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -47,7 +45,7 @@ export class LoggingInterceptor implements NestInterceptor {
             message = err.message;
           }
 
-          this.logger.error(`${method} ${url} ${statusCode} ${message} ${Math.ceil(performance.now() - now)} ms`);
+          this.logger.error(`${method} ${url} ${statusCode} ${message}`);
         },
       }),
     );

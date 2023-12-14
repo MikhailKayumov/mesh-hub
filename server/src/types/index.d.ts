@@ -1,10 +1,11 @@
-import { SessionEntity } from '@entities/session/session.entity';
+import { SessionEntity } from '@/database/entities/session/session.entity';
+import { JwtPayload } from '@/modules/auth/types';
 
 declare global {
   namespace Express {
     interface Request {
-      accessToken?: string;
-      session?: SessionEntity;
+      session: SessionEntity | null;
+      jwtPayload: JwtPayload;
     }
   }
 }

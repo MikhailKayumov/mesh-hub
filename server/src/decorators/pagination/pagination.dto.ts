@@ -16,7 +16,7 @@ export class PaginationDtoSortItem {
   @IsEnum(PaginationSortOrder)
   public by: PaginationSortOrder;
 
-  constructor(field: string, by: PaginationSortOrder) {
+  public constructor(field: string, by: PaginationSortOrder) {
     this.field = field;
     this.by = by;
   }

@@ -1,6 +1,6 @@
 import zod from 'zod';
 import { CgSoftRequest, CgSoftResponse, UserCurrentResponseDto, UserCurrentUpdateRequestDto } from '@/api/dto.ts';
-import { ValidationErrorMessages } from '@/constants';
+import { AppRegexp, ValidationErrorMessages } from '@/constants';
 import { ProfileFormData } from '@/pages/Profile/model.ts';
 
 export const initialValues: ProfileFormData = {
@@ -17,6 +17,11 @@ export const validationSchema = zod.object({
   firstName: zod.string().trim().min(1, ValidationErrorMessages.RequiredField),
   middleName: zod.string().trim(),
   lastName: zod.string().trim(),
+  phone: zod
+    .string()
+    .refine((value) => !value || AppRegexp.RussianPhone.test(`+7${value}`), 'Некорректный формат номера телефона'),
+  aboutYourself: zod.string().trim(),
+  favoriteSoft: zod.string().array().optional(),
 });
 
 export const transformValuesFromFormToRequest = (

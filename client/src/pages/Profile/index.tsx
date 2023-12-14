@@ -50,17 +50,13 @@ export default function ProfilePage() {
               {...form.getInputProps('favoriteSoft')}
               label="Программное обеспечение"
               placeholder="Выберите или добавьте любимый софт"
-              maxDropdownHeight={102}
+              maxDropdownHeight={170}
               clearable
               clearButtonProps={{ 'aria-label': 'Clear input' }}
               data={software}
             />
             <Group mt={24} gap={16}>
-              <Button
-                type="submit" //
-                loading={isSubmitting}
-                // disabled={!form.isDirty()}
-              >
+              <Button type="submit" loading={isSubmitting} disabled={!form.isDirty()}>
                 Сохранить
               </Button>
               <ChangePasswordModal />

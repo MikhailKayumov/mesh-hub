@@ -30,7 +30,7 @@ export default function useLoginForm() {
         submitStart();
 
         const session = await apiLogin(data).unwrap();
-        dispatch(userActions.setSession(session));
+        dispatch(userActions.setSession(session.id));
         navigate(RouterPaths.Base, { replace: true });
       } catch (e) {
         processFormSubmitError<LoginRequestDto>(form, e);

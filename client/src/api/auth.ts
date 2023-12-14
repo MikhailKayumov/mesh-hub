@@ -1,5 +1,5 @@
 import Api from './base';
-import { LoginRequestDto, SessionResponseDto, SignupRequestDto } from './dto';
+import { LoginRequestDto, PaginationDto, PaginationResponseDto, SessionResponseDto, SignupRequestDto } from './dto';
 import ApiTags from './tags';
 import ApiUrls from './urls';
 
@@ -28,10 +28,39 @@ const AuthApi = Api.injectEndpoints({
         url: ApiUrls.Logout,
       }),
     }),
+    currentUserSessions: build.query<PaginationResponseDto<SessionResponseDto>, PaginationDto<never>>({
+      providesTags: [ApiTags.CurrentUser],
+      query: (params) => ({
+        method: 'GET',
+        url: ApiUrls.CurrentUserSessions,
+        params,
+      }),
+    }),
+    closeCurrentUserSession: build.mutation<void, string>({
+      invalidatesTags: [ApiTags.CurrentUser],
+      query: (id) => ({
+        method: 'DELETE',
+        url: `${ApiUrls.CloseCurrentUserSessions}/${id}`,
+      }),
+    }),
+    closeCurrentUserSessions: build.mutation<void, void>({
+      invalidatesTags: [ApiTags.CurrentUser],
+      query: () => ({
+        method: 'DELETE',
+        url: ApiUrls.CloseCurrentUserSessions,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useRegisterMutation, useLoginMutation, useLogoutMutation } = AuthApi;
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useLogoutMutation,
+  useCurrentUserSessionsQuery,
+  useCloseCurrentUserSessionMutation,
+  useCloseCurrentUserSessionsMutation,
+} = AuthApi;
 
 export default AuthApi;

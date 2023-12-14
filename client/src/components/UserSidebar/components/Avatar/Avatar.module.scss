@@ -1,0 +1,31 @@
+.root {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  overflow: hidden;
+
+  .controls {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    padding-bottom: rem(24px);
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+
+    &-overlay {
+      --overlay-z-index: 0 !important;
+    }
+
+    &-button {
+      position: relative;
+      z-index: var(--overlay-z-index);
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

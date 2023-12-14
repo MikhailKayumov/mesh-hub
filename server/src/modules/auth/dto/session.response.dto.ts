@@ -7,6 +7,15 @@ export class SessionResponseDto {
   @ApiProperty()
   public ip: string;
 
+  @ApiProperty()
+  public createdAt: Date;
+
+  @ApiPropertyOptional()
+  public updatedAt?: Date;
+
+  @ApiProperty()
+  public expireAt: Date;
+
   @ApiPropertyOptional()
   public userAgent?: string;
 }

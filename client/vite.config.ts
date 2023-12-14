@@ -36,6 +36,13 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/socket.io/, '/socket.io'),
         },
+        '/files': {
+          ws: false,
+          secure: false,
+          changeOrigin: true,
+          target: env.API_PROXY_URL,
+          rewrite: (path) => path.replace(/^\/files/, '/'),
+        },
       },
     },
     css: {

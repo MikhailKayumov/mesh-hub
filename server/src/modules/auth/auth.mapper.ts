@@ -6,6 +6,9 @@ export class AuthMapper {
     return {
       id: sessionEntity.id,
       ip: sessionEntity.ip,
+      createdAt: sessionEntity.createdAt,
+      updatedAt: sessionEntity.updatedAt,
+      expireAt: sessionEntity.expiredAt,
       userAgent: sessionEntity.userAgent,
     };
   }

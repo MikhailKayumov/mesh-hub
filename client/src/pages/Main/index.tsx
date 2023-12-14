@@ -1,11 +1,33 @@
-import { Blockquote, Button, Code, Container, Group, Mark, Paper, Text, Title } from '@mantine/core';
+import { Blockquote, Button, Code, ColorSwatch, Container, Group, Mark, Paper, Text, Title } from '@mantine/core';
+import { useDispatch } from 'react-redux';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
+import { userActions } from '@/store/user/reducer.ts';
+import { themes } from '@/theme/themes.ts';
 
 export default function MainPage() {
   useDocumentTitle('Главная');
 
+  const dispatch = useDispatch();
+  // console.log(themes);
+
   return (
     <Container>
+      <Paper withBorder p="md" mb="md">
+        <Group>
+          {Object.entries(themes).map(([name, theme]) => {
+            const color = theme.colors[theme.primaryColor][theme.primaryShade];
+            return (
+              <ColorSwatch
+                onClick={() => {
+                  dispatch(userActions.setTheme(name as any));
+                }}
+                key={name}
+                color={color}
+              />
+            );
+          })}
+        </Group>
+      </Paper>
       <Paper withBorder p="md" mb="md">
         <Group>
           <Button

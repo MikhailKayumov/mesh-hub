@@ -267,6 +267,109 @@
           "auth"
         ]
       }
+    },
+    "/api/auth/current-user-sessions": {
+      "get": {
+        "operationId": "AuthController_getCurrentUserSessions",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Sorting fields in format: [+-][fieldName]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "readOnly": true,
+                          "nullable": false,
+                          "items": {
+                            "$ref": "#/components/schemas/SessionResponseDto"
+                          }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      },
+      "delete": {
+        "operationId": "AuthController_closeCurrentUserSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/current-user-sessions/{id}": {
+      "delete": {
+        "operationId": "AuthController_closeCurrentUserSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
     }
   },
   "info": {
@@ -500,13 +603,27 @@
           "ip": {
             "type": "string"
           },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expireAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "userAgent": {
             "type": "string"
           }
         },
         "required": [
           "id",
-          "ip"
+          "ip",
+          "createdAt",
+          "expireAt"
         ]
       },
       "LoginRequestDto": {
@@ -523,6 +640,65 @@
         "required": [
           "email",
           "password"
+        ]
+      },
+      "PaginationDtoSortItem": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "by": {
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "by"
+        ]
+      },
+      "PaginationResponseDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "skip": {
+            "type": "number",
+            "minimum": 0
+          },
+          "size": {
+            "type": "number",
+            "minimum": 0
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaginationDtoSortItem"
+            }
+          },
+          "totalCount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data",
+          "skip",
+          "size",
+          "sort",
+          "totalCount",
+          "hasMore"
         ]
       }
     }

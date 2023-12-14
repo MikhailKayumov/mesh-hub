@@ -12,6 +12,7 @@ const cgSoftware = [
   'form•Z',
   'GIMP',
   'Houdini',
+  'Illustrator',
   'Inventor',
   'IronCAD',
   'Lightwave 3D',
@@ -31,7 +32,7 @@ const cgSoftware = [
   'Strata',
   'Substance',
   'Unity',
-  'Unreal',
+  'Unreal Engine',
   'Vray',
   'ZBrush',
 ];

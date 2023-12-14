@@ -7,12 +7,7 @@
 
   position: sticky;
   top: calc(var(--app-shell-header-offset) + var(--app-shell-padding));
-  height: calc(100dvh - (var(--app-shell-header-offset) + var(--app-shell-padding) * 2));
-
-  .avatar {
-    width: calc(rem(180px) * var(--mantine-scale));
-    aspect-ratio: 1;
-  }
+  //height: calc(100dvh - (var(--app-shell-header-offset) + var(--app-shell-padding) * 2));
 
   .navlinks {
     flex: 1;

@@ -4,6 +4,8 @@ const ApiUrls = {
   Login: 'auth/login',
   Logout: 'auth/logout',
   Refresh: 'auth/refresh',
+  CurrentUserSessions: 'auth/current-user-sessions',
+  CloseCurrentUserSessions: 'auth/current-user-sessions',
   // user
   CurrentUser: 'user/current',
   ResetPassword: 'user/reset-password',

@@ -1,10 +1,20 @@
 import { Container, createTheme, DEFAULT_THEME, mergeMantineTheme } from '@mantine/core';
 import { clsx } from 'clsx';
-import { deepblueColors, redColors } from '@/theme/colors.ts';
+import {
+  bluegrayColors,
+  darkpinkColors,
+  deepblueColors,
+  deeporangeColors,
+  greenColors,
+  magentaColors,
+  redColors,
+  skyblueColors,
+} from '@/theme/colors.ts';
+import { ThemeData, ThemeName } from '@/theme/types.ts';
 
 const appScale = Number(localStorage.getItem('mantine-scale') ?? 1);
 
-const theme = mergeMantineTheme(
+export const baseTheme = mergeMantineTheme(
   DEFAULT_THEME,
   createTheme({
     breakpoints: {
@@ -15,12 +25,7 @@ const theme = mergeMantineTheme(
       xl: '88em', // 1408px
     },
     scale: !isNaN(appScale) ? appScale : 1,
-    primaryColor: 'primary',
-    primaryShade: 7,
-    colors: {
-      primary: deepblueColors,
-      red: redColors,
-    },
+    colors: { red: redColors },
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji`,
     fontFamilyMonospace: `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace`,
     headings: {
@@ -40,4 +45,40 @@ const theme = mergeMantineTheme(
   }),
 );
 
-export default theme;
+export const themes: Record<ThemeName, ThemeData> = {
+  bluegray: {
+    primaryShade: 7,
+    primaryColor: 'primary',
+    colors: { primary: bluegrayColors },
+  },
+  skyblue: {
+    primaryColor: 'primary',
+    primaryShade: 6,
+    colors: { primary: skyblueColors },
+  },
+  deepblue: {
+    primaryShade: 7,
+    primaryColor: 'primary',
+    colors: { primary: deepblueColors },
+  },
+  darkpink: {
+    primaryShade: 7,
+    primaryColor: 'primary',
+    colors: { primary: darkpinkColors },
+  },
+  magenta: {
+    primaryColor: 'primary',
+    primaryShade: 6,
+    colors: { primary: magentaColors },
+  },
+  deeporange: {
+    primaryColor: 'primary',
+    primaryShade: 6,
+    colors: { primary: deeporangeColors },
+  },
+  green: {
+    primaryColor: 'primary',
+    primaryShade: 6,
+    colors: { primary: greenColors },
+  },
+};

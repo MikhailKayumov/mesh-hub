@@ -8,6 +8,7 @@ import { CookiesInterceptor } from '@/interceptors/cookies.interceptor';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { ConfigModule } from '@/modules/common/config/config.module';
 import { ConfigService } from '@/modules/common/config/config.service';
+import { FileStorageModule } from '@/modules/common/files/file-storage.module';
 import { LoggerModule } from '@/modules/common/logger/logger.module';
 import { NotificationsModule } from '@/modules/common/notifications/notifications.module';
 import { ResourcesModule } from '@/modules/common/resources/resources.module';
@@ -18,6 +19,7 @@ import { UserModule } from '@/modules/user/user.module';
     ConfigModule,
     LoggerModule,
     NotificationsModule,
+    FileStorageModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.typeOrmOptions,

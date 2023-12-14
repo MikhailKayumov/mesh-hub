@@ -1,10 +1,15 @@
 import { Modal, Button, Group, PasswordInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { useEffect } from 'react';
 import useChangePasswordForm from './useChangePasswordForm.ts';
 
 export default function ChangePasswordModal() {
   const [opened, { open, close }] = useDisclosure(false);
   const { form, isSubmitting, onSubmit } = useChangePasswordForm();
+
+  useEffect(() => {
+    opened && form.reset();
+  }, [opened]);
 
   return (
     <>

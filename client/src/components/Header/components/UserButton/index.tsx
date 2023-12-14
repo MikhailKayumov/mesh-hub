@@ -1,27 +1,30 @@
 import { Avatar, Group, UnstyledButton, Text, rem, Stack, Skeleton } from '@mantine/core';
 import { IconChevronDown } from '@tabler/icons-react';
 import { clsx } from 'clsx';
-import { ComponentPropsWithoutRef, forwardRef } from 'react';
+import { ComponentPropsWithoutRef, forwardRef, useState } from 'react';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
 import useCurrentUser from '@/hooks/useCurrentUser.ts';
-import userService from '@/services/user';
+import { getAvatarInitials, getAvatarSrc, getUserFullName } from '@/utils/user.ts';
 import classes from './UserButton.module.scss';
 
 const UserButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<'button'>>((props, ref) => {
+  const [isAvatarLoading, setIsAvatarLoading] = useState(true);
   const { isUserLoading, user } = useCurrentUser();
   const { isLight } = useCurrentColorScheme();
 
   return (
     <UnstyledButton ref={ref} {...props} className={classes.root}>
       <Group gap={rem(10)}>
-        <Skeleton circle visible={isUserLoading} w={38} h={38}>
+        <Skeleton circle visible={isUserLoading || isAvatarLoading} w={38} h={38}>
           <Avatar
-            // src={'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png'}
+            src={getAvatarSrc(user)}
             radius="xl"
             size="md"
             className={classes.avatar}
+            onLoad={() => setIsAvatarLoading(false)}
+            onError={() => setIsAvatarLoading(false)}
           >
-            {user ? userService.getAvatarInitials(user) : undefined}
+            {user ? getAvatarInitials(user) : undefined}
           </Avatar>
         </Skeleton>
         <Stack gap={0}>
@@ -29,7 +32,7 @@ const UserButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<'butto
             <Skeleton h={16} w={140} />
           ) : (
             <Text size="sm" c={isLight ? 'black' : 'white'} fw={600}>
-              {user ? userService.getUserFullname(user) : ''}
+              {user ? getUserFullName(user) : ''}
             </Text>
           )}
           {isUserLoading ? (

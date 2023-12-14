@@ -7,7 +7,7 @@ export default function UserLayout({ children }: PropsWithChildren) {
   return (
     <Container className={classes.root}>
       {/*todo: breadcrumbs*/}
-      <Flex align="start" className={classes.main} gap="xl">
+      <Flex align="start" className={classes.wrapper} gap="xl">
         <UserSidebar />
         <Box className={classes.main}>{children}</Box>
       </Flex>

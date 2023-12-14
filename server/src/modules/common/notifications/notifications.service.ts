@@ -1,11 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { addSeconds, subHours } from 'date-fns';
-import { IsNull, MoreThanOrEqual } from 'typeorm';
+import { Injectable } from '@nestjs/common';
 import { EmailGatewayService } from './gateways/email-gateway/email-gateway.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly emailGatewayService: EmailGatewayService) {}
+  public constructor(private readonly emailGatewayService: EmailGatewayService) {}
 
   public async sendEmail(to: string | string[], subject: string, text: string): Promise<any> {
     if ((Array.isArray(to) && !to.length) || !to) {

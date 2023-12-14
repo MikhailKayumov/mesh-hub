@@ -1,9 +1,9 @@
+import { join } from 'path';
 import { ValidationPipe, ValidationError, HttpStatus } from '@nestjs/common';
 import { NestApplication, NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { AppHttpException } from '@/exceptions/app-http.exception';
-import { CookiesInterceptor } from '@/interceptors/cookies.interceptor';
 import { LoggingInterceptor } from '@/interceptors/logging.interceptor';
 import { ConfigService } from '@/modules/common/config/config.service';
 import { LoggerService } from '@/modules/common/logger/logger.service';
@@ -48,6 +48,7 @@ export default class AppBootstrap {
         enableDebugMessages: !this.configService.isProduction,
       }),
     );
+    this.application.useStaticAssets(join(process.cwd(), 'files'));
     this.application.useGlobalInterceptors(new LoggingInterceptor());
     this.application.useLogger(this.application.get(LoggerService));
 

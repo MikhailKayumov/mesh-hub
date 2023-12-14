@@ -60,7 +60,7 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Settings,
-            lazy: async () => ({ Component: (await import('@/pages/Profile')).default }),
+            lazy: async () => ({ Component: (await import('@/pages/Settings')).default }),
           },
         ],
       },

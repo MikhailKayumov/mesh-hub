@@ -32,7 +32,7 @@ export default function useRegisterForm() {
 
         const session = await register(data).unwrap();
 
-        dispatch(userActions.setSession(session));
+        dispatch(userActions.setSession(session.id));
         navigate(RouterPaths.Base, { replace: true });
 
         notifications.show({ message: 'Регистрация успешно завершена', color: 'green', autoClose: 3000 });

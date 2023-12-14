@@ -1,5 +1,5 @@
 import { SerializedError } from '@reduxjs/toolkit';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query/react';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { BaseQueryFn, createApi, FetchArgs, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Mutex } from 'async-mutex';
 import ApiUrls from '@/api/urls.ts';
@@ -36,7 +36,7 @@ const query: BaseQueryFn<string | FetchArgs, unknown, FetchQueryError> = async (
         try {
           const refreshResult = await baseQuery({ url: ApiUrls.Refresh, method: 'POST' }, api, extraOptions);
           if (refreshResult.data) {
-            api.dispatch(userActions.setSession(refreshResult.data as any));
+            api.dispatch(userActions.setSession((refreshResult.data as any).id));
             result = await baseQuery(args, api, extraOptions);
           } else {
             api.dispatch(userActions.setSession(null));

@@ -10,7 +10,7 @@ import { UserRoleHelper } from '@/utils/user-role.helper';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(
+  public constructor(
     private readonly reflector: Reflector,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
@@ -21,6 +21,8 @@ export class JwtAuthGuard implements CanActivate {
 
     const [session, isValid] = await this.authService.validateSession(
       request?.cookies?.[this.configService.jwt.cookieName],
+      request.ip,
+      request.headers['user-agent'],
     );
     request.session = session;
 

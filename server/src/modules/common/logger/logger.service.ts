@@ -12,7 +12,7 @@ import getConsoleRowFormat from '@/modules/common/logger/utils';
 export class LoggerService implements NestLoggerService {
   private logger: Logger;
 
-  constructor(private readonly configService: ConfigService) {
+  public constructor(private readonly configService: ConfigService) {
     this.logger = createLogger({
       level: configService.logging.level,
       transports: [

@@ -1,14 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import { SessionResponseDto } from '@/api/dto.ts';
+import { ThemeName } from '@/theme/types.ts';
 
 export interface UserState {
-  session: SessionResponseDto | null;
+  session: string | null;
+  theme: ThemeName;
 }
 
 const initialState: UserState = {
   session: null,
+  theme: 'deepblue',
 };
 
 export const userSlice = createSlice({
@@ -17,6 +19,9 @@ export const userSlice = createSlice({
   reducers: {
     setSession(state, { payload }: PayloadAction<UserState['session']>) {
       state.session = payload;
+    },
+    setTheme(state, { payload }: PayloadAction<UserState['theme']>) {
+      state.theme = payload;
     },
     reset: () => initialState,
   },

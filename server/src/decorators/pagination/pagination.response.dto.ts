@@ -36,7 +36,7 @@ export class PaginationResponseDto<T = unknown> {
   @IsBoolean()
   public hasMore: boolean;
 
-  constructor(data: T[], totalCount: number, size?: number, skip = 0, sort: PaginationDtoSortItem[] = []) {
+  public constructor(data: T[], totalCount: number, size?: number, skip = 0, sort: PaginationDtoSortItem[] = []) {
     this.data = data;
     this.skip = skip;
     this.size = size || data.length;

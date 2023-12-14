@@ -1,4 +1,4 @@
-import { rem } from '@mantine/core';
+import { rem, useSafeMantineTheme } from '@mantine/core';
 import { ComponentPropsWithoutRef } from 'react';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
 
@@ -11,19 +11,20 @@ export default function Logo({
   ...props
 }: LogoProps) {
   const { isLight } = useCurrentColorScheme();
+  const { primaryColor, colors } = useSafeMantineTheme();
+  const [topColor, rightColor, frontColor] = [
+    colors[primaryColor][4] ?? '#5362e1',
+    colors[primaryColor][6] ?? '#2d3fdc',
+    colors[primaryColor][7] ?? '#1f32c4',
+  ];
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 1800 329"
       fill={isLight ? '#000000' : '#ffffff'}
-      // width={typeof width === 'number' ? width * scale : width}
-      // height={typeof height === 'number' ? height * scale : height}
       preserveAspectRatio={preserveAspectRatio}
-      style={{
-        width: rem(width),
-        height: rem(height),
-      }}
+      style={{ width: rem(width), height: rem(height) }}
       {...props}
     >
       <g>
@@ -38,63 +39,63 @@ export default function Logo({
       <g id="cubes">
         <path
           d="M165.64,89.93l75-43.28a1.81,1.81,0,0,0,0-3.13L165.64.24a1.83,1.83,0,0,0-1.81,0l-75,43.28a1.8,1.8,0,0,0,0,3.13l75,43.28A1.78,1.78,0,0,0,165.64,89.93Z"
-          fill="#5362e1"
+          fill={topColor}
         />
         <path
           d="M167.24,182.41V95.84a1.82,1.82,0,0,1,.9-1.56l75-43.29a1.8,1.8,0,0,1,2.7,1.57v86.56a1.81,1.81,0,0,1-.9,1.57L170,184A1.81,1.81,0,0,1,167.24,182.41Z"
-          fill="#2d3fdc"
+          fill={rightColor}
         />
         <path
           d="M83.62,139.12V52.56A1.81,1.81,0,0,1,86.33,51l75,43.29a1.8,1.8,0,0,1,.9,1.56v86.57a1.8,1.8,0,0,1-2.7,1.56l-75-43.28A1.81,1.81,0,0,1,83.62,139.12Z"
-          fill="#1f32c4"
+          fill={frontColor}
         />
         <path
           d="M332.88,89.93l75-43.28a1.81,1.81,0,0,0,0-3.13L332.88.24a1.83,1.83,0,0,0-1.81,0l-75,43.28a1.8,1.8,0,0,0,0,3.13l75,43.28A1.78,1.78,0,0,0,332.88,89.93Z"
-          fill="#5362e1"
+          fill={topColor}
         />
         <path
           d="M334.48,182.41V95.84a1.82,1.82,0,0,1,.9-1.56l75-43.29a1.81,1.81,0,0,1,2.71,1.57v86.56a1.82,1.82,0,0,1-.91,1.57l-75,43.28A1.81,1.81,0,0,1,334.48,182.41Z"
-          fill="#2d3fdc"
+          fill={rightColor}
         />
         <path
           d="M250.86,139.12V52.56A1.81,1.81,0,0,1,253.57,51l75,43.29a1.81,1.81,0,0,1,.91,1.56v86.57a1.81,1.81,0,0,1-2.71,1.56l-75-43.28A1.83,1.83,0,0,1,250.86,139.12Z"
-          fill="#1f32c4"
+          fill={frontColor}
         />
         <path
           d="M82,234.72l75-43.28a1.81,1.81,0,0,0,0-3.13L82,145a1.81,1.81,0,0,0-1.8,0l-75,43.28a1.8,1.8,0,0,0,0,3.13l75,43.28A1.81,1.81,0,0,0,82,234.72Z"
-          fill="#5362e1"
+          fill={topColor}
         />
         <path
           d="M83.62,327.19V240.63a1.81,1.81,0,0,1,.9-1.57l75-43.28a1.8,1.8,0,0,1,2.7,1.56v86.57a1.8,1.8,0,0,1-.9,1.56l-75,43.29A1.81,1.81,0,0,1,83.62,327.19Z"
-          fill="#2d3fdc"
+          fill={rightColor}
         />
         <path
           d="M0,283.91V197.34a1.81,1.81,0,0,1,2.71-1.56l75,43.28a1.81,1.81,0,0,1,.9,1.57v86.56a1.8,1.8,0,0,1-2.7,1.57L.9,285.47A1.8,1.8,0,0,1,0,283.91Z"
-          fill="#1f32c4"
+          fill={frontColor}
         />
         <path
           d="M249.26,234.72l75-43.28a1.81,1.81,0,0,0,0-3.13l-75-43.28a1.83,1.83,0,0,0-1.81,0l-75,43.28a1.8,1.8,0,0,0,0,3.13l75,43.28A1.83,1.83,0,0,0,249.26,234.72Z"
-          fill="#5362e1"
+          fill={topColor}
         />
         <path
           d="M250.86,327.19V240.63a1.83,1.83,0,0,1,.9-1.57l75-43.28a1.81,1.81,0,0,1,2.71,1.56v86.57a1.81,1.81,0,0,1-.91,1.56l-75,43.29A1.81,1.81,0,0,1,250.86,327.19Z"
-          fill="#2d3fdc"
+          fill={rightColor}
         />
         <path
           d="M167.24,283.91V197.34a1.81,1.81,0,0,1,2.71-1.56l75,43.28a1.81,1.81,0,0,1,.9,1.57v86.56a1.8,1.8,0,0,1-2.7,1.57l-75-43.29A1.82,1.82,0,0,1,167.24,283.91Z"
-          fill="#1f32c4"
+          fill={frontColor}
         />
         <path
           d="M416.5,234.72l75-43.28a1.81,1.81,0,0,0,0-3.13L416.5,145a1.83,1.83,0,0,0-1.81,0l-75,43.28a1.81,1.81,0,0,0,0,3.13l75,43.28A1.83,1.83,0,0,0,416.5,234.72Z"
-          fill="#5362e1"
+          fill={topColor}
         />
         <path
           d="M418.1,327.19V240.63a1.82,1.82,0,0,1,.91-1.57l75-43.28a1.81,1.81,0,0,1,2.71,1.56v86.57a1.81,1.81,0,0,1-.91,1.56l-75,43.29A1.81,1.81,0,0,1,418.1,327.19Z"
-          fill="#2d3fdc"
+          fill={rightColor}
         />
         <path
           d="M334.48,283.91V197.34a1.81,1.81,0,0,1,2.71-1.56l75,43.28a1.82,1.82,0,0,1,.91,1.57v86.56a1.81,1.81,0,0,1-2.71,1.57l-75-43.29A1.82,1.82,0,0,1,334.48,283.91Z"
-          fill="#1f32c4"
+          fill={frontColor}
         />
       </g>
     </svg>

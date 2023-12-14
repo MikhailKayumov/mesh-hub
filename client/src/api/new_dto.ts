@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 /* tslint:disable */
 /*
  * ---------------------------------------------------------------
@@ -73,6 +73,12 @@ export interface SignupRequestDto {
 export interface SessionResponseDto {
   id: string;
   ip: string;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt?: string;
+  /** @format date-time */
+  expireAt: string;
   userAgent?: string;
 }
 
@@ -80,4 +86,21 @@ export interface LoginRequestDto {
   email: string;
   /** @minLength 6 */
   password: string;
+}
+
+export interface PaginationDtoSortItem {
+  field: string;
+  by: "ASC" | "DESC";
+}
+
+export interface PaginationResponseDto {
+  data: object[];
+  /** @min 0 */
+  skip: number;
+  /** @min 0 */
+  size: number;
+  sort: PaginationDtoSortItem[];
+  /** @min 0 */
+  totalCount: number;
+  hasMore: boolean;
 }

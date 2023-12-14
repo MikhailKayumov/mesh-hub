@@ -3,6 +3,13 @@ export interface PaginationDtoSortItem {
   by: 'ASC' | 'DESC';
 }
 
+export interface PaginationDto<T = any> {
+  skip?: number;
+  size?: number;
+  sort?: string[];
+  body?: T;
+}
+
 export interface PaginationResponseDto<T = any> {
   data: T[];
   skip: number;
@@ -76,6 +83,9 @@ export interface SignupRequestDto {
 export interface SessionResponseDto {
   id: string;
   ip: string;
+  createdAt: string;
+  updatedAt?: string;
+  expireAt: string;
   userAgent?: string;
 }
 

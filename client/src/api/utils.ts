@@ -1,5 +1,6 @@
-import { AnyAction, isRejectedWithValue, Middleware } from '@reduxjs/toolkit';
+import { UnknownAction, isRejectedWithValue, Middleware } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { isNumber } from '@/utils/type-guards.ts';
 import { HttpException, ValidationHttpException } from './dto';
 
 export const isFetchQueryError = (error: unknown): error is FetchBaseQueryError => {
@@ -7,7 +8,7 @@ export const isFetchQueryError = (error: unknown): error is FetchBaseQueryError 
 };
 
 export const isHttpException = (error: unknown): error is HttpException => {
-  return isFetchQueryError(error) && typeof error.status === 'number';
+  return isFetchQueryError(error) && isNumber(error.status);
 };
 
 export const isUnauthorizedHttpException = (error: unknown): error is HttpException => {
@@ -40,8 +41,8 @@ export const rtkErrorLogger: Middleware = () => (next) => (action) => {
       '[RTK Query Error] ',
       JSON.stringify(
         {
-          endpointName: action?.meta?.arg?.endpointName ?? '',
-          url: action?.meta?.baseQueryMeta?.request?.url ?? '',
+          endpointName: (action?.meta?.arg as any)?.endpointName ?? '',
+          url: (action?.meta as any)?.baseQueryMeta?.request?.url ?? '',
           payload: action?.payload,
         },
         null,
@@ -50,5 +51,5 @@ export const rtkErrorLogger: Middleware = () => (next) => (action) => {
     );
   }
 
-  return next(action as AnyAction);
+  return next(action as UnknownAction);
 };

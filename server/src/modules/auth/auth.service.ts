@@ -5,6 +5,12 @@ import { Request } from 'express';
 import { LessThan, MoreThanOrEqual } from 'typeorm';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
+import {
+  PaginationDto,
+  PaginationDtoSortItem,
+  PaginationResponseDto,
+  PaginationSortOrder,
+} from '@/decorators/pagination';
 import { SignupRequestDto } from '@/modules/auth/dto/signup.request.dto';
 import { JwtPayload } from '@/modules/auth/types';
 import { ConfigService } from '@/modules/common/config/config.service';
@@ -26,6 +32,36 @@ export class AuthService {
     private readonly authRepository: AuthRepository,
     private readonly userRepository: UserRepository,
   ) {}
+
+  public async getCurrentUserSessions(
+    user: UserEntity,
+    { size = 10, skip = 0, sort }: PaginationDto,
+  ): Promise<PaginationResponseDto<SessionResponseDto>> {
+    const { field = 'updatedAt', by = 'DESC' } = sort?.[0] ?? {};
+
+    const [sessions, count] = await this.authRepository.findAndCount({
+      where: { user: { id: user.id } },
+      skip,
+      take: size,
+      order: { [field]: by },
+    });
+
+    return PaginationResponseDto.build(
+      sessions.map(AuthMapper.toSessionResponse),
+      count,
+      size,
+      skip,
+      sort?.length ? sort : [await PaginationDtoSortItem.build('updatedAt', PaginationSortOrder.DESC)],
+    );
+  }
+
+  public async closeCurrentUserSession(user: UserEntity, sessionId: string): Promise<void> {
+    await this.authRepository.delete({ id: sessionId, user: { id: user.id } });
+  }
+
+  public async closeCurrentUserSessions(user: UserEntity): Promise<void> {
+    await this.authRepository.delete({ user: { id: user.id } });
+  }
 
   public async signup({ confirmPassword, ...dto }: SignupRequestDto, request: Request): Promise<SessionResponseDto> {
     if (dto.password !== confirmPassword) {
@@ -73,7 +109,11 @@ export class AuthService {
     }
   }
 
-  public async validateSession(token: string | null): Promise<[SessionEntity | null, boolean]> {
+  public async validateSession(
+    token: string | null,
+    ip: string,
+    userAgent: string | undefined,
+  ): Promise<[SessionEntity | null, boolean]> {
     const verifiedToken = await this.verifyAccessToken(token ?? '');
 
     if (!verifiedToken) return [null, false];
@@ -82,6 +122,8 @@ export class AuthService {
     const session = await this.authRepository.findOne({
       relations: { user: { roles: true } },
       where: {
+        ip,
+        userAgent,
         accessToken: token!,
         user: { id: verifiedToken.userId, email: verifiedToken.userEmail },
         expiredAt: MoreThanOrEqual(new Date()),
@@ -101,6 +143,7 @@ export class AuthService {
           id: user.id,
         },
         ip: request.ip,
+        userAgent: request.headers['user-agent'],
         expiredAt: MoreThanOrEqual(new Date()),
       },
     });
@@ -140,7 +183,7 @@ export class AuthService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_4_HOURS)
   private async clearSessions(): Promise<void> {
     const { affected } = await this.authRepository.delete({
       expiredAt: LessThan(new Date()),

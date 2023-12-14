@@ -53,9 +53,28 @@
   }
 }
 
+.main-page-header {
+  transition-property: transform;
+}
+
 .main-page-content {
   display: flex;
   flex-direction: column;
 
   --app-shell-padding: var(--mantine-spacing-xl);
+  padding: calc(
+    var(--app-shell-header-offset, 0px) + var(--app-shell-padding))
+    var(--_main-padding-right, calc(var(--app-shell-aside-offset, 0px) + var(--app-shell-padding)))
+    calc(var(--app-shell-padding))
+    var(--_main-padding-left, calc(var(--app-shell-navbar-offset, 0px) + var(--app-shell-padding))
+  );
+}
+
+.main-page-footer {
+  transition-property: transform;
+  position: relative;
+}
+
+.mantine-datatable-row {
+  transition: background 0.14s ease-out;
 }

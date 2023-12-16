@@ -115,22 +115,12 @@ export class AuthService {
     userAgent: string | undefined,
   ): Promise<[SessionEntity | null, boolean]> {
     const verifiedToken = await this.verifyAccessToken(token ?? '');
-
     if (!verifiedToken) return [null, false];
 
-    const isValid = Math.floor(Date.now() * 0.001) < (verifiedToken?.exp ?? 0);
-    const session = await this.authRepository.findOne({
-      relations: { user: { roles: true } },
-      where: {
-        ip,
-        userAgent,
-        accessToken: token!,
-        user: { id: verifiedToken.userId, email: verifiedToken.userEmail },
-        expiredAt: MoreThanOrEqual(new Date()),
-      },
-    });
-
-    return [session, isValid];
+    return [
+      await this.authRepository.getSession(verifiedToken.userId, token!, ip, userAgent),
+      Math.floor(Date.now() * 0.001) < (verifiedToken?.exp ?? 0),
+    ];
   }
 
   private async createSession(request: Request, user: UserEntity): Promise<SessionEntity> {

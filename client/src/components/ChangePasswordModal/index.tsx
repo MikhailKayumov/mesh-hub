@@ -21,8 +21,8 @@ export default function ChangePasswordModal() {
         opened={opened}
         onClose={close}
         title="Изменение пароля"
-        size="sm"
-        padding="lg"
+        size="md"
+        padding={24}
         closeButtonProps={{ 'aria-label': 'Close modal' }}
       >
         <form

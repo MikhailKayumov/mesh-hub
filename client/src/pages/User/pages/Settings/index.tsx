@@ -9,7 +9,7 @@ export default function SettingsPage() {
   return (
     <>
       <Title mb="lg">Настройки</Title>
-      <Paper withBorder p="lg">
+      <Paper>
         <Title order={4} fw={400} mb="sm">
           Цветовая тема
         </Title>

@@ -5,12 +5,7 @@ import { Request } from 'express';
 import { LessThan, MoreThanOrEqual } from 'typeorm';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import {
-  PaginationDto,
-  PaginationDtoSortItem,
-  PaginationResponseDto,
-  PaginationSortOrder,
-} from '@/decorators/pagination';
+import { PaginationDto, PaginationResponseDto, PaginationSortOrder } from '@/decorators/pagination';
 import { SignupRequestDto } from '@/modules/auth/dto/signup.request.dto';
 import { JwtPayload } from '@/modules/auth/types';
 import { ConfigService } from '@/modules/common/config/config.service';
@@ -37,22 +32,16 @@ export class AuthService {
     user: UserEntity,
     { size = 10, skip = 0, sort }: PaginationDto,
   ): Promise<PaginationResponseDto<SessionResponseDto>> {
-    const { field = 'updatedAt', by = 'DESC' } = sort?.[0] ?? {};
+    const { field, by } = sort?.[0] ?? { updatedAt: PaginationSortOrder.DESC };
 
     const [sessions, count] = await this.authRepository.findAndCount({
       where: { user: { id: user.id } },
       skip,
       take: size,
-      order: { [field]: by },
+      order: { [field as string]: by },
     });
 
-    return PaginationResponseDto.build(
-      sessions.map(AuthMapper.toSessionResponse),
-      count,
-      size,
-      skip,
-      sort?.length ? sort : [await PaginationDtoSortItem.build('updatedAt', PaginationSortOrder.DESC)],
-    );
+    return PaginationResponseDto.build(sessions.map(AuthMapper.toSessionResponse), count, size, skip, sort);
   }
 
   public async closeCurrentUserSession(user: UserEntity, sessionId: string): Promise<void> {

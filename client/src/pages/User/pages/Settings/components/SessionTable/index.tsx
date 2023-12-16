@@ -32,7 +32,7 @@ export default function SessionTable() {
 
   return (
     <>
-      <Group justify="space-between" mt="lg" mb="sm">
+      <Group justify="space-between" mt={24} mb="sm">
         <Title order={4} fw={400}>
           Открытые сессии
         </Title>

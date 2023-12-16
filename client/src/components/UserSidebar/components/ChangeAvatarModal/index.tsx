@@ -58,7 +58,7 @@ export default function ChangeAvatarModal({ currentImage, opened, close }: Chang
       centered
       opened={opened}
       size="lg"
-      padding="lg"
+      padding={24}
       onClose={close}
       title="Изменение фотографии профиля"
       className={classes.root}
@@ -66,7 +66,7 @@ export default function ChangeAvatarModal({ currentImage, opened, close }: Chang
       closeOnEscape={!isLoading}
       closeButtonProps={{ disabled: isLoading }}
     >
-      <Group wrap="nowrap">
+      <Group wrap="nowrap" gap={24}>
         <Dropzone
           multiple={false}
           onDrop={onDrop}
@@ -113,7 +113,7 @@ export default function ChangeAvatarModal({ currentImage, opened, close }: Chang
           src={newImage ? URL.createObjectURL(newImage) : currentImage}
         />
       </Group>
-      <Group align="center" justify="space-between" wrap="nowrap" mt={20}>
+      <Group align="center" justify="space-between" wrap="nowrap" mt={24}>
         <Button fullWidth variant="outline" onClick={close} disabled={isLoading}>
           Отмена
         </Button>

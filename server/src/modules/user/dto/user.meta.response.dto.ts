@@ -8,6 +8,9 @@ export class UserMetaResponseDto {
   @ApiPropertyOptional()
   public aboutYourself?: string;
 
+  @ApiPropertyOptional()
+  public avatar?: string;
+
   @ApiPropertyOptional({ type: () => CgSoftResponse, isArray: true })
   public favoriteSoft?: CgSoftResponse[];
 }

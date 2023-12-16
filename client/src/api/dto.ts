@@ -32,6 +32,7 @@ export interface CgSoftResponse {
 
 export interface UserMetaResponseDto {
   id: string;
+  avatar?: string;
   aboutYourself?: string;
   favoriteSoft?: CgSoftResponse[];
 }

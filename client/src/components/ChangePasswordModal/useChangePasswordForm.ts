@@ -6,7 +6,7 @@ import { useChangePasswordMutation } from '@/api/user.ts';
 import processFormSubmitError from '@/utils/processFormSubmitError.ts';
 import { initialValues, transformValues, validationSchema } from './constants.ts';
 
-export default function useChangePasswordForm() {
+export default function useChangePasswordForm(onSuccess: () => void) {
   const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);
   const [changePassword] = useChangePasswordMutation();
 
@@ -24,6 +24,7 @@ export default function useChangePasswordForm() {
         submitStart();
         await changePassword(data).unwrap();
         notifications.show({ message: 'Пароль успешно изменен', color: 'green', autoClose: 3000 });
+        onSuccess();
       } catch (e) {
         processFormSubmitError<UserChangePasswordRequestDto>(form, e);
       } finally {

@@ -10,9 +10,18 @@ export default function useSearchParamsTableSorting<T = Record<string, unknown>>
   const [searchParams, setSearchParams] = useSearchParams();
 
   const setSorting = (status: DataTableSortStatus<T>) => {
-    setSortStatus(status);
+    if (
+      status.columnAccessor === sortStatus?.columnAccessor &&
+      status.direction === 'asc' &&
+      sortStatus.direction === 'desc'
+    ) {
+      setSortStatus(undefined);
+      searchParams.delete(paramName);
+    } else {
+      setSortStatus(status);
+      searchParams.set(paramName, `${status.direction === 'asc' ? '+' : '-'}${status.columnAccessor.toString()}`);
+    }
 
-    searchParams.set(paramName, `${status.direction === 'asc' ? '+' : '-'}${status.columnAccessor.toString()}`);
     setSearchParams(Object.fromEntries(searchParams.entries()));
   };
 

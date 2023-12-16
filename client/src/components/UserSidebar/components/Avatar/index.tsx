@@ -2,6 +2,8 @@ import { Avatar as MAvatar, Group, Skeleton, Overlay, ActionIcon } from '@mantin
 import { IconBucket, IconEdit, IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
 import { UserCurrentResponseDto } from '@/api/dto.ts';
+import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
+import ChangeAvatarModal from '@/components/UserSidebar/components/ChangeAvatarModal';
 import { getAvatarSrc } from '@/utils/user.ts';
 import classes from './Avatar.module.scss';
 
@@ -11,35 +13,33 @@ export interface AvatarProps {
 }
 
 export default function Avatar({ user, isLoading }: AvatarProps) {
+  const [opened, setOpened] = useState(false);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
-  const [hasAvatar, setHasAvatar] = useState(false);
-
-  const onLoad = (result: boolean) => {
-    setHasAvatar(result);
-    setIsAvatarLoading(false);
-  };
+  const [saveAvatar, { isLoading: isDeleting }] = useUpdateCurrentUserAvatarMutation();
 
   return (
-    <Skeleton circle visible={isLoading || isAvatarLoading} className={classes.root} mb={16}>
+    <Skeleton radius="sm" visible={isLoading || isAvatarLoading} className={classes.root} mb={16}>
       <MAvatar
         src={getAvatarSrc(user)}
         color="primary"
         w="100%"
         h="100%"
-        onLoad={() => onLoad(true)}
-        onError={() => onLoad(false)}
+        radius="sm"
+        onLoad={() => setIsAvatarLoading(false)}
+        onError={() => setIsAvatarLoading(false)}
       />
-      <Group className={classes.controls} gap={8} align="flex-end" justify="center">
+      <Group className={classes.controls} gap={12} align="flex-end" justify="center">
         <Overlay color="black" backgroundOpacity={0.42} blur={0} className={classes['controls-overlay']} />
-        <ActionIcon size="lg" radius="xl" variant="default">
-          {hasAvatar ? <IconEdit size={18} /> : <IconPlus size={18} />}
+        <ActionIcon size="lg" radius="sm" variant="default" onClick={() => setOpened(true)} disabled={isDeleting}>
+          {user?.meta.avatar ? <IconEdit size={18} /> : <IconPlus size={18} />}
         </ActionIcon>
-        {hasAvatar && (
-          <ActionIcon size="lg" radius="xl" variant="default">
+        {Boolean(user?.meta.avatar) && (
+          <ActionIcon size="lg" radius="sm" variant="default" loading={isDeleting} onClick={() => saveAvatar({})}>
             <IconBucket size={18} />
           </ActionIcon>
         )}
       </Group>
+      <ChangeAvatarModal opened={opened} close={() => setOpened(false)} currentImage={getAvatarSrc(user)} />
     </Skeleton>
   );
 }

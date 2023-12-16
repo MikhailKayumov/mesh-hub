@@ -84,6 +84,42 @@
         ]
       }
     },
+    "/api/user/current/avatar": {
+      "post": {
+        "operationId": "UserController_updateCurrentUserAvatar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
     "/api/user/reset-password": {
       "patch": {
         "operationId": "UserController_resetPassword",
@@ -423,6 +459,9 @@
             "type": "string"
           },
           "aboutYourself": {
+            "type": "string"
+          },
+          "avatar": {
             "type": "string"
           },
           "favoriteSoft": {

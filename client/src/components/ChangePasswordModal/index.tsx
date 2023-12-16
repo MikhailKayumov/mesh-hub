@@ -5,7 +5,7 @@ import useChangePasswordForm from './useChangePasswordForm.ts';
 
 export default function ChangePasswordModal() {
   const [opened, { open, close }] = useDisclosure(false);
-  const { form, isSubmitting, onSubmit } = useChangePasswordForm();
+  const { form, isSubmitting, onSubmit } = useChangePasswordForm(close);
 
   useEffect(() => {
     opened && form.reset();
@@ -21,8 +21,8 @@ export default function ChangePasswordModal() {
         opened={opened}
         onClose={close}
         title="Изменение пароля"
-        size="sm"
-        padding="lg"
+        size="md"
+        padding={24}
         closeButtonProps={{ 'aria-label': 'Close modal' }}
       >
         <form

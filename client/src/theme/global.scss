@@ -24,8 +24,31 @@
   color: var(--mantine-color-black)
 }
 
-[data-mantine-color-scheme=dark] .mantine-Title-root {
-  color: var(--mantine-color-white)
+[data-mantine-color-scheme=dark] {
+  .mantine-Title-root {
+    color: var(--mantine-color-white)
+  }
+  .mantine-datatable-loader {
+    background: rgba(#242424, 0.75);
+  }
+
+  .mantine-Dropzone-root {
+    --_dropzone-bg: var(--mantine-color-dark-7);
+    --_dropzone-border-color: var(--mantine-color-dark-4);
+
+    &:hover[data-activate-on-click]:not([data-loading]) {
+      --_dropzone-bg: var(--mantine-color-dark-6);
+    }
+
+    &[data-accept] {
+      --_dropzone-bg: var(--dropzone-accept-bg);
+      --_dropzone-border-color: var(--dropzone-accept-bg);
+    }
+    &[data-reject] {
+      --_dropzone-bg: var(--dropzone-reject-bg);
+      --_dropzone-border-color: var(--dropzone-reject-bg);
+    }
+  }
 }
 
 .responsive-container {

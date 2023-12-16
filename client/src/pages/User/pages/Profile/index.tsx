@@ -18,7 +18,7 @@ export default function ProfilePage() {
           <Loader />
         </Center>
       ) : (
-        <Paper withBorder p="lg" className={classes.root}>
+        <Paper className={classes.root}>
           <form onSubmit={onSubmit} className={classes.form}>
             <TextInput {...form.getInputProps('lastName')} label="Фамилия" placeholder="Введите вашу фамилию" mb={16} />
             <TextInput {...form.getInputProps('firstName')} label="Имя" placeholder="Введите ваше имя" mb={16} />

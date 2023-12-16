@@ -19,7 +19,7 @@ export default function UserSidebar({ className }: UserSidebarProps) {
   return (
     <Box visibleFrom="sm" className={clsx(classes.root, className)}>
       <Avatar user={user} isLoading={isUserLoading} />
-      <Skeleton visible={isUserLoading} mb={32} h={42}>
+      <Skeleton visible={isUserLoading} mb={24} h={42}>
         <Tooltip
           withArrow
           arrowSize={6}

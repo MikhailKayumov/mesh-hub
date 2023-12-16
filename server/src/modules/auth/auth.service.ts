@@ -32,13 +32,16 @@ export class AuthService {
     user: UserEntity,
     { size = 10, skip = 0, sort }: PaginationDto,
   ): Promise<PaginationResponseDto<SessionResponseDto>> {
-    const { field, by } = sort?.[0] ?? { updatedAt: PaginationSortOrder.DESC };
+    const order: Record<string, PaginationSortOrder> = {};
+    if (sort?.[0]) {
+      order[sort[0].field] = sort[0].by;
+    }
 
     const [sessions, count] = await this.authRepository.findAndCount({
       where: { user: { id: user.id } },
       skip,
       take: size,
-      order: { [field as string]: by },
+      order,
     });
 
     return PaginationResponseDto.build(sessions.map(AuthMapper.toSessionResponse), count, size, skip, sort);

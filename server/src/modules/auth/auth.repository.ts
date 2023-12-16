@@ -20,6 +20,7 @@ export class AuthRepository extends Repository<SessionEntity> {
     const qb = this.createQueryBuilder('session')
       .select([
         'session.id',
+        'session.createdAt',
         'session.accessToken',
         'session.refreshToken',
         'session.ip',

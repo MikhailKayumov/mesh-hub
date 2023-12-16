@@ -1,7 +1,6 @@
 import { ActionIcon, Button, Group, Title } from '@mantine/core';
 import { IconRefresh } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
-import { useEffect } from 'react';
 import { useCloseCurrentUserSessionsMutation, useCurrentUserSessionsQuery } from '@/api/auth.ts';
 import { SessionResponseDto } from '@/api/dto.ts';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
@@ -14,21 +13,16 @@ const PAGE_SIZE = 10;
 
 export default function SessionTable() {
   const session = useSession();
+
   const [closeAll, { isLoading: isClosing }] = useCloseCurrentUserSessionsMutation();
   const [page, onPageChange] = useSearchParamsPagination();
   const [sortStatus, onSortStatusChange, sortParam] = useSearchParamsTableSorting<SessionResponseDto>();
+
   const { isDark } = useCurrentColorScheme();
   const { data, refetch, isLoading, isFetching } = useCurrentUserSessionsQuery(
     { skip: (page - 1) * PAGE_SIZE, size: PAGE_SIZE, sort: sortParam ? [sortParam] : undefined },
     { pollingInterval: 10000 },
   );
-
-  useEffect(() => {
-    if (!data || !data.sort.length) return;
-    onSortStatusChange({ columnAccessor: data.sort[0].field, direction: data.sort[0].by.toLowerCase() as any });
-  }, [data]);
-
-  const onCloseAll = () => closeAll();
 
   return (
     <>
@@ -40,7 +34,7 @@ export default function SessionTable() {
           <ActionIcon w={36} h={36} onClick={refetch} loading={isLoading || isFetching}>
             <IconRefresh size={24} />
           </ActionIcon>
-          <Button loading={isClosing} onClick={onCloseAll}>
+          <Button loading={isClosing} onClick={() => closeAll()}>
             Закрыть все сессии
           </Button>
         </Group>

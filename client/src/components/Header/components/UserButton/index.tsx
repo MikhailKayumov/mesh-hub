@@ -15,7 +15,7 @@ const UserButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<'butto
   return (
     <UnstyledButton ref={ref} {...props} className={classes.root}>
       <Group gap={rem(10)}>
-        <Skeleton circle visible={isUserLoading || isAvatarLoading} w={38} h={38}>
+        <Skeleton circle visible={isUserLoading || (isAvatarLoading && !!user?.meta.avatar)} w={38} h={38}>
           <Avatar
             src={getAvatarSrc(user)}
             radius="xl"

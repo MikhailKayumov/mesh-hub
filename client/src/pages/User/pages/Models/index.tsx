@@ -1,4 +1,5 @@
-import { Title } from '@mantine/core';
+import { Button, Group, Title } from '@mantine/core';
+import { IconUpload } from '@tabler/icons-react';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
 
 export default function ModelsPage() {
@@ -6,7 +7,10 @@ export default function ModelsPage() {
 
   return (
     <>
-      <Title mb="lg">Модели</Title>
+      <Group mb="lg" justify="space-between">
+        <Title>Модели</Title>
+        <Button leftSection={<IconUpload size={18} />}>Загрузить модель</Button>
+      </Group>
     </>
   );
 }

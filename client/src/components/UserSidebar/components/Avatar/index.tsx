@@ -18,7 +18,12 @@ export default function Avatar({ user, isLoading }: AvatarProps) {
   const [saveAvatar, { isLoading: isDeleting }] = useUpdateCurrentUserAvatarMutation();
 
   return (
-    <Skeleton radius="sm" visible={isLoading || isAvatarLoading} className={classes.root} mb={16}>
+    <Skeleton
+      radius="sm"
+      visible={isLoading || (isAvatarLoading && !!user?.meta.avatar)}
+      className={classes.root}
+      mb={16}
+    >
       <MAvatar
         src={getAvatarSrc(user)}
         color="primary"

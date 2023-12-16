@@ -1,4 +1,4 @@
-import { Container, createTheme, DEFAULT_THEME, mergeMantineTheme, Paper } from '@mantine/core';
+import { Container, createTheme, DEFAULT_THEME, mergeMantineTheme } from '@mantine/core';
 import { clsx } from 'clsx';
 import {
   bluegrayColors,
@@ -40,12 +40,6 @@ export const baseTheme = mergeMantineTheme(
         classNames: (_, { size, fluid }) => ({
           root: clsx({ 'responsive-container': size === 'responsive' && !fluid }),
         }),
-      }),
-      Paper: Paper.extend({
-        defaultProps: {
-          p: 24,
-          withBorder: true,
-        },
       }),
     },
   }),

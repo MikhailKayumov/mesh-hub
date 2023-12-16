@@ -8,6 +8,9 @@ export class UserMetaEntity extends GuidIdEntityBase {
   @Column({ type: 'text', name: 'about_yourself', nullable: true })
   public aboutYourself?: string;
 
+  @Column({ type: 'text', name: 'avatar', nullable: true })
+  public avatar?: string;
+
   @ManyToMany(() => CgSoftEntity, { nullable: true })
   @JoinTable({
     name: UserSchemaTables.UserMetaCgSoft,

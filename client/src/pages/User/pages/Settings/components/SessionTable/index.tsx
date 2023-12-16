@@ -4,6 +4,7 @@ import { DataTable } from 'mantine-datatable';
 import { useEffect } from 'react';
 import { useCloseCurrentUserSessionsMutation, useCurrentUserSessionsQuery } from '@/api/auth.ts';
 import { SessionResponseDto } from '@/api/dto.ts';
+import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
 import useSearchParamsPagination from '@/hooks/useSearchParamsPagination.ts';
 import useSearchParamsTableSorting from '@/hooks/useSearchParamsTableSorting.ts';
 import useSession from '@/hooks/useSession.ts';
@@ -16,6 +17,7 @@ export default function SessionTable() {
   const [closeAll, { isLoading: isClosing }] = useCloseCurrentUserSessionsMutation();
   const [page, onPageChange] = useSearchParamsPagination();
   const [sortStatus, onSortStatusChange, sortParam] = useSearchParamsTableSorting<SessionResponseDto>();
+  const { isDark } = useCurrentColorScheme();
   const { data, refetch, isLoading, isFetching } = useCurrentUserSessionsQuery(
     { skip: (page - 1) * PAGE_SIZE, size: PAGE_SIZE, sort: sortParam ? [sortParam] : undefined },
     { pollingInterval: 10000 },
@@ -56,7 +58,7 @@ export default function SessionTable() {
         minHeight={133}
         rowStyle={({ id }) => {
           if (session !== id) return;
-          return (theme) => ({ color: theme.colors.primary[theme.primaryShade as number] });
+          return (theme) => ({ backgroundColor: isDark ? theme.colors.dark[8] : theme.colors.gray[1] });
         }}
         // pagination
         page={page}

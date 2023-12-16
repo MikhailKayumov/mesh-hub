@@ -37,7 +37,7 @@ export default function User() {
           Настройки
         </Menu.Item>
         <Menu.Divider />
-        <Menu.Item c="red.4" leftSection={<IconLogout size={16} />} onClick={onLogout}>
+        <Menu.Item c="red" leftSection={<IconLogout size={16} />} onClick={onLogout}>
           Выйти
         </Menu.Item>
       </Menu.Dropdown>

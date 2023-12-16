@@ -12,8 +12,8 @@ export default function CloseSessionColumn({ id }: CloseSessionColumnProps) {
   const onClick = () => close(id);
 
   return (
-    <ActionIcon variant="subtle" color="red" onClick={onClick} loading={isLoading}>
-      <IconLogout color="red" size={18} />
+    <ActionIcon w={26} h={26} variant="subtle" c="red" color="red" onClick={onClick} loading={isLoading}>
+      <IconLogout size={18} />
     </ActionIcon>
   );
 }

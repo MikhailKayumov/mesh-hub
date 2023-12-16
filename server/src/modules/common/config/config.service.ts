@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import { Injectable, Logger } from '@nestjs/common';
 import { type CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService as NestConfigService } from '@nestjs/config';
@@ -136,6 +137,18 @@ export class ConfigService {
       },
       defaults: {
         from: `"${name}" <${user}>`,
+      },
+    };
+  }
+
+  public get fsConfig() {
+    const root = resolve(process.cwd(), 'files');
+
+    return {
+      root,
+      folders: {
+        avatars: resolve(root, 'avatars'),
+        models: resolve(root, 'models'),
       },
     };
   }

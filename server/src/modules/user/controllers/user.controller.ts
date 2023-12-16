@@ -1,6 +1,28 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBody, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  ParseFilePipe,
+  Patch,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiConsumes,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
+import { Express } from 'express';
 import { UserRoles } from '@/constants';
+import { ALLOWED_AVATAR_FILE_TYPES, MAX_AVATAR_FILE_SIZE } from '@/constants/files';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { User } from '@/decorators/user/user.decorator';
@@ -10,6 +32,8 @@ import { UserCurrentUpdateRequestDto } from '@/modules/user/dto/user.current.upd
 import { UserNewPasswordRequestDto } from '@/modules/user/dto/user.new.password.request.dto';
 import { UserResetPasswordRequestDto } from '@/modules/user/dto/user.reset.password.request.dto';
 import { UserService } from '@/modules/user/services/user.service';
+import { FileSizeValidator } from '@/pipes/file-size-validator.pipe';
+import { FileTypeValidator } from '@/pipes/file-type-validator.pipe';
 
 @Controller('user')
 @ApiTags('user')
@@ -33,6 +57,27 @@ export class UserController {
     @Body() body: UserCurrentUpdateRequestDto,
   ): Promise<UserCurrentResponseDto> {
     return this.userService.updateCurrentUser(user, body);
+  }
+
+  @Post('current/avatar')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
+  @ApiOkResponse()
+  @ApiBadRequestResponse()
+  @ApiUnprocessableEntityResponse()
+  public updateCurrentUserAvatar(
+    @User() user: UserEntity,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [new FileSizeValidator(MAX_AVATAR_FILE_SIZE), new FileTypeValidator(ALLOWED_AVATAR_FILE_TYPES)],
+      }),
+    )
+    file?: Express.Multer.File,
+  ): Promise<void> {
+    return this.userService.updateCurrentUserAvatar(user, file);
   }
 
   @Patch('reset-password')

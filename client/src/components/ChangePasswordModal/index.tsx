@@ -5,7 +5,7 @@ import useChangePasswordForm from './useChangePasswordForm.ts';
 
 export default function ChangePasswordModal() {
   const [opened, { open, close }] = useDisclosure(false);
-  const { form, isSubmitting, onSubmit } = useChangePasswordForm();
+  const { form, isSubmitting, onSubmit } = useChangePasswordForm(close);
 
   useEffect(() => {
     opened && form.reset();

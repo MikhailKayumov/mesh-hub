@@ -25,6 +25,14 @@ const UserApi = Api.injectEndpoints({
         body,
       }),
     }),
+    updateCurrentUserAvatar: build.mutation<void, { file?: Blob }>({
+      invalidatesTags: [ApiTags.CurrentUser],
+      query: (body) => ({
+        method: 'POST',
+        url: ApiUrls.UpdateCurrentUserAvatar,
+        body,
+      }),
+    }),
     resetPassword: build.mutation<void, string>({
       query: (email) => ({
         method: 'PATCH',
@@ -52,11 +60,11 @@ const UserApi = Api.injectEndpoints({
 
 export const {
   useCurrentUserQuery,
-  useLazyCurrentUserQuery,
   useResetPasswordMutation,
   useNewPasswordMutation,
   useChangePasswordMutation,
   useUpdateCurrentUserMutation,
+  useUpdateCurrentUserAvatarMutation,
 } = UserApi;
 
 export default UserApi;

@@ -1,4 +1,4 @@
- 
+/* eslint-disable */
 /* tslint:disable */
 /*
  * ---------------------------------------------------------------
@@ -18,6 +18,7 @@ export interface CgSoftResponse {
 export interface UserMetaResponseDto {
   id: string;
   aboutYourself?: string;
+  avatar?: string;
   favoriteSoft?: CgSoftResponse[];
 }
 

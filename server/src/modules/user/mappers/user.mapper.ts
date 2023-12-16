@@ -22,9 +22,9 @@ export class UserMapper {
   }
 
   public static toUserMetaResponse(meta: UserMetaEntity): UserMetaResponseDto {
-    // console.log(meta);
     return {
       id: meta.id,
+      avatar: meta.avatar,
       aboutYourself: meta.aboutYourself,
       favoriteSoft: (meta.favoriteSoft ?? []).map(CgSoftMapper.toResponse),
     };

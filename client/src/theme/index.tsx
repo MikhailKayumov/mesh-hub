@@ -11,7 +11,7 @@ export default function Theme({ children }: PropsWithChildren) {
   }, [themeName]);
 
   return (
-    <MantineProvider defaultColorScheme="dark" theme={theme}>
+    <MantineProvider defaultColorScheme="auto" theme={theme}>
       {children}
     </MantineProvider>
   );

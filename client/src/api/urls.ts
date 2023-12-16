@@ -8,6 +8,7 @@ const ApiUrls = {
   CloseCurrentUserSessions: 'auth/current-user-sessions',
   // user
   CurrentUser: 'user/current',
+  UpdateCurrentUserAvatar: 'user/current/avatar',
   ResetPassword: 'user/reset-password',
   NewPassword: 'user/new-password',
   ChangePassword: 'user/change-password',

@@ -13,5 +13,5 @@ export function getUserFullName(user: UserCurrentResponseDto, withMiddleName = f
 }
 
 export function getAvatarSrc(user: UserCurrentResponseDto | null): string | null {
-  return user ? `/files/avatars/${user.id}` : null;
+  return user && user.meta.avatar ? `/files/avatars/${user.meta.avatar}` : null;
 }

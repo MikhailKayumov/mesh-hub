@@ -17,3 +17,5 @@ yarn-error.log*
 
 /logo/*.log
 /logo/SVG
+
+/test-models

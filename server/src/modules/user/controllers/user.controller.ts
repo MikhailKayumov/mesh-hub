@@ -15,6 +15,7 @@ import {
   ApiBadRequestResponse,
   ApiBody,
   ApiConsumes,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
@@ -65,8 +66,8 @@ export class UserController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
   @ApiOkResponse()
-  @ApiBadRequestResponse()
   @ApiUnprocessableEntityResponse()
+  @ApiInternalServerErrorResponse()
   public updateCurrentUserAvatar(
     @User() user: UserEntity,
     @UploadedFile(

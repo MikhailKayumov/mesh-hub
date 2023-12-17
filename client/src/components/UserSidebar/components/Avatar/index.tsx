@@ -1,4 +1,5 @@
 import { Avatar as MAvatar, Group, Skeleton, Overlay, ActionIcon } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { IconBucket, IconEdit, IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
 import { UserCurrentResponseDto } from '@/api/dto.ts';
@@ -16,6 +17,19 @@ export default function Avatar({ user, isLoading }: AvatarProps) {
   const [opened, setOpened] = useState(false);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
   const [saveAvatar, { isLoading: isDeleting }] = useUpdateCurrentUserAvatarMutation();
+
+  const onDelete = () => {
+    saveAvatar({})
+      .unwrap()
+      .catch((e: any) => {
+        notifications.show({
+          title: 'Ошибка',
+          message: e?.message ?? e?.error ?? 'Неизвестная ошибка',
+          color: 'red',
+          autoClose: 10000,
+        });
+      });
+  };
 
   return (
     <Skeleton
@@ -39,7 +53,7 @@ export default function Avatar({ user, isLoading }: AvatarProps) {
           {user?.meta.avatar ? <IconEdit size={18} /> : <IconPlus size={18} />}
         </ActionIcon>
         {Boolean(user?.meta.avatar) && (
-          <ActionIcon size="lg" radius="sm" variant="default" loading={isDeleting} onClick={() => saveAvatar({})}>
+          <ActionIcon size="lg" radius="sm" variant="default" loading={isDeleting} onClick={onDelete}>
             <IconBucket size={18} />
           </ActionIcon>
         )}

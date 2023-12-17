@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { In, QueryFailedError } from 'typeorm';
 import { UserRoles } from '@/constants';
@@ -68,19 +69,27 @@ export class UserService {
 
   public async updateCurrentUserAvatar(user: UserEntity, file?: Express.Multer.File): Promise<void> {
     try {
-      if (user.userMeta.avatar) {
-        await this.fileStorageService.removeAvatar(user.userMeta.avatar);
+      user.userMeta.avatar && (await this.fileStorageService.removeAvatar(user.userMeta.avatar));
+    } catch (e: any) {
+      if (e?.code === 'ENOENT') {
+        this.logger.debug(`There is no avatar at "${user.userMeta.avatar}"`);
+      } else {
+        throw new InternalServerErrorException('Не удалось удалить предыдущий аватар. Попробуйте позже');
       }
-    } catch {}
-
-    if (file) {
-      const avatar = `${user.id}_${Date.now()}`;
-      user.userMeta.avatar = await this.fileStorageService.saveAvatar(avatar, file);
-    } else {
-      user.userMeta.avatar = null!;
     }
 
-    await this.userRepository.save(user);
+    try {
+      if (file) {
+        const avatar = `${user.id}_${Date.now()}`;
+        user.userMeta.avatar = await this.fileStorageService.saveAvatar(avatar, file);
+      } else {
+        user.userMeta.avatar = null!;
+      }
+
+      await this.userRepository.save(user);
+    } catch (e) {
+      throw new UnprocessableEntityException('Не удалось сохранить файл аватара. Попробуйте позже');
+    }
   }
 
   public async createUserEntity(dto: UserCreateRequestDto): Promise<UserEntity> {

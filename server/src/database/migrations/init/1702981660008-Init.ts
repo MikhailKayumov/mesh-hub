@@ -1,23 +1,23 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Init1701970763132 implements MigrationInterface {
-  name = 'Init1701970763132';
+export class Init1702981660008 implements MigrationInterface {
+  name = 'Init1702981660008';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TABLE "resources"."cg_soft" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" SERIAL NOT NULL, "name" text NOT NULL, "description" text, CONSTRAINT "UQ_0ca26b9a56ca5a514bb7c448fcd" UNIQUE ("name"), CONSTRAINT "PK_d8a8f129ba042563e3428f2fac8" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "users"."role" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" SERIAL NOT NULL, "name" text NOT NULL, "description" text, CONSTRAINT "UQ_ae4578dcaed5adff96595e61660" UNIQUE ("name"), CONSTRAINT "PK_b36bcfe02fc8de3c57a8b2391c2" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "users"."user_meta" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "about_yourself" text, CONSTRAINT "PK_2b45acc20c0a71d613f9ed6d9e2" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
-      `CREATE TABLE "users"."user" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "last_login_date" TIMESTAMP WITH TIME ZONE, "email" text NOT NULL, "phone" text, "password" text NOT NULL, "salt" text NOT NULL, "first_name" text, "middle_name" text, "last_name" text, "is_confirmed" boolean NOT NULL DEFAULT false, "is_active" boolean NOT NULL DEFAULT true, "user_meta_id" uuid NOT NULL, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "UQ_8e1f623798118e629b46a9e6299" UNIQUE ("phone"), CONSTRAINT "REL_ec03dddce46b4c14e25b70f9dc" UNIQUE ("user_meta_id"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "users"."user_meta" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "about_yourself" text, "avatar" text, CONSTRAINT "PK_2b45acc20c0a71d613f9ed6d9e2" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "auth"."session" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "access_token" text NOT NULL, "refresh_token" text NOT NULL, "expired_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "ip" inet NOT NULL, "user_agent" text, "user_id" uuid, CONSTRAINT "UQ_dd3bfba3a86f80dc44b1834cdf5" UNIQUE ("access_token"), CONSTRAINT "UQ_14f5d9fd42ee29c579807b5f7e5" UNIQUE ("refresh_token"), CONSTRAINT "PK_f55da76ac1c3ac420f444d2ff11" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "users"."role" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" SERIAL NOT NULL, "name" text NOT NULL, "description" text, CONSTRAINT "UQ_ae4578dcaed5adff96595e61660" UNIQUE ("name"), CONSTRAINT "PK_b36bcfe02fc8de3c57a8b2391c2" PRIMARY KEY ("id"))`,
+    );
+    await queryRunner.query(
+      `CREATE TABLE "users"."user" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "last_login_date" TIMESTAMP WITH TIME ZONE, "email" text NOT NULL, "phone" text, "password" text NOT NULL, "salt" text NOT NULL, "first_name" text, "middle_name" text, "last_name" text, "is_confirmed" boolean NOT NULL DEFAULT false, "is_active" boolean NOT NULL DEFAULT true, "user_meta_id" uuid NOT NULL, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "UQ_8e1f623798118e629b46a9e6299" UNIQUE ("phone"), CONSTRAINT "REL_ec03dddce46b4c14e25b70f9dc" UNIQUE ("user_meta_id"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "users"."user_reset_password" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT now(), "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "expired_at" TIMESTAMP WITH TIME ZONE NOT NULL, "user_id" uuid NOT NULL, CONSTRAINT "REL_2a819c1c57be41646da4cb1faf" UNIQUE ("user_id"), CONSTRAINT "PK_7375b15001ebb80cac091ea3589" PRIMARY KEY ("id"))`,
@@ -37,10 +37,10 @@ export class Init1701970763132 implements MigrationInterface {
     await queryRunner.query(`CREATE INDEX "IDX_d0e5815877f7395a198a4cb0a4" ON "users"."user_role" ("user_id") `);
     await queryRunner.query(`CREATE INDEX "IDX_32a6fc2fcb019d8e3a8ace0f55" ON "users"."user_role" ("role_id") `);
     await queryRunner.query(
-      `ALTER TABLE "users"."user" ADD CONSTRAINT "FK_ec03dddce46b4c14e25b70f9dc8" FOREIGN KEY ("user_meta_id") REFERENCES "users"."user_meta"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "auth"."session" ADD CONSTRAINT "FK_30e98e8746699fb9af235410aff" FOREIGN KEY ("user_id") REFERENCES "users"."user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "auth"."session" ADD CONSTRAINT "FK_30e98e8746699fb9af235410aff" FOREIGN KEY ("user_id") REFERENCES "users"."user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
+      `ALTER TABLE "users"."user" ADD CONSTRAINT "FK_ec03dddce46b4c14e25b70f9dc8" FOREIGN KEY ("user_meta_id") REFERENCES "users"."user_meta"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
       `ALTER TABLE "users"."user_reset_password" ADD CONSTRAINT "FK_2a819c1c57be41646da4cb1fafa" FOREIGN KEY ("user_id") REFERENCES "users"."user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
@@ -67,8 +67,8 @@ export class Init1701970763132 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "users"."user_reset_password" DROP CONSTRAINT "FK_2a819c1c57be41646da4cb1fafa"`,
     );
-    await queryRunner.query(`ALTER TABLE "auth"."session" DROP CONSTRAINT "FK_30e98e8746699fb9af235410aff"`);
     await queryRunner.query(`ALTER TABLE "users"."user" DROP CONSTRAINT "FK_ec03dddce46b4c14e25b70f9dc8"`);
+    await queryRunner.query(`ALTER TABLE "auth"."session" DROP CONSTRAINT "FK_30e98e8746699fb9af235410aff"`);
     await queryRunner.query(`DROP INDEX "users"."IDX_32a6fc2fcb019d8e3a8ace0f55"`);
     await queryRunner.query(`DROP INDEX "users"."IDX_d0e5815877f7395a198a4cb0a4"`);
     await queryRunner.query(`DROP TABLE "users"."user_role"`);
@@ -76,10 +76,10 @@ export class Init1701970763132 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "users"."IDX_e26f5c00edf8c0a570732d6a69"`);
     await queryRunner.query(`DROP TABLE "users"."user_meta_cg_soft"`);
     await queryRunner.query(`DROP TABLE "users"."user_reset_password"`);
-    await queryRunner.query(`DROP TABLE "auth"."session"`);
     await queryRunner.query(`DROP TABLE "users"."user"`);
-    await queryRunner.query(`DROP TABLE "users"."user_meta"`);
     await queryRunner.query(`DROP TABLE "users"."role"`);
+    await queryRunner.query(`DROP TABLE "auth"."session"`);
+    await queryRunner.query(`DROP TABLE "users"."user_meta"`);
     await queryRunner.query(`DROP TABLE "resources"."cg_soft"`);
   }
 }

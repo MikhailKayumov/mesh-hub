@@ -1,7 +1,7 @@
-import { Text, Tooltip } from '@mantine/core';
 import dayjs from 'dayjs';
 import { DataTableColumn } from 'mantine-datatable';
 import { SessionResponseDto } from '@/api/dto.ts';
+import UserAgentColumn from '@/components/SessionTable/UserAgentColumn.tsx';
 import CloseSessionColumn from './CloseSessionColumn.tsx';
 
 const columns: DataTableColumn<SessionResponseDto>[] = [
@@ -35,13 +35,7 @@ const columns: DataTableColumn<SessionResponseDto>[] = [
     accessor: 'userAgent',
     title: 'Информация о браузере',
     width: 450,
-    render: ({ userAgent }) => (
-      <Tooltip withArrow multiline fz={12} position="bottom-start" w={430} label={userAgent}>
-        <Text size="sm" truncate="end">
-          {userAgent}
-        </Text>
-      </Tooltip>
-    ),
+    render: ({ userAgent }) => <UserAgentColumn userAgent={userAgent} />,
   },
   {
     accessor: 'id',

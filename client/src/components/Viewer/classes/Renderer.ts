@@ -1,4 +1,4 @@
-import { Color, PCFSoftShadowMap, WebGLRenderer, WebGLRendererParameters } from 'three';
+import { Color, PCFSoftShadowMap, WebGLRenderer, WebGLRendererParameters } from 'three/src/Three.js';
 import { CameraController } from './Camera';
 import { World } from './World';
 
@@ -25,8 +25,8 @@ export class Renderer {
 
     this.renderer = new WebGLRenderer(parameters);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.setPixelRatio(pixelRatio ?? window.devicePixelRatio);
+    this.renderer.shadowMap.type = PCFSoftShadowMap; // PCFShadowMap,BasicShadowMap,PCFSoftShadowMap,VSMShadowMap
+    // this.renderer.setPixelRatio(pixelRatio ?? window.devicePixelRatio);
     this.renderer.setClearColor(clearColor ?? new Color('#282828'));
 
     if (place) this.setPlace(place);
@@ -52,7 +52,7 @@ export class Renderer {
   }
 
   public render(delta: number, frame: XRFrame) {
-    this.cameraController.update(delta);
+    this.cameraController.update();
     this.renderCallbacks.forEach((cb) => cb(delta, frame));
     this.renderer.render(this.world, this.cameraController.camera);
   }
@@ -67,4 +67,8 @@ export class Renderer {
     this.renderer.setSize(size?.width ?? 0, size?.height ?? 0);
     this.cameraController.resize();
   };
+
+  public getScreenshot() {
+    return this.renderer.domElement.toDataURL('image/png');
+  }
 }

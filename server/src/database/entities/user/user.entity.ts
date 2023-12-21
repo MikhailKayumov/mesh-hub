@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, OneToOne } from 'typeorm';
 import { DatabaseSchemas, UserSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
+import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { RoleEntity } from '@/database/entities/user/role.entity';
 import { UserMetaEntity } from '@/database/entities/user/user-meta.entity';
@@ -39,6 +40,9 @@ export class UserEntity extends GuidIdEntityBase {
 
   @OneToMany(() => SessionEntity, (session) => session.user)
   public sessions: SessionEntity[];
+
+  @OneToMany(() => Model3dEntity, (model) => model.user)
+  public models3d: Model3dEntity[];
 
   @OneToOne(() => UserMetaEntity, { nullable: false, cascade: true, eager: true })
   @JoinColumn({ name: 'user_meta_id' })

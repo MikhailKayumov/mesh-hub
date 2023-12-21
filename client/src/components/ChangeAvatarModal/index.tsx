@@ -7,6 +7,7 @@ import { FileWithPath } from 'react-dropzone-esm';
 import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
 import { MAX_AVATAR_FILE_SIZE } from '@/constants/files.ts';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
+import formatBytes from '@/utils/format-bytes.ts';
 import classes from './ChangeAvatarModal.module.scss';
 
 export interface ChangeAvatarModalProps {
@@ -14,6 +15,15 @@ export interface ChangeAvatarModalProps {
   opened: boolean;
   close: () => void;
 }
+
+const onReject = () => {
+  notifications.show({
+    title: 'Ошибка',
+    message: 'Неверный формат файла или его размер превышает 1МБ',
+    color: 'red',
+    autoClose: 10000,
+  });
+};
 
 export default function ChangeAvatarModal({ currentImage, opened, close }: ChangeAvatarModalProps) {
   const { isDark } = useCurrentColorScheme();
@@ -27,14 +37,6 @@ export default function ChangeAvatarModal({ currentImage, opened, close }: Chang
   const onDrop = (files: FileWithPath[]) => {
     if (!files.length) return;
     setNewImage(files[0]);
-  };
-  const onReject = () => {
-    notifications.show({
-      title: 'Ошибка',
-      message: 'Неверный формат файла или его размер превышает 1МБ',
-      color: 'red',
-      autoClose: 10000,
-    });
   };
   const onSave = async () => {
     const body = new FormData();
@@ -100,7 +102,7 @@ export default function ChangeAvatarModal({ currentImage, opened, close }: Chang
               Переместите изображение сюда или нажмите чтобы выбрать файл
             </Text>
             <Text size="sm" c={isDark ? 'gray.5' : 'gray.6'} inline ta="center">
-              Размер файла не должен превышать 1МБ
+              Размер файла не должен превышать {formatBytes(MAX_AVATAR_FILE_SIZE)}
             </Text>
           </Stack>
         </Dropzone>

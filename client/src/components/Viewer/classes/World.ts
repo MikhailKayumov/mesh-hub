@@ -8,7 +8,7 @@ import {
   SpotLight,
   SpotLightHelper,
   Vector3,
-} from 'three';
+} from 'three/src/Three.js';
 import { PromiseWorldObject3D, WorldLights, WorldObject3D, WorldSpotLight } from './types/world';
 
 export class World extends Scene {
@@ -21,10 +21,10 @@ export class World extends Scene {
     if (Array.isArray(object)) {
       object.forEach(this.spawn, this);
     } else {
-      if (object instanceof Object3D) {
-        this.add(object);
+      if ((object as Object3D).isObject3D) {
+        this.add(object as any);
       } else {
-        await this.spawnAsync(object);
+        await this.spawnAsync(object as any);
       }
     }
   }
@@ -96,7 +96,7 @@ export class World extends Scene {
   }
 
   public addGridHelper(): this {
-    const size = 50;
+    const size = 100;
     const division = 50;
 
     const color1 = '#6e6e6e';

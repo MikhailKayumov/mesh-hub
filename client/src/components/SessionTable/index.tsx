@@ -21,7 +21,7 @@ export default function SessionTable() {
   const { isDark } = useCurrentColorScheme();
   const { data, refetch, isLoading, isFetching } = useCurrentUserSessionsQuery(
     { skip: (page - 1) * PAGE_SIZE, size: PAGE_SIZE, sort: sortParam ? [sortParam] : undefined },
-    { pollingInterval: 10000 },
+    { pollingInterval: 30000 },
   );
 
   return (
@@ -49,7 +49,8 @@ export default function SessionTable() {
         records={data?.data}
         fetching={isLoading}
         columns={columns}
-        minHeight={133}
+        minHeight={141}
+        height="auto"
         rowStyle={({ id }) => {
           if (session !== id) return;
           return (theme) => ({ backgroundColor: isDark ? theme.colors.dark[8] : theme.colors.gray[1] });

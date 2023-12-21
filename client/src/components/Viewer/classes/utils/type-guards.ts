@@ -1,4 +1,14 @@
-import { Material, Mesh, MeshStandardMaterial, OrthographicCamera, PerspectiveCamera } from 'three/src/Three.js';
+import {
+  AxesHelper,
+  GridHelper,
+  Light,
+  Material,
+  Mesh,
+  MeshStandardMaterial,
+  Object3D,
+  OrthographicCamera,
+  PerspectiveCamera,
+} from 'three/src/Three.js';
 import { isObject } from '@/utils/type-guards.ts';
 
 export const isMesh = (object: unknown): object is Mesh => {
@@ -20,3 +30,15 @@ export const isPerspectiveCamera = (object: unknown): object is PerspectiveCamer
 export const isOrthographicCamera = (object: unknown): object is OrthographicCamera => {
   return isObject(object) && (object as OrthographicCamera).isOrthographicCamera;
 };
+
+export function isGrid(object3D: Object3D): object3D is GridHelper {
+  return (object3D as GridHelper)?.type === 'GridHelper';
+}
+
+export function isAxis(object3D: Object3D): object3D is AxesHelper {
+  return (object3D as AxesHelper)?.type === 'AxesHelper';
+}
+
+export function isLight(object3D: Object3D): object3D is Light {
+  return (object3D as Light).isLight;
+}

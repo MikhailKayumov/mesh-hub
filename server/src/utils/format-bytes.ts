@@ -1,10 +1,21 @@
-export default function formatBytes(bytes: number, decimals?: number) {
-  if (bytes == 0) return '0Б';
+export interface FormatBytesOptions {
+  precision?: number;
+  forceDecimal?: boolean;
+}
 
-  const k = 1024;
-  const dm = decimals || 2;
-  const sizes = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+const SIZES = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ'];
+const BASE = 1024;
 
-  return `${(bytes / Math.pow(k, i)).toFixed(dm).replace('.', ',')}${sizes[i]}`;
+export default function formatBytes(bytes: number, { precision = 2, forceDecimal = false }: FormatBytesOptions = {}) {
+  if (bytes === 0) {
+    return forceDecimal ? `0,${'0'.repeat(precision)}Б` : '0Б';
+  }
+
+  const exponent = Math.floor(Math.log(bytes) / Math.log(BASE));
+  const formatter = new Intl.NumberFormat('ru-RU', {
+    minimumFractionDigits: forceDecimal ? precision : 0,
+    maximumFractionDigits: precision,
+  });
+
+  return `${formatter.format(bytes / Math.pow(BASE, exponent))}${SIZES[exponent]}`;
 }

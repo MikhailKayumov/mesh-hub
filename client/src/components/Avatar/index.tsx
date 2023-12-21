@@ -1,10 +1,11 @@
 import { Avatar as MAvatar, Group, Skeleton, Overlay, ActionIcon } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconBucket, IconEdit, IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
 import { UserCurrentResponseDto } from '@/api/dto.ts';
 import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
-import ChangeAvatarModal from '@/components/UserSidebar/components/ChangeAvatarModal';
+import ChangeAvatarModal from '@/components/ChangeAvatarModal';
 import { getAvatarSrc } from '@/utils/user.ts';
 import classes from './Avatar.module.scss';
 
@@ -14,7 +15,7 @@ export interface AvatarProps {
 }
 
 export default function Avatar({ user, isLoading }: AvatarProps) {
-  const [opened, setOpened] = useState(false);
+  const [opened, { open, close }] = useDisclosure(false);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
   const [saveAvatar, { isLoading: isDeleting }] = useUpdateCurrentUserAvatarMutation();
 
@@ -49,7 +50,7 @@ export default function Avatar({ user, isLoading }: AvatarProps) {
       />
       <Group className={classes.controls} gap={12} align="flex-end" justify="center">
         <Overlay color="black" backgroundOpacity={0.42} blur={0} className={classes['controls-overlay']} />
-        <ActionIcon size="lg" radius="sm" variant="default" onClick={() => setOpened(true)} disabled={isDeleting}>
+        <ActionIcon size="lg" radius="sm" variant="default" onClick={open} disabled={isDeleting}>
           {user?.meta.avatar ? <IconEdit size={18} /> : <IconPlus size={18} />}
         </ActionIcon>
         {Boolean(user?.meta.avatar) && (
@@ -58,7 +59,7 @@ export default function Avatar({ user, isLoading }: AvatarProps) {
           </ActionIcon>
         )}
       </Group>
-      <ChangeAvatarModal opened={opened} close={() => setOpened(false)} currentImage={getAvatarSrc(user)} />
+      <ChangeAvatarModal opened={opened} close={close} currentImage={getAvatarSrc(user)} />
     </Skeleton>
   );
 }

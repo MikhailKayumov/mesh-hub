@@ -1,0 +1,26 @@
+.root {
+  .card {
+    height: 100%;
+
+    transition: transform 110ms ease-in-out, box-shadow 170ms ease-out;
+
+    &:hover {
+      box-shadow: var(--mantine-shadow-lg);
+    }
+
+    &:active {
+      box-shadow: var(--mantine-shadow-xs);
+    }
+
+    .thumbnail {
+      aspect-ratio: 16 / 9;
+    }
+
+    .model-name {
+      word-break: break-all;
+      color: var(--mantine-color-text);
+      text-decoration: none;
+      flex: 1;
+    }
+  }
+}

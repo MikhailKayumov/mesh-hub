@@ -97,7 +97,7 @@ export class UserService {
       throw new ConflictException('Пользователь уже зарегистрирован');
     }
 
-    // todo: generate temporary password
+    // todo: generate temporary password for users created by admins, if need (diploma not need)
     const { hash, salt } = await this.encodePassword(dto.password ?? 'TEMPORARY_PASSWORD');
     const { roles = [UserRoles.User] } = dto;
     const user = new UserEntity();

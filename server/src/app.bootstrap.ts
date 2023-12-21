@@ -3,6 +3,7 @@ import { ValidationPipe, ValidationError, HttpStatus } from '@nestjs/common';
 import { NestApplication, NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 import { AppHttpException } from '@/exceptions/app-http.exception';
 import { LoggingInterceptor } from '@/interceptors/logging.interceptor';
 import { ConfigService } from '@/modules/common/config/config.service';
@@ -28,6 +29,9 @@ export default class AppBootstrap {
 
     this.application.use(cookieParser());
     this.application.enableCors(this.configService.cors);
+    // todo: delete, mode to guard/interceptor
+    this.application.use(json({ limit: '100mb' }));
+    this.application.use(urlencoded({ extended: true, limit: '100mb' }));
     this.application.setGlobalPrefix(this.configService.app.prefix);
     this.application.useGlobalPipes(
       new ValidationPipe({

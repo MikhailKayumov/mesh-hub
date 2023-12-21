@@ -1,6 +1,8 @@
 const RouterPaths = {
   // common
   Base: '/',
+  Models: 'models',
+  Id: ':id',
 
   // auth
   Auth: 'auth',
@@ -12,7 +14,6 @@ const RouterPaths = {
   // user
   User: 'user',
   Profile: 'profile',
-  Models: 'models',
   Settings: 'settings',
 
   // editor

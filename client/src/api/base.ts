@@ -6,7 +6,7 @@ import ApiUrls from '@/api/urls.ts';
 import { userActions } from '@/store/user/reducer.ts';
 import { HttpException } from './dto';
 import ApiTags from './tags';
-import { isFetchQueryError, isUnauthorizedHttpException, processFetchQueryError } from './utils';
+import { isFetchError, isFetchQueryError, isUnauthorizedHttpException, processFetchQueryError } from './utils';
 
 export type FetchQueryError = SerializedError | FetchBaseQueryError | HttpException;
 
@@ -26,7 +26,7 @@ const query: BaseQueryFn<string | FetchArgs, unknown, FetchQueryError> = async (
   if (isFetchQueryError(result.error)) {
     result.error = processFetchQueryError(result.error);
 
-    if (isUnauthorizedHttpException(result.error)) {
+    if (isUnauthorizedHttpException(result.error) || isFetchError(result.error)) {
       if (apiMutex.isLocked()) {
         await apiMutex.waitForUnlock();
         result = await baseQuery(args, api, extraOptions);
@@ -57,7 +57,7 @@ const Api = createApi({
   reducerPath: '@mesh_hub/api',
   baseQuery: query,
   endpoints: () => ({}),
-  tagTypes: [ApiTags.Reset, ApiTags.CurrentUser, ApiTags.CGSoft],
+  tagTypes: Object.values(ApiTags),
 });
 
 export default Api;

@@ -1,21 +1,44 @@
-import { MOUSE, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { isOrthographicCamera, isPerspectiveCamera } from './utils';
+import CameraControls from 'camera-controls';
+import {
+  Box3,
+  Clock,
+  MathUtils,
+  Matrix4,
+  PerspectiveCamera,
+  Quaternion,
+  Raycaster,
+  Sphere,
+  Spherical,
+  Vector2,
+  Vector3,
+  Vector4,
+} from 'three/src/Three.js';
 
-export type CameraType = 'perspective' | 'orthographic';
+CameraControls.install({
+  THREE: {
+    Vector2,
+    Vector3,
+    Vector4,
+    Quaternion,
+    Matrix4,
+    Spherical,
+    Box3,
+    Sphere,
+    Raycaster,
+  },
+});
+
+const clock = new Clock();
 
 export class CameraController {
-  public camera: PerspectiveCamera | OrthographicCamera;
-  public control: OrbitControls | null = null;
+  public camera: PerspectiveCamera;
+  public control: CameraControls | null = null;
 
   private canvas: HTMLCanvasElement | null = null;
 
-  public constructor(type: CameraType = 'perspective') {
-    if (type === 'perspective') {
-      this.camera = new PerspectiveCamera(75, 1, 0.1, 4000);
-    } else {
-      this.camera = new OrthographicCamera(2, -2, -1, 1, 0.001, 4000);
-    }
+  public constructor() {
+    this.camera = new PerspectiveCamera(75, 1, 0.05, 4000);
+    this.camera.position.set(0, 0, -120);
   }
 
   public on(canvas: HTMLCanvasElement): void {
@@ -25,27 +48,15 @@ export class CameraController {
     this.createControl();
   }
 
-  public update(delta: number) {
-    this.camera.updateProjectionMatrix();
-    this.control?.update(delta);
+  public update() {
+    return this.control?.update(clock.getDelta());
   }
 
   public resize() {
     if (!this.canvas) return;
 
-    const aspect = this.canvas.width / this.canvas.height;
-
-    if (isPerspectiveCamera(this.camera)) {
-      this.camera.aspect = aspect;
-      this.camera.position.set(3.5, -1, 2);
-    } else if (isOrthographicCamera(this.camera)) {
-      this.camera.left = this.canvas.width / -2;
-      this.camera.right = this.canvas.width / 2;
-      this.camera.top = this.canvas.height / 2;
-      this.camera.bottom = this.canvas.height / -2;
-      this.camera.zoom = aspect * 100;
-      this.camera.position.set(2, 2, this.camera.zoom);
-    }
+    this.camera.aspect = this.canvas.width / this.canvas.height;
+    this.camera.updateProjectionMatrix();
   }
 
   private createControl() {
@@ -57,17 +68,27 @@ export class CameraController {
       return;
     }
 
-    this.control = new OrbitControls(this.camera, this.canvas);
-    this.control.target = new Vector3(0, 0, 0);
+    this.control = new CameraControls(this.camera, this.canvas);
+    this.control.smoothTime = 0.16;
+    this.control.mouseButtons.left = CameraControls.ACTION.TRUCK;
+    this.control.mouseButtons.right = CameraControls.ACTION.ROTATE;
+    this.control.updateCameraUp();
+  }
 
-    this.control.enabled = true;
-    this.control.enableDamping = true;
-    this.control.dampingFactor = 0.06;
+  public async fitToBox(boundingBox: Box3): Promise<void> {
+    if (!this.control) return;
 
-    this.control.mouseButtons = {
-      LEFT: MOUSE.PAN,
-      MIDDLE: undefined,
-      RIGHT: MOUSE.ROTATE,
-    };
+    await this.control.reset(false);
+
+    this.control.smoothTime = 0.56;
+    await this.control.fitToBox(boundingBox, false, {
+      cover: false,
+      paddingTop: 0.3,
+      paddingBottom: 0.3,
+      paddingLeft: 0.3,
+      paddingRight: 0.3,
+    });
+    await this.control.rotateTo(MathUtils.degToRad(10), MathUtils.degToRad(78), true);
+    this.control.smoothTime = 0.16;
   }
 }

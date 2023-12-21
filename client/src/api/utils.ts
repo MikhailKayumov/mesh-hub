@@ -11,6 +11,10 @@ export const isHttpException = (error: unknown): error is HttpException => {
   return isFetchQueryError(error) && isNumber(error.status);
 };
 
+export const isFetchError = (error: unknown): error is FetchBaseQueryError => {
+  return isFetchQueryError(error) && error.status === 'FETCH_ERROR';
+};
+
 export const isUnauthorizedHttpException = (error: unknown): error is HttpException => {
   return isHttpException(error) && error.status === 401;
 };

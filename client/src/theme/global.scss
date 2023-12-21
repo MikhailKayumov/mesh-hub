@@ -83,7 +83,7 @@
 .main-page-content {
   display: flex;
   flex-direction: column;
-
+  min-height: 100dvh;
   --app-shell-padding: var(--mantine-spacing-xl);
   padding: calc(
     var(--app-shell-header-offset, 0px) + var(--app-shell-padding))

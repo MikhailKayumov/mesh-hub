@@ -148,7 +148,7 @@ export class ConfigService {
       root,
       folders: {
         avatars: resolve(root, 'avatars'),
-        models: resolve(root, 'models'),
+        models: resolve(root, 'models-3d'),
       },
     };
   }

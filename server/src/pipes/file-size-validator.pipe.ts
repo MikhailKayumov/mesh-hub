@@ -1,18 +1,22 @@
+import { rm } from 'fs/promises';
 import { FileValidator, Injectable } from '@nestjs/common';
-import { IFile } from '@nestjs/common/pipes/file/interfaces/file.interface';
 import formatBytes from '@/utils/format-bytes';
 
 @Injectable()
 export class FileSizeValidator extends FileValidator {
-  constructor(private readonly maxSizeBytes: number) {
+  public constructor(private readonly maxSizeBytes: number) {
     super({ maxSizeBytes });
   }
 
-  isValid(file: IFile): boolean {
+  isValid(file: Express.Multer.File): boolean {
     return file.size <= this.maxSizeBytes;
   }
 
-  buildErrorMessage(file: IFile): string {
+  buildErrorMessage(file: Express.Multer.File): string {
+    if (file.path && !file.buffer) {
+      rm(file.path, { force: true });
+    }
+
     return `Размер файла ${formatBytes(file.size)} больше допустимого ${formatBytes(this.maxSizeBytes)}`;
   }
 }

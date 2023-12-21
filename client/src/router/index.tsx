@@ -64,6 +64,21 @@ const routes: RouteObject[] = [
           },
         ],
       },
+      // models
+      {
+        path: RouterPaths.Models,
+        lazy: async () => ({ Component: (await import('@/pages/Models')).default }),
+        children: [
+          {
+            index: true,
+            element: <Navigate replace to={RouterPaths.Base} />,
+          },
+          {
+            path: RouterPaths.Id,
+            lazy: async () => ({ Component: (await import('../pages/Models/Model')).default }),
+          },
+        ],
+      },
     ],
   },
   // {

@@ -105,3 +105,36 @@ export interface PaginationResponseDto {
   totalCount: number;
   hasMore: boolean;
 }
+
+export interface Model3DFileResponseDto {
+  id: string;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt?: string;
+  name: string;
+  size: number;
+  extension: string;
+}
+
+export interface CategoryResponse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface Model3DResponseDto {
+  id: string;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt?: string;
+  isOwner: boolean;
+  ownerAvatar?: string;
+  ownerName: string;
+  name: string;
+  file: Model3DFileResponseDto;
+  description?: string;
+  thumbnail?: string;
+  categories?: CategoryResponse[];
+}

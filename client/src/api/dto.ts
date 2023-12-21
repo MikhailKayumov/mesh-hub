@@ -95,6 +95,35 @@ export interface LoginRequestDto {
   password: string;
 }
 
+export interface Model3DFileResponseDto {
+  id: string;
+  createdAt: string;
+  updatedAt?: string;
+  name: string;
+  size: number;
+  extension: string;
+}
+
+export interface CategoryResponse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface Model3DResponseDto {
+  id: string;
+  createdAt: string;
+  updatedAt?: string;
+  isOwner: boolean;
+  ownerAvatar?: string;
+  ownerName: string;
+  name: string;
+  file: Model3DFileResponseDto;
+  description?: string;
+  thumbnail?: string;
+  categories?: CategoryResponse[];
+}
+
 /**
  * Exceptions
  */

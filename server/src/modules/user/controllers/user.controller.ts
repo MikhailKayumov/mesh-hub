@@ -15,12 +15,12 @@ import {
   ApiBadRequestResponse,
   ApiBody,
   ApiConsumes,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { Express } from 'express';
 import { UserRoles } from '@/constants';
 import { ALLOWED_AVATAR_FILE_TYPES, MAX_AVATAR_FILE_SIZE } from '@/constants/files';
 import { UserEntity } from '@/database/entities/user/user.entity';
@@ -67,6 +67,7 @@ export class UserController {
   @ApiOkResponse()
   @ApiBadRequestResponse()
   @ApiUnprocessableEntityResponse()
+  @ApiInternalServerErrorResponse()
   public updateCurrentUserAvatar(
     @User() user: UserEntity,
     @UploadedFile(

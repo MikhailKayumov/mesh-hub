@@ -21,7 +21,7 @@ export class PaginationDtoSortItem {
     this.by = by;
   }
 
-  public static async build(field: string, by: PaginationSortOrder) {
+  public static async build(field: string, by: PaginationSortOrder): Promise<PaginationDtoSortItem> {
     const dto = new PaginationDtoSortItem(field, by);
     await validateDto(dto);
     return dto;

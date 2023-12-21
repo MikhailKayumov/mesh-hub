@@ -12,6 +12,7 @@ import { FileStorageModule } from '@/modules/common/files/file-storage.module';
 import { LoggerModule } from '@/modules/common/logger/logger.module';
 import { NotificationsModule } from '@/modules/common/notifications/notifications.module';
 import { ResourcesModule } from '@/modules/common/resources/resources.module';
+import { Models3dModule } from '@/modules/models-3d/models-3d.module';
 import { UserModule } from '@/modules/user/user.module';
 
 @Module({
@@ -32,6 +33,7 @@ import { UserModule } from '@/modules/user/user.module';
     ResourcesModule,
     UserModule,
     AuthModule,
+    Models3dModule,
   ],
   providers: [
     {

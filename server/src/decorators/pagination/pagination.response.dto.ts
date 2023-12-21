@@ -51,7 +51,7 @@ export class PaginationResponseDto<T = unknown> {
     size?: number,
     skip?: number,
     sort?: PaginationDtoSortItem[],
-  ) {
+  ): Promise<PaginationResponseDto<T>> {
     const dto = new PaginationResponseDto<T>(data, totalCount, size, skip, sort);
 
     await validateDto(dto);

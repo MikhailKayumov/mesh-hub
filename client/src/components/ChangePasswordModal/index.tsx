@@ -32,6 +32,7 @@ export default function ChangePasswordModal() {
           }}
         >
           <PasswordInput
+            data-autofocus
             label="Текущий пароль"
             placeholder="Введите текущий пароль"
             withAsterisk

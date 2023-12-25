@@ -52,7 +52,9 @@ export default class AppBootstrap {
         enableDebugMessages: !this.configService.isProduction,
       }),
     );
-    this.application.useStaticAssets(join(process.cwd(), 'files'));
+    this.application.useStaticAssets(join(process.cwd(), 'files'), {
+      cacheControl: 'no-cache',
+    });
     this.application.useGlobalInterceptors(new LoggingInterceptor());
     this.application.useLogger(this.application.get(LoggerService));
 

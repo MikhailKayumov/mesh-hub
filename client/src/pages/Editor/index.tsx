@@ -1,6 +1,6 @@
 import { Button } from '@mantine/core';
 import { useState } from 'react';
-import Viewer from '@/components/Viewer';
+// import Viewer from '@/components/Viewer';
 
 export function Component() {
   const [count, setCount] = useState(0);
@@ -11,9 +11,7 @@ export function Component() {
 
   return (
     <div>
-      <div>
-        <Viewer />
-      </div>
+      <div>{/*<Viewer />*/}</div>
       <div>
         <div>MainPageReRenders: {count}</div>
         <div>

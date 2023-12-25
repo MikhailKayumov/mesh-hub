@@ -1,0 +1,11 @@
+.wrapper {
+  position: relative;
+}
+
+.content {
+  cursor: text;
+
+  & :global(.mantine-RichTextEditor-content) {
+    min-height: 200px;
+  }
+}

@@ -45,11 +45,15 @@ const Models3dApi = Api.injectEndpoints({
     }),
     saveThumbnailBase64: build.mutation<void, { id: string; thumbnail: string }>({
       invalidatesTags: [ApiTags.CurrentUser3DModels, ApiTags.Get3DModels],
-      query: ({ id, thumbnail }) => ({
-        method: 'POST',
-        url: `${ApiUrls.Get3DModels}/${id}/${ApiUrls.SaveThumbnailBase64}`,
-        body: { thumbnail },
-      }),
+      query: ({ id, thumbnail }) => {
+        console.log('thumbnail >>>', thumbnail);
+
+        return {
+          method: 'POST',
+          url: `${ApiUrls.Get3DModels}/${id}/${ApiUrls.SaveThumbnailBase64}`,
+          body: { thumbnail },
+        };
+      },
     }),
   }),
   overrideExisting: true,

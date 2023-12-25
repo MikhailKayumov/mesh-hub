@@ -6,7 +6,7 @@ import ApiUrls from './urls';
 const AuthApi = Api.injectEndpoints({
   endpoints: (build) => ({
     register: build.mutation<SessionResponseDto, SignupRequestDto>({
-      invalidatesTags: [ApiTags.CurrentUser],
+      invalidatesTags: [ApiTags.CurrentUser, ApiTags.Get3DModel],
       query: (body) => ({
         body,
         method: 'POST',
@@ -14,7 +14,7 @@ const AuthApi = Api.injectEndpoints({
       }),
     }),
     login: build.mutation<SessionResponseDto, LoginRequestDto>({
-      invalidatesTags: [ApiTags.CurrentUser],
+      invalidatesTags: [ApiTags.CurrentUser, ApiTags.Get3DModel],
       query: (body) => ({
         body,
         method: 'POST',
@@ -22,7 +22,7 @@ const AuthApi = Api.injectEndpoints({
       }),
     }),
     logout: build.mutation<void, void>({
-      invalidatesTags: [ApiTags.CurrentUser],
+      invalidatesTags: [ApiTags.CurrentUser, ApiTags.Get3DModel],
       query: () => ({
         method: 'POST',
         url: ApiUrls.Logout,
@@ -44,7 +44,7 @@ const AuthApi = Api.injectEndpoints({
       }),
     }),
     closeCurrentUserSessions: build.mutation<void, void>({
-      invalidatesTags: [ApiTags.CurrentUser],
+      invalidatesTags: [ApiTags.CurrentUser, ApiTags.Get3DModel],
       query: () => ({
         method: 'DELETE',
         url: ApiUrls.CloseCurrentUserSessions,

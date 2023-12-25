@@ -52,7 +52,7 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Models,
-            lazy: async () => ({ Component: (await import('@/pages/User/pages/Models')).default }),
+            lazy: async () => ({ Component: (await import('../pages/User/pages/Models3D')).default }),
           },
           {
             path: RouterPaths.Profile,
@@ -67,7 +67,7 @@ const routes: RouteObject[] = [
       // models
       {
         path: RouterPaths.Models,
-        lazy: async () => ({ Component: (await import('@/pages/Models')).default }),
+        lazy: async () => ({ Component: (await import('@/pages/Models3D')).default }),
         children: [
           {
             index: true,
@@ -75,7 +75,7 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Id,
-            lazy: async () => ({ Component: (await import('../pages/Models/Model')).default }),
+            lazy: async () => ({ Component: (await import('../pages/Models3D/Model3D')).default }),
           },
         ],
       },

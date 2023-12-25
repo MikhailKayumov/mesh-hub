@@ -98,7 +98,7 @@ export default function Upload3DModelModal() {
           </Stack>
         </Dropzone>
         <Group mt={12} justify="space-between" c={!model ? 'dimmed' : undefined} gap={16} wrap="nowrap" align="center">
-          <Tooltip label={model?.name} position="bottom-start" withArrow fz={12} lh={rem(17)} multiline maw={380}>
+          <Tooltip label={model?.name ?? 'Файл не выбран'} position="top-start" openDelay={500}>
             <Text lh={rem(20)} size="sm" truncate="end">
               {model ? model.name : 'Файл не выбран'}
             </Text>

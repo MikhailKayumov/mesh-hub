@@ -1,19 +1,17 @@
 import { Button } from '@mantine/core';
 import { IconDownload } from '@tabler/icons-react';
-import { Model3DFileResponseDto } from '@/api/dto.ts';
+import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
 import { getModel3DFileSrc } from '@/utils/model3d.ts';
 
-export interface Model3DDownloadButtonProps {
-  file: Model3DFileResponseDto;
-}
+export default function Model3DDownloadButton() {
+  const model = useModel3DContext();
 
-export default function Model3DDownloadButton({ file }: Model3DDownloadButtonProps) {
   return (
     <Button
       leftSection={<IconDownload size={18} />}
       component="a"
       download
-      href={getModel3DFileSrc(file.id, file.name)}
+      href={model ? getModel3DFileSrc(model.file.id, model.file.name) : undefined}
     >
       Скачать
     </Button>

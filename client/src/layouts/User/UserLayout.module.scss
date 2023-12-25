@@ -10,7 +10,9 @@
   }
 
   .main {
-    flex: 1;
+    flex: 0 0 calc(100% - rem(180px) * var(--mantine-scale) - var(--mantine-spacing-xl));
+    width: calc(100% - rem(180px) * var(--mantine-scale) - var(--mantine-spacing-xl));
+
     min-height: 100%;
     align-self: stretch;
     display: flex;

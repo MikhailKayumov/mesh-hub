@@ -1,6 +1,13 @@
-import { Color, PCFSoftShadowMap, WebGLRenderer, WebGLRendererParameters } from 'three/src/Three.js';
+import {
+  Color,
+  PCFSoftShadowMap,
+  WebGLRenderer,
+  WebGLRendererParameters,
+  ColorRepresentation,
+  WebGLInfo,
+} from 'three/src/Three.js';
 import { CameraController } from './Camera';
-import { World } from './World';
+import { World } from './world/World.ts';
 
 export interface RendererParameters extends WebGLRendererParameters {
   world: World;
@@ -19,34 +26,51 @@ export class Renderer {
   private cameraController: CameraController;
   private renderCallbacks: XRFrameRequestCallback[] = [];
 
-  public constructor({ world, cameraController, place, pixelRatio, clearColor, ...parameters }: RendererParameters) {
+  public constructor({ world, cameraController, place, ...parameters }: RendererParameters) {
     this.world = world;
     this.cameraController = cameraController;
 
     this.renderer = new WebGLRenderer(parameters);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap; // PCFShadowMap,BasicShadowMap,PCFSoftShadowMap,VSMShadowMap
-    // this.renderer.setPixelRatio(pixelRatio ?? window.devicePixelRatio);
-    this.renderer.setClearColor(clearColor ?? new Color('#282828'));
+    this.renderer.setClearColor(new Color(0, 0, 0), 0);
 
     if (place) this.setPlace(place);
   }
 
+  public getCanvas(): HTMLCanvasElement {
+    return this.renderer.domElement;
+  }
+
+  public setClearColor(clearColor: ColorRepresentation = new Color('#282828')) {
+    this.renderer.setClearColor(clearColor);
+  }
+
   public setPlace(place: HTMLDivElement): void {
     this.place = place;
-    this.place.innerHTML = '';
     this.place.appendChild(this.renderer.domElement);
 
     this.resize();
     window.addEventListener('resize', this.resize);
   }
 
-  public run(callback: XRFrameRequestCallback | null): void {
+  public getRenderer(): WebGLRenderer {
+    return this.renderer;
+  }
+
+  public getInfo(): WebGLInfo {
+    return this.renderer.info;
+  }
+
+  public addCallback(callback: XRFrameRequestCallback): this {
+    this.renderCallbacks.push(callback);
+    return this;
+  }
+
+  public run(callback?: XRFrameRequestCallback | null): void {
     if (callback) {
       this.renderCallbacks.push(callback);
     }
-
-    this.cameraController.on(this.renderer.domElement);
 
     this.renderer.setAnimationLoop(this.render.bind(this));
   }
@@ -59,16 +83,19 @@ export class Renderer {
 
   public destroy() {
     window.removeEventListener('resize', this.resize);
+
+    this.renderer.getRenderTarget()?.dispose();
     this.renderer.dispose();
+  }
+
+  public getScreenshot() {
+    return this.renderer.domElement.toDataURL('image/png', 0.4);
   }
 
   public resize = () => {
     const size = this.place?.getBoundingClientRect();
+
     this.renderer.setSize(size?.width ?? 0, size?.height ?? 0);
     this.cameraController.resize();
   };
-
-  public getScreenshot() {
-    return this.renderer.domElement.toDataURL('image/png');
-  }
 }

@@ -22,7 +22,7 @@ export default function MainPage() {
         </Flex>
       ) : (
         <Stack gap={24} style={{ flex: 1 }}>
-          <Models3DList models={models} emptyLabel="Ваш список 3D моделей пуст" mode="all" />
+          <Models3DList models={models} emptyLabel="Список 3D моделей пуст" mode="all" />
           {totalPages > 1 && (
             <Center>
               <Pagination withEdges total={totalPages} value={page} onChange={setPage} size="sm" radius="sm" />

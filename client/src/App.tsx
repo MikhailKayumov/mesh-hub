@@ -5,6 +5,7 @@ import '@mantine/dropzone/styles.css';
 import '@mantine/carousel/styles.css';
 import 'mantine-datatable/styles.css';
 import 'mantine-datatable/styles.layer.css';
+import '@mantine/tiptap/styles.css';
 import '@/theme/global.scss';
 
 import { Notifications } from '@mantine/notifications';

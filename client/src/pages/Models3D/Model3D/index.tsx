@@ -25,6 +25,7 @@ import RouterPaths from '@/router/paths.ts';
 import canNavigateBack from '@/utils/canNavigateBack.ts';
 import classes from './Model3DPage.module.scss';
 
+// @refresh reset
 export default function Model3DPage() {
   const navigate = useNavigate();
   const [modelFileLoading, setModelFileLoading] = useState(true);

@@ -1,5 +1,6 @@
 import {
   AxesHelper,
+  BufferGeometry,
   GridHelper,
   Light,
   LineSegments,
@@ -11,6 +12,8 @@ import {
   Object3D,
   OrthographicCamera,
   PerspectiveCamera,
+  Texture,
+  Source,
 } from 'three/src/Three.js';
 import { isObject } from '@/utils/type-guards.ts';
 
@@ -22,6 +25,22 @@ export const isMesh = (object: unknown): object is Mesh => {
 
 export const isMaterial = (object: unknown): object is Material => {
   return isObject(object) && (object as Material).isMaterial;
+};
+
+export const isTexture = (object: unknown): object is Texture => {
+  return isObject(object) && (object as Texture).isTexture;
+};
+
+export const isSource = (object: unknown): object is Source => {
+  return isObject(object) && (object as Source).isSource;
+};
+
+export const isImageBitmap = (object: unknown): object is ImageBitmap => {
+  return isObject(object) && object instanceof ImageBitmap;
+};
+
+export const isImageBitmapSource = (object: unknown): object is Texture => {
+  return isSource(object) && isImageBitmap(object.data);
 };
 
 export const isMeshBasicMaterial = (object: unknown): object is MeshBasicMaterial => {
@@ -68,6 +87,10 @@ export function isLineSegments(object: unknown): object is LineSegments {
 
 export function isDisposableObject3D(object: unknown): object is Object3D & { dispose: () => void } {
   return isObject(object) && typeof object?.dispose === 'function';
+}
+
+export function isWithGeometryObject3D(object: unknown): object is Object3D & { geometry: BufferGeometry } {
+  return isObject(object) && !!object?.geometry;
 }
 
 export function isWithMaterialObject3D(object: unknown): object is Object3D & { material: Material | Material[] } {

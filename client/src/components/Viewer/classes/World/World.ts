@@ -1,39 +1,18 @@
-import { AxesHelper, GridHelper, Material, Object3D, Scene } from 'three/src/Three.js';
+import { AxesHelper, GridHelper, Material, Object3D, Scene, Texture, Vector3 } from 'three/src/Three.js';
+import { MATERIAL_TEXTURE_FIELDS } from '@/components/Viewer/classes/World/constants.ts';
 import { PromiseWorldObject3D, WorldLights, WorldObject3D } from '../types/world.ts';
-import { isDisposableObject3D, isLight, isMesh, isWithMaterialObject3D } from '../utils/type-guards.ts';
+import { isDisposableObject3D, isLight, isWithGeometryObject3D, isWithMaterialObject3D } from '../utils/type-guards.ts';
 
-const MATERIAL_TEXTURE_FIELDS = [
-  'alphaMap',
-  'aoMap',
-  'envMap',
-  'lightMap',
-  'map',
-  'bumpMap',
-  'displacementMap',
-  'emissiveMap',
-  'gradientMap',
-  'metalnessMap',
-  'normalMap',
-  'roughnessMap',
-  'specularMap',
-  'clearcoatMap',
-  'clearcoatNormalMap',
-  'clearcoatRoughnessMap',
-  'iridescenceMap',
-  'iridescenceThicknessMap',
-  'sheenRoughnessMap',
-  'sheenColorMap',
-  'specularIntensityMap',
-  'specularColorMap',
-  'thicknessMap',
-  'transmissionMap',
-];
+// setting up axis
+Object3D.DEFAULT_UP = new Vector3(0, 1, 0);
 
 export class World extends Scene {
   public readonly lights: WorldLights = {
     ambient: null,
     spot: [],
   };
+
+  private grid: GridHelper | null = null;
 
   public async spawn(object: Array<WorldObject3D | null> | WorldObject3D | null): Promise<void> {
     if (!object) return;
@@ -59,7 +38,7 @@ export class World extends Scene {
     }
   }
 
-  public addAxisHelper(size = 1): this {
+  public spawnAxisHelper(size = 1): this {
     const axisHelper = new AxesHelper(size);
 
     this.add(axisHelper);
@@ -67,13 +46,14 @@ export class World extends Scene {
     return this;
   }
 
-  public addGridHelper(size = 100, division = 50): this {
-    const color1 = '#dee2e6';
-    const color2 = '#e9ecef';
+  public spawnGridHelper(size = 30, division = 30, color1 = '#dee2e6', color2 = '#e9ecef'): this {
+    if (this.grid) {
+      this.destroyObject(this.grid);
+      this.remove(this.grid);
+    }
 
-    const gridHelper = new GridHelper(size, division, color1, color2);
-
-    this.add(gridHelper);
+    this.grid = new GridHelper(size, division, color1, color2);
+    this.add(this.grid);
 
     return this;
   }
@@ -85,35 +65,44 @@ export class World extends Scene {
     this.overrideMaterial?.dispose();
   }
 
-  private destroyObject(object: Object3D): void {
-    if (isMesh(object)) {
-      object.geometry.dispose();
-    }
-
+  private destroyObject(object: Object3D): this {
     if (isLight(object)) {
       object.shadow?.map?.dispose();
       object.shadow?.mapPass?.dispose();
       object.shadow?.dispose();
     }
 
+    if (isWithGeometryObject3D(object)) {
+      object.geometry.dispose();
+    }
     if (isWithMaterialObject3D(object)) {
       this.destroyMaterial(object.material);
     }
-
     if (isDisposableObject3D(object)) {
       object.dispose();
     }
+
+    return this;
   }
 
-  private destroyMaterial(material: Material | Material[]): void {
+  private destroyMaterial(material: Material | Material[]): this {
     if (Array.isArray(material)) {
       material.forEach(this.destroyMaterial, this);
     } else {
       MATERIAL_TEXTURE_FIELDS.forEach((field) => {
-        (material as any)[field]?.dispose();
+        const texture = (material as any)[field] as Texture | undefined;
+        if (texture) this.destroyTexture(texture);
       });
 
       material.dispose();
     }
+
+    return this;
+  }
+
+  private destroyTexture(texture: Texture): this {
+    texture.dispose();
+
+    return this;
   }
 }

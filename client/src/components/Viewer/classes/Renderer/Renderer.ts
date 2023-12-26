@@ -1,4 +1,12 @@
 import {
+  // NoToneMapping,
+  // LinearToneMapping,
+  ReinhardToneMapping,
+  // CineonToneMapping,
+  // ACESFilmicToneMapping,
+  // CustomToneMapping,
+} from 'three/src/Three.js';
+import {
   Color,
   PCFSoftShadowMap,
   WebGLRenderer,
@@ -6,8 +14,8 @@ import {
   ColorRepresentation,
   WebGLInfo,
 } from 'three/src/Three.js';
-import { CameraController } from './Camera';
-import { World } from './world/World.ts';
+import { CameraController } from '../Camera/Camera.ts';
+import { World } from '../World';
 
 export interface RendererParameters extends WebGLRendererParameters {
   world: World;
@@ -31,6 +39,8 @@ export class Renderer {
     this.cameraController = cameraController;
 
     this.renderer = new WebGLRenderer(parameters);
+    this.renderer.toneMapping = ReinhardToneMapping;
+    this.renderer.toneMappingExposure = 2.0;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap; // PCFShadowMap,BasicShadowMap,PCFSoftShadowMap,VSMShadowMap
     this.renderer.setClearColor(new Color(0, 0, 0), 0);
@@ -76,20 +86,21 @@ export class Renderer {
   }
 
   public render(delta: number, frame: XRFrame) {
-    this.cameraController.update();
     this.renderCallbacks.forEach((cb) => cb(delta, frame));
+    this.cameraController.update();
     this.renderer.render(this.world, this.cameraController.camera);
   }
 
   public destroy() {
     window.removeEventListener('resize', this.resize);
 
+    this.renderer.setAnimationLoop(null);
     this.renderer.getRenderTarget()?.dispose();
     this.renderer.dispose();
   }
 
   public getScreenshot() {
-    return this.renderer.domElement.toDataURL('image/png', 0.4);
+    return this.renderer.domElement.toDataURL('image/png', 0.2);
   }
 
   public resize = () => {

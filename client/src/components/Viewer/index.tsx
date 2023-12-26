@@ -9,7 +9,6 @@ export interface ViewerProps extends UseViewerProps {
   className?: string;
 }
 
-// @refresh reset
 export default function Viewer({ className, ...props }: ViewerProps) {
   const { viewer, placeRef } = useViewer(props);
   const { onMouseEnter, onMouseLeave } = usePreventMiddleClick();

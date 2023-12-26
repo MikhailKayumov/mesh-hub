@@ -1,9 +1,8 @@
 import Stats from 'three/addons/libs/stats.module.js';
 import { Viewer } from '@/components/Viewer/classes/types';
-import { CameraController } from './Camera';
-import { Renderer } from './Renderer';
-import { prepareWorld } from './world/prepareWorld.ts';
-import { World } from './world/World.ts';
+import { CameraController } from './Camera/Camera.ts';
+import { Renderer } from './Renderer/Renderer.ts';
+import { World } from './World';
 
 export const run = async (place: HTMLDivElement): Promise<Viewer> => {
   const world = new World();
@@ -31,8 +30,6 @@ export const run = async (place: HTMLDivElement): Promise<Viewer> => {
   renderer.addCallback(() => {
     stats.update();
   });
-
-  await prepareWorld(world);
 
   return {
     world,

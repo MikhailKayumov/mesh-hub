@@ -80,10 +80,12 @@ export class CameraController {
     }
 
     this.control = new CameraControls(this.camera, this.canvas);
+
     this.control.smoothTime = 0.16;
     this.control.mouseButtons.left = CameraControls.ACTION.TRUCK;
     this.control.mouseButtons.right = CameraControls.ACTION.NONE;
     this.control.mouseButtons.middle = CameraControls.ACTION.ROTATE;
+
     this.control.updateCameraUp();
   }
 
@@ -107,7 +109,7 @@ export class CameraController {
 
     this.control.smoothTime = 0.672;
 
-    await sleep(0.02);
+    await sleep(0.01);
     await Promise.all([
       this.control.fitToBox(boundingBox, true, {
         cover: false,

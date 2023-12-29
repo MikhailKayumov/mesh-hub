@@ -4,7 +4,7 @@ import { CameraController } from './Camera/Camera.ts';
 import { Renderer } from './Renderer/Renderer.ts';
 import { World } from './World';
 
-export const run = async (place: HTMLDivElement): Promise<Viewer> => {
+export function initViewer(place: HTMLDivElement): Viewer {
   const world = new World();
   const camera = new CameraController();
   const renderer = new Renderer({
@@ -21,15 +21,11 @@ export const run = async (place: HTMLDivElement): Promise<Viewer> => {
   stats.dom.style.position = 'absolute';
   stats.dom.style.top = 'initial';
   stats.dom.style.right = '0';
-  stats.dom.style.bottom = '0';
+  stats.dom.style.top = '0';
   stats.dom.style.left = 'initial';
-  stats.dom.style.zIndex = '1';
-  stats.dom.style.opacity = '0.46';
+  stats.dom.style.zIndex = '50';
+  stats.dom.style.opacity = '0.70';
   place.appendChild(stats.dom);
-
-  renderer.addCallback(() => {
-    stats.update();
-  });
 
   return {
     world,
@@ -37,4 +33,4 @@ export const run = async (place: HTMLDivElement): Promise<Viewer> => {
     renderer,
     stats,
   };
-};
+}

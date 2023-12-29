@@ -1,0 +1,31 @@
+.root {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(8px);
+
+  :global(.mantine-Slider-root) {
+    flex: 1;
+  }
+
+  :global(.mantine-Slider-bar) {
+    transition: width 0.1s linear;
+  }
+
+  :global(.mantine-Slider-thumb) {
+    transition: left 0.1s linear;
+  }
+
+  &.is-interacting {
+    :global(.mantine-Slider-bar) {
+      transition: none;
+    }
+
+    :global(.mantine-Slider-thumb) {
+      transition: none;
+    }
+  }
+}
+
+[data-mantine-color-scheme=dark] {}

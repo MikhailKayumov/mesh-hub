@@ -1,19 +1,13 @@
 import {
+  Clock,
   // NoToneMapping,
   // LinearToneMapping,
   ReinhardToneMapping,
   // CineonToneMapping,
   // ACESFilmicToneMapping,
   // CustomToneMapping,
-} from 'three/src/Three.js';
-import {
-  Color,
-  PCFSoftShadowMap,
-  WebGLRenderer,
-  WebGLRendererParameters,
-  ColorRepresentation,
-  WebGLInfo,
-} from 'three/src/Three.js';
+} from 'three';
+import { Color, PCFSoftShadowMap, WebGLRenderer, WebGLRendererParameters, ColorRepresentation, WebGLInfo } from 'three';
 import { CameraController } from '../Camera/Camera.ts';
 import { World } from '../World';
 
@@ -32,7 +26,9 @@ export class Renderer {
   private renderer: WebGLRenderer;
   private world: World;
   private cameraController: CameraController;
-  private renderCallbacks: XRFrameRequestCallback[] = [];
+  public renderCallbacks: Array<(delta: number) => void> = [];
+
+  public readonly clock = new Clock();
 
   public constructor({ world, cameraController, place, ...parameters }: RendererParameters) {
     this.world = world;
@@ -56,6 +52,10 @@ export class Renderer {
     this.renderer.setClearColor(clearColor);
   }
 
+  public getPlace(): HTMLDivElement | null {
+    return this.place;
+  }
+
   public setPlace(place: HTMLDivElement): void {
     this.place = place;
     this.place.appendChild(this.renderer.domElement);
@@ -72,12 +72,17 @@ export class Renderer {
     return this.renderer.info;
   }
 
-  public addCallback(callback: XRFrameRequestCallback): this {
+  public addCallback(callback: (delta: number) => void): this {
     this.renderCallbacks.push(callback);
     return this;
   }
 
-  public run(callback?: XRFrameRequestCallback | null): void {
+  public removeCallback(callback: (delta: number) => void): this {
+    this.renderCallbacks = this.renderCallbacks.filter((i) => i !== callback);
+    return this;
+  }
+
+  public run(callback?: (delta: number) => void | null): void {
     if (callback) {
       this.renderCallbacks.push(callback);
     }
@@ -85,15 +90,18 @@ export class Renderer {
     this.renderer.setAnimationLoop(this.render.bind(this));
   }
 
-  public render(delta: number, frame: XRFrame) {
-    this.renderCallbacks.forEach((cb) => cb(delta, frame));
+  public render() {
+    const delta = this.clock.getDelta();
+
     this.cameraController.update();
+    this.renderCallbacks.forEach((cb) => cb(delta));
     this.renderer.render(this.world, this.cameraController.camera);
   }
 
   public destroy() {
     window.removeEventListener('resize', this.resize);
 
+    this.renderCallbacks = [];
     this.renderer.setAnimationLoop(null);
     this.renderer.getRenderTarget()?.dispose();
     this.renderer.dispose();

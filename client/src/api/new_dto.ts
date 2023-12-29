@@ -15,6 +15,12 @@ export interface CgSoftResponse {
   description?: string;
 }
 
+export interface CategoryResponse {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 export interface UserMetaResponseDto {
   id: string;
   aboutYourself?: string;
@@ -117,12 +123,6 @@ export interface Model3DFileResponseDto {
   extension: string;
 }
 
-export interface CategoryResponse {
-  id: number;
-  name: string;
-  description?: string;
-}
-
 export interface Model3DResponseDto {
   id: string;
   /** @format date-time */
@@ -133,8 +133,21 @@ export interface Model3DResponseDto {
   ownerAvatar?: string;
   ownerName: string;
   name: string;
+  isVisible: boolean;
   file: Model3DFileResponseDto;
-  description?: string;
+  description?: object;
   thumbnail?: string;
   categories?: CategoryResponse[];
+}
+
+export interface CategoryRequest {
+  id: number;
+  name: string;
+}
+
+export interface Model3DUpdateRequestDto {
+  name?: string;
+  isVisible?: boolean;
+  description?: object;
+  categories?: CategoryRequest[];
 }

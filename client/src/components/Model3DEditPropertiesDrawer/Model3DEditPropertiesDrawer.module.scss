@@ -35,6 +35,42 @@
   flex-direction: column;
   position: relative;
 
+  .model-name-field {
+    flex: 1;
+
+    & :global(.mantine-TextInput-input) {
+      --_input-padding-right: rem(42px);
+    }
+
+    & :global(.mantine-TextInput-section[data-position='right']) {
+      --_input-right-section-size: rem(42px);
+    }
+
+    .model-name-field-remaining {
+      border-radius: var(--_input-radius);
+      padding: 0;
+      width: rem(30px);
+    }
+  }
+
+  .model-visible-field {
+    & :global(.mantine-Switch-body) {
+      height: rem(36px);
+      display: flex;
+      align-items: center;
+    }
+
+    .eye-icon, .eye-off-icon {
+      color: var(--mantine-primary-color-6);
+      width: rem(14px);
+      height: rem(14px);
+    }
+
+    .eye-off-icon {
+      color: var(--mantine-color-dimmed);
+    }
+  }
+
   .wysiwyg {
     flex: 1;
   }
@@ -43,7 +79,6 @@
     position: sticky;
     bottom: 24px;
     right: 0;
-    gap: 24px;
   }
 
   .button {

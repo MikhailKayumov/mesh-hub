@@ -14,8 +14,10 @@ const ApiUrls = {
   ChangePassword: 'user/change-password',
   // resources
   ResourcesCGSoft: 'resources/cg-soft/all',
+  ResourcesCategories: 'resources/category/all',
   // models 3d
   Get3DModels: 'models-3d',
+  Update3DModels: 'models-3d',
   SaveThumbnailBase64: 'save-thumbnail-base64',
   CurrentUser3DModels: 'models-3d/current-user',
   Upload3DModel: 'models-3d/upload',

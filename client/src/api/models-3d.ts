@@ -1,5 +1,5 @@
 import Api from '@/api/base.ts';
-import { PaginationResponseDto, Model3DResponseDto, PaginationDto } from '@/api/dto.ts';
+import { PaginationResponseDto, Model3DResponseDto, PaginationDto, Model3DUpdateRequestDto } from '@/api/dto.ts';
 import ApiTags from '@/api/tags.ts';
 import ApiUrls from '@/api/urls.ts';
 
@@ -18,6 +18,18 @@ const Models3dApi = Api.injectEndpoints({
       query: (id) => ({
         method: 'GET',
         url: `${ApiUrls.Get3DModels}/${id}`,
+      }),
+    }),
+    updateModel3D: build.mutation<Model3DResponseDto, { id: string; body: Model3DUpdateRequestDto }>({
+      invalidatesTags: (_result, _error, arg) => [
+        ApiTags.Reset,
+        ApiTags.Get3DModels,
+        { type: ApiTags.Get3DModel, id: arg.id },
+      ],
+      query: ({ id, body }) => ({
+        method: 'PATCH',
+        url: `${ApiUrls.Update3DModels}/${id}`,
+        body,
       }),
     }),
     currentUser3DModels: build.query<PaginationResponseDto<Model3DResponseDto>, PaginationDto<any>>({
@@ -43,11 +55,9 @@ const Models3dApi = Api.injectEndpoints({
         url: `${ApiUrls.Get3DModels}/${id}`,
       }),
     }),
-    saveThumbnailBase64: build.mutation<void, { id: string; thumbnail: string }>({
+    saveThumbnailFromBase64: build.mutation<void, { id: string; thumbnail: string }>({
       invalidatesTags: [ApiTags.CurrentUser3DModels, ApiTags.Get3DModels],
       query: ({ id, thumbnail }) => {
-        console.log('thumbnail >>>', thumbnail);
-
         return {
           method: 'POST',
           url: `${ApiUrls.Get3DModels}/${id}/${ApiUrls.SaveThumbnailBase64}`,
@@ -62,10 +72,11 @@ const Models3dApi = Api.injectEndpoints({
 export const {
   useUpload3DModelMutation,
   useCurrentUser3DModelsQuery,
+  useUpdateModel3DMutation,
   useDelete3DModelMutation,
   useModels3DQuery,
   useModel3DQuery,
-  useSaveThumbnailBase64Mutation,
+  useSaveThumbnailFromBase64Mutation,
 } = Models3dApi;
 
 export default Models3dApi;

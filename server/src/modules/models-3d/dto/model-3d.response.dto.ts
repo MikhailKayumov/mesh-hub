@@ -24,11 +24,14 @@ export class Model3dResponseDto {
   @ApiProperty()
   public name: string;
 
+  @ApiProperty()
+  public isVisible: boolean;
+
   @ApiProperty({ type: () => Model3dFileResponseDto })
   public file: Model3dFileResponseDto;
 
   @ApiPropertyOptional()
-  public description?: string;
+  public description?: Record<string, any>;
 
   @ApiPropertyOptional()
   public thumbnail?: string;

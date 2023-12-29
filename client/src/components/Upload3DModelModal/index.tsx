@@ -4,7 +4,7 @@ import { notifications } from '@mantine/notifications';
 import { IconCubePlus, IconUpload } from '@tabler/icons-react';
 import { FileRejection } from 'react-dropzone-esm';
 import validate3DModelFile from '@/components/Upload3DModelModal/validate3DModelFile.ts';
-import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants/files.ts';
+import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
 import formatBytes from '@/utils/format-bytes.ts';
 import classes from './Upload3DModelModal.module.scss';

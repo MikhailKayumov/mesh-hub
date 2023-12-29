@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const onMousedown = (event: MouseEvent) => {
   if (event.button == 1) {
@@ -20,8 +20,11 @@ export default function usePreventMiddleClick() {
     };
   }, [isOn]);
 
-  return {
-    onMouseEnter: () => setIsOn(true),
-    onMouseLeave: () => setIsOn(false),
-  };
+  return useMemo(
+    () => ({
+      onMouseEnter: () => setIsOn(true),
+      onMouseLeave: () => setIsOn(false),
+    }),
+    [],
+  );
 }

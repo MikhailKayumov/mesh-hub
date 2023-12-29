@@ -14,7 +14,7 @@ export interface Model3DCard {
 export default function Model3DCard({ model }: Model3DCard) {
   return (
     <Card withBorder className={classes.card} p={0}>
-      <Model3DCardThumbnail id={model.id} fileId={model.file.id} thumbnail={model.thumbnail} />
+      <Model3DCardThumbnail id={model.id} name={model.name} fileId={model.file.id} thumbnail={model.thumbnail} />
       <Group wrap="nowrap" gap={0} p="xs" py="xs">
         <Tooltip label={model.ownerName} withArrow position="top-start" offset={1} openDelay={500}>
           <Avatar radius="xs" src={getAvatarSrcByString(model.ownerAvatar)} color="primary" size={22}></Avatar>

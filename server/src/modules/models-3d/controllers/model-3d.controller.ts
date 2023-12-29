@@ -8,20 +8,29 @@ import {
   Param,
   ParseFilePipe,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBadRequestResponse, ApiBody, ApiConsumes, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { UserRoles } from '@/constants';
-import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants/files';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiConsumes,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UserRoles, ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { User } from '@/decorators/user/user.decorator';
 import { Model3dResponseDto } from '@/modules/models-3d/dto/model-3d.response.dto';
+import { Model3dUpdateRequestDto } from '@/modules/models-3d/dto/model-3d.update.request.dto';
 import { Models3dRequestDto } from '@/modules/models-3d/dto/models-3d.request.dto';
 import { Model3dService } from '@/modules/models-3d/services/model-3d.service';
 import { FileExtensionValidatorPipe } from '@/pipes/file-extension-validator.pipe';
@@ -66,6 +75,19 @@ export class Model3dController {
     return this.model3dService.get3DModel(modelId, user);
   }
 
+  @Patch(':modelId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  @ApiBadRequestResponse()
+  @ApiNotFoundResponse()
+  public async update3DModel(
+    @Param('modelId', ParseUUIDPipe) modelId: string,
+    @User() user: UserEntity,
+    @Body() body: Model3dUpdateRequestDto,
+  ) {
+    return this.model3dService.update3DModel(modelId, user, body);
+  }
+
   @Delete(':modelId')
   @Roles([UserRoles.User])
   @HttpCode(HttpStatus.OK)
@@ -79,12 +101,12 @@ export class Model3dController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOkResponse()
   @ApiBadRequestResponse()
-  public async save3DModelThumbnailFormBase64(
+  public async save3DModelThumbnailFromBase64(
     @User() user: UserEntity,
     @Param('modelId', ParseUUIDPipe) modelId: string,
     @Body('thumbnail') thumbnail: string,
   ): Promise<void> {
-    return this.model3dService.save3DModelThumbnailFormBase64(user, modelId, thumbnail);
+    return this.model3dService.save3DModelThumbnailFromBase64(user, modelId, thumbnail);
   }
 
   @Post('upload')

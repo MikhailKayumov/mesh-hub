@@ -14,11 +14,21 @@ import {
   PerspectiveCamera,
   Texture,
   Source,
-} from 'three/src/Three.js';
+  SkinnedMesh,
+  Bone,
+} from 'three';
 import { isObject } from '@/utils/type-guards.ts';
+
+export const isBone = (object: unknown): object is Bone => {
+  return isObject(object) && (object as Bone).isBone;
+};
 
 export const isMesh = (object: unknown): object is Mesh => {
   return isObject(object) && (object as Mesh).isMesh;
+};
+
+export const isSkinnedMesh = (object: unknown): object is SkinnedMesh => {
+  return isMesh(object) && (object as SkinnedMesh).isSkinnedMesh;
 };
 
 // ####### materials #######

@@ -1,4 +1,4 @@
-import { Center, Container, Flex, Loader, Pagination, Stack, Text } from '@mantine/core';
+import { Center, Container, Flex, Loader, Pagination, Stack } from '@mantine/core';
 import { useWindowScroll } from '@mantine/hooks';
 import { useEffect } from 'react';
 import Models3DList from '@/components/Models3DList';
@@ -15,7 +15,7 @@ export default function MainPage() {
 
   return (
     <Container style={{ flex: 1, flexDirection: 'column' }} display="flex">
-      <Text mb="xs">todo: add filters</Text>
+      {/*<Text mb="lg">todo: add filters</Text>*/}
       {isModelsLoading ? (
         <Flex align="center" justify="center" style={{ flex: 1 }}>
           <Loader />

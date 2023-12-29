@@ -19,10 +19,13 @@ export class Model3dEntity extends GuidIdEntityBase {
   public file: Model3dFileEntity;
 
   @Column({ type: 'json', nullable: true })
-  public description?: string;
+  public description?: Record<string, any>;
 
   @Column({ type: 'text', nullable: true })
   public thumbnail?: string;
+
+  @Column({ type: 'boolean', nullable: false, default: true })
+  public isVisible: boolean;
 
   @ManyToMany(() => CategoryEntity, { nullable: true })
   @JoinTable({

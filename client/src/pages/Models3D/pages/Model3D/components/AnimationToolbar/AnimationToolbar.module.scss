@@ -1,0 +1,20 @@
+.root {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  padding: rem(18px) rem(24px);
+  background-color: var(--mantine-color-white);
+
+  .icon {
+    width: rem(22px);
+    height: rem(22px);
+  }
+}
+
+[data-mantine-color-scheme=dark] {
+  .root {
+    background-color: var(--mantine-color-dark-8);
+  }
+}

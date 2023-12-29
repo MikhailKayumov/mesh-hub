@@ -1,4 +1,4 @@
-import { ColorRepresentation, Vector3 } from 'three/src/Three.js';
+import { ColorRepresentation, Vector3 } from 'three';
 
 export interface BuildBaseLightOptions {
   color?: ColorRepresentation;

@@ -21,7 +21,7 @@ const routes: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <Navigate replace to={RouterPaths.Login} />,
+            element: <Navigate to={RouterPaths.Login} />,
           },
           {
             path: RouterPaths.Login,
@@ -75,7 +75,7 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Id,
-            lazy: async () => ({ Component: (await import('../pages/Models3D/Model3D')).default }),
+            lazy: async () => ({ Component: (await import('../pages/Models3D/pages/Model3D')).default }),
           },
         ],
       },

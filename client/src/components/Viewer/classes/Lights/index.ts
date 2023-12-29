@@ -6,12 +6,12 @@ import {
   SpotLight,
   SpotLightHelper,
   MathUtils,
-} from 'three/src/Three.js';
+} from 'three';
 import {
   BuildAmbientLightOptions,
   BuildDirectionLightOptions,
   BuildSpotLightOptions,
-} from '@/components/Viewer/classes/lights/types.ts';
+} from '@/components/Viewer/classes/Lights/types.ts';
 
 export function buildAmbientLight({ color = 0x000000, intensity = 0.2 }: BuildAmbientLightOptions = {}): AmbientLight {
   return new AmbientLight(color, intensity);

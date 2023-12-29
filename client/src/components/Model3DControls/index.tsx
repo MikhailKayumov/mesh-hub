@@ -1,6 +1,6 @@
 import { ActionIcon, Button, Group, Menu, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconChevronDown, IconDownload, IconEdit, IconSettings, IconTrash } from '@tabler/icons-react';
+import { IconChevronDown, IconDownload, IconEdit, IconTrash } from '@tabler/icons-react';
 import useDeleteModel3D from '@/components/Model3DControls/useDeleteModel3D.ts';
 import Model3DEditPropertiesDrawer from '@/components/Model3DEditPropertiesDrawer';
 import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
@@ -8,7 +8,7 @@ import { getModel3DFileSrc } from '@/utils/model3d.ts';
 import classes from './Model3DControls.module.scss';
 
 export default function Model3DControls() {
-  const model = useModel3DContext();
+  const { model } = useModel3DContext();
   const { onDelete, isDeleting } = useDeleteModel3D(model?.id);
   const [editPropertiesOpened, { open, close }] = useDisclosure(false);
 
@@ -34,9 +34,9 @@ export default function Model3DControls() {
             >
               Скачать
             </Menu.Item>
-            <Menu.Item leftSection={<IconSettings style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}>
+            {/*<Menu.Item leftSection={<IconSettings style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}>
               3D Настройки
-            </Menu.Item>
+            </Menu.Item>*/}
             <Menu.Item
               c="red"
               onClick={onDelete}

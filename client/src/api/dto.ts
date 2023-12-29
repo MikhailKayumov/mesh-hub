@@ -110,6 +110,11 @@ export interface CategoryResponse {
   description?: string;
 }
 
+export interface CategoryRequest {
+  id: number;
+  name: string;
+}
+
 export interface Model3DResponseDto {
   id: string;
   createdAt: string;
@@ -118,10 +123,18 @@ export interface Model3DResponseDto {
   ownerAvatar?: string;
   ownerName: string;
   name: string;
+  isVisible: boolean;
   file: Model3DFileResponseDto;
-  description?: string;
+  description?: Record<string, any>;
   thumbnail?: string;
   categories?: CategoryResponse[];
+}
+
+export interface Model3DUpdateRequestDto {
+  name?: string;
+  isVisible?: boolean;
+  description?: object;
+  categories?: CategoryRequest[];
 }
 
 /**

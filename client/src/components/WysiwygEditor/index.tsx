@@ -14,17 +14,15 @@ import classes from './WysiwygEditor.module.scss';
 
 export interface WysiwygEditorProps {
   value: JSONContent;
-  onChange: any;
-
+  onChange: (content: JSONContent | null) => void;
   label?: string;
   className?: string;
 }
 
 export default function WysiwygEditor({ value, label, className, onChange }: WysiwygEditorProps) {
   const onUpdate = useDebouncedCallback((e: EditorEvents['update']) => {
-    onChange(e.editor.getJSON());
+    onChange(!e.editor.isEmpty ? e.editor.getJSON() : null);
   });
-
   const editor: Editor | null = useEditor({
     extensions: [
       StarterKit,
@@ -38,11 +36,16 @@ export default function WysiwygEditor({ value, label, className, onChange }: Wys
     content: value,
     onUpdate,
   });
+  const focus = () => {
+    if (editor?.isFocused) return;
+    editor?.commands.focus('end');
+  };
 
-  useEffect(() => () => editor?.destroy(), []);
+  useEffect(() => () => editor?.destroy(), [editor]);
 
   return (
-    <Input.Wrapper label={label} className={clsx(classes.wrapper, className)}>
+    <Input.Wrapper className={clsx(classes.wrapper, className)}>
+      <Input.Label onClick={focus}>{label}</Input.Label>
       <RichTextEditor editor={editor}>
         <RichTextEditor.Toolbar sticky stickyOffset={-10}>
           <RichTextEditor.ControlsGroup>
@@ -79,13 +82,7 @@ export default function WysiwygEditor({ value, label, className, onChange }: Wys
             <RichTextEditor.AlignRight />
           </RichTextEditor.ControlsGroup>
         </RichTextEditor.Toolbar>
-        <RichTextEditor.Content
-          className={classes.content}
-          onClick={() => {
-            if (editor?.isFocused) return;
-            editor?.commands.focus('end');
-          }}
-        />
+        <RichTextEditor.Content className={classes.content} onClick={focus} />
       </RichTextEditor>
     </Input.Wrapper>
   );

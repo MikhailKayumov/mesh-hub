@@ -12,7 +12,7 @@ import {
   Vector2,
   Vector3,
   Vector4,
-} from 'three/src/Three.js';
+} from 'three';
 import sleep from '@/utils/sleep.ts';
 
 CameraControls.install({
@@ -83,8 +83,8 @@ export class CameraController {
 
     this.control.smoothTime = 0.16;
     this.control.mouseButtons.left = CameraControls.ACTION.TRUCK;
-    this.control.mouseButtons.right = CameraControls.ACTION.NONE;
-    this.control.mouseButtons.middle = CameraControls.ACTION.ROTATE;
+    this.control.mouseButtons.right = CameraControls.ACTION.ROTATE;
+    this.control.mouseButtons.middle = CameraControls.ACTION.NONE;
 
     this.control.updateCameraUp();
   }
@@ -107,9 +107,10 @@ export class CameraController {
     );
     await this.control.rotateTo(MathUtils.degToRad(160), MathUtils.degToRad(62), false);
 
-    this.control.smoothTime = 0.672;
+    this.control.smoothTime = 0.472;
 
-    await sleep(0.01);
+    await sleep(0.02);
+
     await Promise.all([
       this.control.fitToBox(boundingBox, true, {
         cover: false,

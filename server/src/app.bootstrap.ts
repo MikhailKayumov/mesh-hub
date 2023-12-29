@@ -29,9 +29,11 @@ export default class AppBootstrap {
 
     this.application.use(cookieParser());
     this.application.enableCors(this.configService.cors);
+
     // todo: delete, mode to guard/interceptor
-    this.application.use(json({ limit: '100mb' }));
-    this.application.use(urlencoded({ extended: true, limit: '100mb' }));
+    this.application.use(json({ limit: '5mb' }));
+    this.application.use(urlencoded({ extended: true, limit: '5mb' }));
+
     this.application.setGlobalPrefix(this.configService.app.prefix);
     this.application.useGlobalPipes(
       new ValidationPipe({
@@ -52,9 +54,12 @@ export default class AppBootstrap {
         enableDebugMessages: !this.configService.isProduction,
       }),
     );
+
     this.application.useStaticAssets(join(process.cwd(), 'files'), {
-      cacheControl: 'no-cache',
+      maxAge: '1000',
+      index: false,
     });
+
     this.application.useGlobalInterceptors(new LoggingInterceptor());
     this.application.useLogger(this.application.get(LoggerService));
 

@@ -1,4 +1,16 @@
-import { AxesHelper, GridHelper, Material, Object3D, Scene, Texture, Vector3 } from 'three/src/Three.js';
+import {
+  AxesHelper,
+  GridHelper,
+  Material,
+  MathUtils,
+  Mesh,
+  MeshStandardMaterial,
+  Object3D,
+  PlaneGeometry,
+  Scene,
+  Texture,
+  Vector3,
+} from 'three';
 import { MATERIAL_TEXTURE_FIELDS } from '@/components/Viewer/classes/World/constants.ts';
 import { PromiseWorldObject3D, WorldLights, WorldObject3D } from '../types/world.ts';
 import { isDisposableObject3D, isLight, isWithGeometryObject3D, isWithMaterialObject3D } from '../utils/type-guards.ts';
@@ -13,6 +25,7 @@ export class World extends Scene {
   };
 
   private grid: GridHelper | null = null;
+  private ground: Mesh | null = null;
 
   public async spawn(object: Array<WorldObject3D | null> | WorldObject3D | null): Promise<void> {
     if (!object) return;
@@ -58,6 +71,22 @@ export class World extends Scene {
     return this;
   }
 
+  public spawnGroundHelper(color = '#dee2e6'): this {
+    if (this.ground) {
+      this.destroyObject(this.ground);
+      this.remove(this.ground);
+    }
+
+    const geometry = new PlaneGeometry(10, 10, 24, 24);
+    const material = new MeshStandardMaterial({ color });
+    this.ground = new Mesh(geometry, material);
+    this.ground.rotateX(MathUtils.degToRad(-90));
+
+    this.add(this.ground);
+
+    return this;
+  }
+
   public destroy(): void {
     this.traverse(this.destroyObject.bind(this));
     this.clear();
@@ -65,7 +94,7 @@ export class World extends Scene {
     this.overrideMaterial?.dispose();
   }
 
-  private destroyObject(object: Object3D): this {
+  public destroyObject(object: Object3D): this {
     if (isLight(object)) {
       object.shadow?.map?.dispose();
       object.shadow?.mapPass?.dispose();
@@ -85,7 +114,7 @@ export class World extends Scene {
     return this;
   }
 
-  private destroyMaterial(material: Material | Material[]): this {
+  public destroyMaterial(material: Material | Material[]): this {
     if (Array.isArray(material)) {
       material.forEach(this.destroyMaterial, this);
     } else {
@@ -100,7 +129,7 @@ export class World extends Scene {
     return this;
   }
 
-  private destroyTexture(texture: Texture): this {
+  public destroyTexture(texture: Texture): this {
     texture.dispose();
 
     return this;

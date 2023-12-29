@@ -1,5 +1,5 @@
+import { AnimationClip, AnimationObjectGroup, Group } from 'three';
 import { GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { AnimationClip, Group } from 'three/src/Three.js';
 import { CameraController } from '../Camera/Camera.ts';
 import { Renderer } from '../Renderer/Renderer.ts';
 import { World } from '../World';
@@ -9,6 +9,10 @@ export interface Viewer {
   camera: CameraController;
   renderer: Renderer;
   stats: Stats;
+  animations?: {
+    clips: AnimationClip[];
+    objectGroup: AnimationObjectGroup;
+  };
 }
 
 export interface ViewerModel3D {

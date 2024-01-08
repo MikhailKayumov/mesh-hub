@@ -3,7 +3,7 @@ import { forwardRef, useState } from 'react';
 import { IMaskInput, IMaskInputProps } from 'react-imask';
 
 export interface PhoneInputProps extends InputProps {
-  value: string;
+  value?: string;
   mask?: string;
   error?: any;
   placeholder?: string;

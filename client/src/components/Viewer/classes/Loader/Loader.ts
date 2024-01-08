@@ -16,7 +16,7 @@ export class Loader {
       const loader = new FBXLoader();
       const loadedModel = await loader.loadAsync(fileSrc);
 
-      model = { scene: loadedModel, animations: [] };
+      model = { scene: loadedModel, animations: loadedModel.animations };
     } else {
       const loader = new GLTFLoader();
       const loadedModel = await loader.loadAsync(fileSrc);

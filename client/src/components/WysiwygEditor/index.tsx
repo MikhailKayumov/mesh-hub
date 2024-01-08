@@ -13,7 +13,7 @@ import { useDebouncedCallback } from '@/hooks/useDebounced.ts';
 import classes from './WysiwygEditor.module.scss';
 
 export interface WysiwygEditorProps {
-  value: JSONContent;
+  value?: JSONContent;
   onChange: (content: JSONContent | null) => void;
   label?: string;
   className?: string;

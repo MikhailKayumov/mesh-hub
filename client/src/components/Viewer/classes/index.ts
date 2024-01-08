@@ -17,15 +17,18 @@ export function initViewer(place: HTMLDivElement): Viewer {
     alpha: true,
   });
 
-  const stats = new Stats();
-  stats.dom.style.position = 'absolute';
-  stats.dom.style.top = 'initial';
-  stats.dom.style.right = '0';
-  stats.dom.style.top = '0';
-  stats.dom.style.left = 'initial';
-  stats.dom.style.zIndex = '50';
-  stats.dom.style.opacity = '0.70';
-  place.appendChild(stats.dom);
+  let stats = null;
+  if (import.meta.env.MODE === 'development') {
+    stats = new Stats();
+    stats.dom.style.position = 'absolute';
+    stats.dom.style.top = 'initial';
+    stats.dom.style.right = '0';
+    stats.dom.style.top = '0';
+    stats.dom.style.left = 'initial';
+    stats.dom.style.zIndex = '50';
+    stats.dom.style.opacity = '0.70';
+    place.appendChild(stats.dom);
+  }
 
   return {
     world,

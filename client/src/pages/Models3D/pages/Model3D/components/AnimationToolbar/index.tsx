@@ -1,5 +1,5 @@
 import { ActionIcon, Group } from '@mantine/core';
-import { IconPlayerPauseFilled, IconPlayerPlayFilled } from '@tabler/icons-react';
+import { IconArrowsMaximize, IconPlayerPauseFilled, IconPlayerPlayFilled } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { UseAnimationsReturn } from '@/components/Viewer/hooks/useAnimations.ts';
@@ -15,9 +15,16 @@ export interface AnimationToolbarProps {
   };
   autorun?: boolean;
   className?: string;
+  toggleFullscreen?: () => void;
 }
 
-export default function AnimationToolbar({ animations, blends, autorun = false, className }: AnimationToolbarProps) {
+export default function AnimationToolbar({
+  animations,
+  blends,
+  autorun = false,
+  className,
+  toggleFullscreen,
+}: AnimationToolbarProps) {
   const prevActionRef = useRef(animations.action);
   const [isPaused, setIsPaused] = useState(autorun);
 
@@ -47,7 +54,7 @@ export default function AnimationToolbar({ animations, blends, autorun = false, 
   }, [animations.action]);
 
   return (
-    <Group px="sm" py="sm" className={clsx(classes.root, className)} align="center">
+    <Group px="sm" py="sm" gap={8} className={clsx(classes.root, className)} align="center">
       <ActionIcon c="dimmed" variant="transparent" onClick={onPlayToggle}>
         {isPaused ? (
           <IconPlayerPlayFilled className={classes.icon} />
@@ -56,6 +63,9 @@ export default function AnimationToolbar({ animations, blends, autorun = false, 
         )}
       </ActionIcon>
       <AnimationProgress animations={animations} />
+      <ActionIcon c="dimmed" variant="transparent" onClick={toggleFullscreen}>
+        <IconArrowsMaximize className={classes.icon} />
+      </ActionIcon>
       <AnimationList animations={animations} />
     </Group>
   );

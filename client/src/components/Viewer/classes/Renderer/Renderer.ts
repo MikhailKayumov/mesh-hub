@@ -20,12 +20,13 @@ export interface RendererParameters extends WebGLRendererParameters {
 }
 
 export class Renderer {
-  // viewport
   private place: HTMLDivElement | null = null;
+  private placeObserver: ResizeObserver | null = null;
 
   private renderer: WebGLRenderer;
   private world: World;
   private cameraController: CameraController;
+
   public renderCallbacks: Array<(delta: number) => void> = [];
 
   public readonly clock = new Clock();
@@ -57,11 +58,18 @@ export class Renderer {
   }
 
   public setPlace(place: HTMLDivElement): void {
+    if (this.place) {
+      this.placeObserver?.unobserve(this.place);
+    }
+
+    this.placeObserver?.disconnect();
+
     this.place = place;
     this.place.appendChild(this.renderer.domElement);
 
     this.resize();
-    window.addEventListener('resize', this.resize);
+    this.placeObserver = new ResizeObserver(() => this.resize());
+    this.placeObserver.observe(this.place);
   }
 
   public getRenderer(): WebGLRenderer {
@@ -99,8 +107,11 @@ export class Renderer {
   }
 
   public destroy() {
-    window.removeEventListener('resize', this.resize);
+    if (this.place) {
+      this.placeObserver?.unobserve(this.place);
+    }
 
+    this.placeObserver?.disconnect();
     this.renderCallbacks = [];
     this.renderer.setAnimationLoop(null);
     this.renderer.getRenderTarget()?.dispose();

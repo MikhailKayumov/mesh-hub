@@ -1,6 +1,6 @@
 import { Group, Slider } from '@mantine/core';
 import { clsx } from 'clsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { UseAnimationsReturn } from '@/components/Viewer/hooks/useAnimations.ts';
 import { formatAnimationTime } from '@/pages/Models3D/pages/Model3D/components/AnimationProgress/utils.ts';
 import classes from './AnimationProgress.module.scss';
@@ -11,11 +11,13 @@ export interface AnimationProgressProps {
 
 // @refresh reset
 export default function AnimationProgress({ animations }: AnimationProgressProps) {
+  const prevAnimationStateRef = useRef(false);
   const [animationTime, setAnimationTime] = useState(0);
   const [isInteracting, setIsInteracting] = useState(false);
 
   const onAnimationTimeChange = (value: number) => {
     if (!animations.action) return;
+    setAnimationTime(value);
     animations.action.time = value;
   };
 
@@ -42,6 +44,16 @@ export default function AnimationProgress({ animations }: AnimationProgressProps
       cancelAnimationFrame(rafId);
     };
   }, [animations.action]);
+  useEffect(() => {
+    if (!animations.action) return;
+
+    if (isInteracting) {
+      prevAnimationStateRef.current = animations.action.paused;
+      animations.action.paused = true;
+    } else {
+      animations.action.paused = prevAnimationStateRef.current;
+    }
+  }, [isInteracting]);
 
   return (
     <Group className={clsx(classes.root, isInteracting && classes['is-interacting'])}>

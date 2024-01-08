@@ -8,7 +8,7 @@ export interface Viewer {
   world: World;
   camera: CameraController;
   renderer: Renderer;
-  stats: Stats;
+  stats: Stats | null;
   animations?: {
     clips: AnimationClip[];
     objectGroup: AnimationObjectGroup;

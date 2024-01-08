@@ -3,7 +3,7 @@ import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
 import { Model3DResponseDto } from '@/api/dto.ts';
 import { initViewer } from '@/components/Viewer/classes';
 import { Viewer } from '@/components/Viewer/classes/types';
-import { isBone, isMesh, isSkinnedMesh } from '@/components/Viewer/classes/utils';
+import { isMesh, isSkinnedMesh } from '@/components/Viewer/classes/utils';
 import { prepareWorld } from '@/components/Viewer/classes/World/prepareWorld.ts';
 import { UseAnimationsProps } from '@/components/Viewer/hooks/useAnimations.ts';
 import sleep from '@/utils/sleep.ts';
@@ -42,7 +42,9 @@ export default function useViewer({ model, onLoad }: UseViewerProps) {
     if (!viewer) return;
 
     viewer.camera.on(viewer.renderer.getCanvas());
-    viewer.renderer.addCallback(() => viewer.stats.update());
+    if (viewer.stats) {
+      viewer.renderer.addCallback(() => viewer.stats?.update());
+    }
 
     return () => {
       viewer?.world.destroy();
@@ -67,10 +69,7 @@ export default function useViewer({ model, onLoad }: UseViewerProps) {
       const ag: AnimationObjectGroup = new AnimationObjectGroup();
 
       scene.traverse((object: Object3D) => {
-        if (isBone(object)) {
-          // console.log(new Vector3().setFromMatrixPosition(object.matrixWorld));
-          // bb.expandByPoint(new Vector3().setFromMatrixPosition(object.matrixWorld));
-        } else if (isSkinnedMesh(object)) {
+        if (isSkinnedMesh(object)) {
           const vector = new Vector3();
 
           for (let i = 0; i < object.geometry.attributes.position.count; i++) {
@@ -85,11 +84,8 @@ export default function useViewer({ model, onLoad }: UseViewerProps) {
 
           ag.add(object);
         } else if (isMesh(object)) {
-          // console.log(object);
           object.geometry.computeBoundingBox();
           object.geometry.computeBoundingSphere();
-        } else {
-          // console.log(object);
         }
       });
 

@@ -22,7 +22,6 @@ export default function Model3DPage() {
   return (
     <Model3DContextProvider model={data}>
       <Model3DPageHeader />
-
       <Paper withBorder p={0} className={classes.content}>
         <Box className={classes['viewer-wrapper']}>
           <Model3DPageViewer onLoad={() => setIsViewerLoading(false)} />

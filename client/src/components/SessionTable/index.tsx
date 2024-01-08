@@ -51,6 +51,8 @@ export default function SessionTable() {
         columns={columns}
         minHeight={141}
         height="auto"
+        width="100%"
+        style={{ overflow: 'hidden', width: '100%' }}
         rowStyle={({ id }) => {
           if (session !== id) return;
           return (theme) => ({ backgroundColor: isDark ? theme.colors.dark[8] : theme.colors.gray[1] });

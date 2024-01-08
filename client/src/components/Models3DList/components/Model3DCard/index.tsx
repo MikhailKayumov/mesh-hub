@@ -1,59 +1,37 @@
-import { Avatar, Card, Group, Image, rem, Skeleton, Text, Tooltip } from '@mantine/core';
-import { useState } from 'react';
+import { Avatar, Card, Group, Text, Tooltip } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { Model3DResponseDto } from '@/api/dto.ts';
 import RouterPaths from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import { getThumbnailSrc } from '@/utils/model3d.ts';
 import { getAvatarSrcByString } from '@/utils/user.ts';
 import classes from '../../Models3DList.module.scss';
-import fallback from './model-3d-thumbnail-fallback.jpg';
+import Model3DCardThumbnail from '../Model3DCardThumbnail';
 
-export interface Model3DCard extends Model3DResponseDto {}
+export interface Model3DCard {
+  model: Model3DResponseDto;
+}
 
-export default function Model3DCard({ name, ownerAvatar, ownerName, id, file, thumbnail }: Model3DCard) {
-  const to = buildAbsolutePath([RouterPaths.Models, id]);
-  const [thumbnailLoading, setThumbnailLoading] = useState(true);
-
+export default function Model3DCard({ model }: Model3DCard) {
   return (
-    <Card withBorder className={classes.card} p={0} shadow="sm">
-      <Card.Section>
-        <Skeleton visible={thumbnailLoading}>
-          <Link to={to}>
-            <Image
-              src={getThumbnailSrc(file.id, thumbnail)}
-              fallbackSrc={fallback}
-              className={classes.thumbnail}
-              onLoad={() => setThumbnailLoading(false)}
-              onError={() => setThumbnailLoading(false)}
-            />
-          </Link>
-        </Skeleton>
-      </Card.Section>
-
+    <Card withBorder className={classes.card} p={0}>
+      <Model3DCardThumbnail id={model.id} name={model.name} fileId={model.file.id} thumbnail={model.thumbnail} />
       <Group wrap="nowrap" gap={0} p="xs" py="xs">
-        <Tooltip label={ownerName} withArrow position="bottom-start" openDelay={500} fz={12} lh={rem(17)}>
-          <Avatar radius="xs" src={getAvatarSrcByString(ownerAvatar)} size={22}></Avatar>
+        <Tooltip label={model.ownerName} withArrow position="top-start" offset={1} openDelay={500}>
+          <Avatar radius="xs" src={getAvatarSrcByString(model.ownerAvatar)} color="primary" size={22}></Avatar>
         </Tooltip>
-        <Tooltip
-          multiline
-          maw={260}
-          withArrow
-          label={name}
-          position="bottom-start"
-          openDelay={500}
-          fz={12}
-          lh={rem(17)}
-        >
-          <Text c="text" ml={6} size="sm" truncate="end" className={classes['model-name']} component={Link} to={to}>
-            {name}
+        <Tooltip label={model.name} position="top-start" openDelay={500}>
+          <Text
+            c="text"
+            ml={6}
+            size="sm"
+            truncate="end"
+            className={classes['model-name']}
+            component={Link}
+            to={buildAbsolutePath([RouterPaths.Models, model.id])}
+          >
+            {model.name}
           </Text>
         </Tooltip>
-        {/*{isOwner && (*/}
-        {/*  <ActionIcon variant="transparent" c="dimmed" ml={14} mr={-10}>*/}
-        {/*    <IconDotsVertical size={22} />*/}
-        {/*  </ActionIcon>*/}
-        {/*)}*/}
       </Group>
     </Card>
   );

@@ -1,0 +1,3 @@
+export const MAX_MODEL_3D_NAME_LENGTH = 255;
+
+export const MAX_MODEL_3D_CATEGORIES_LENGTH = 3;

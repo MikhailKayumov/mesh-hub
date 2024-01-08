@@ -1,7 +1,7 @@
 const RouterPaths = {
   // common
   Base: '/',
-  Models: 'models',
+  Models: 'models-3d',
   Id: ':id',
 
   // auth

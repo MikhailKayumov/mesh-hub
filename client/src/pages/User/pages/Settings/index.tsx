@@ -9,7 +9,7 @@ export default function SettingsPage() {
   return (
     <>
       <Title mb="lg">Настройки</Title>
-      <Paper withBorder p={24}>
+      <Paper withBorder p={24} style={{ flex: 1, width: '100%', overflow: 'hidden' }}>
         <Title order={4} fw={400} mb="sm">
           Цветовая тема
         </Title>

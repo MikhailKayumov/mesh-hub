@@ -15,7 +15,7 @@ export default function UserAgentColumn({ userAgent }: UserAgentColumnProps) {
   }
 
   return (
-    <Tooltip withArrow multiline fz={12} position="bottom-start" w={430} label={userAgent}>
+    <Tooltip position="bottom-start" label={userAgent}>
       <Text size="sm" truncate="end">
         {parseUserAgent(userAgent)}
       </Text>

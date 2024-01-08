@@ -1,10 +1,22 @@
-import { CameraController } from '@/components/Viewer/classes/Camera.ts';
-import { Renderer } from '@/components/Viewer/classes/Renderer.ts';
-import { World } from '@/components/Viewer/classes/World.ts';
+import { AnimationClip, AnimationObjectGroup, Group } from 'three';
+import { GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { CameraController } from '../Camera/Camera.ts';
+import { Renderer } from '../Renderer/Renderer.ts';
+import { World } from '../World';
 
 export interface Viewer {
   world: World;
-  cameraController: CameraController;
+  camera: CameraController;
   renderer: Renderer;
   stats: Stats;
+  animations?: {
+    clips: AnimationClip[];
+    objectGroup: AnimationObjectGroup;
+  };
+}
+
+export interface ViewerModel3D {
+  scene: Group;
+  animations?: AnimationClip[];
+  associations?: GLTFParser['associations'];
 }

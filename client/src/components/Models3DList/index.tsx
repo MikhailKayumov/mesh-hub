@@ -2,7 +2,6 @@ import { Flex, Grid } from '@mantine/core';
 import { Model3DResponseDto } from '@/api/dto.ts';
 import EmptyData from '@/components/EmptyData';
 import Model3DCard from './components/Model3DCard';
-import classes from './Models3DList.module.scss';
 
 export interface Models3DList {
   mode?: 'user' | 'all';
@@ -20,14 +19,12 @@ export default function Models3DList({ models, emptyLabel }: Models3DList) {
   }
 
   return (
-    <Grid align="stretch" className={classes.root}>
-      {models.map((model) => {
-        return (
-          <Grid.Col key={model.id} span={{ base: 12, md: 6, lg: 4 }}>
-            <Model3DCard {...model} />
-          </Grid.Col>
-        );
-      })}
+    <Grid align="stretch">
+      {models.map((model) => (
+        <Grid.Col key={model.id} span={{ base: 12, md: 6, lg: 4 }}>
+          <Model3DCard model={model} />
+        </Grid.Col>
+      ))}
     </Grid>
   );
 }

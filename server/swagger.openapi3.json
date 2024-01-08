@@ -25,6 +25,30 @@
         ]
       }
     },
+    "/api/resources/category/all": {
+      "get": {
+        "operationId": "ResourcesController_getCategories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "resources"
+        ]
+      }
+    },
     "/api/user/current": {
       "get": {
         "operationId": "UserController_getCurrentUser",
@@ -644,6 +668,43 @@
           "models-3d"
         ]
       },
+      "patch": {
+        "operationId": "Model3dController_update3DModel",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Model3dUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "models-3d"
+        ]
+      },
       "delete": {
         "operationId": "Model3dController_delete3DModel",
         "parameters": [
@@ -668,7 +729,7 @@
     },
     "/api/models-3d/{modelId}/save-thumbnail-base64": {
       "post": {
-        "operationId": "Model3dController_save3DModelThumbnailFormBase64",
+        "operationId": "Model3dController_save3DModelThumbnailFromBase64",
         "parameters": [
           {
             "name": "modelId",
@@ -762,6 +823,24 @@
     },
     "schemas": {
       "CgSoftResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "CategoryResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -1099,24 +1178,6 @@
           "extension"
         ]
       },
-      "CategoryResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name"
-        ]
-      },
       "Model3dResponseDto": {
         "type": "object",
         "properties": {
@@ -1143,11 +1204,14 @@
           "name": {
             "type": "string"
           },
+          "isVisible": {
+            "type": "boolean"
+          },
           "file": {
             "$ref": "#/components/schemas/Model3dFileResponseDto"
           },
           "description": {
-            "type": "string"
+            "type": "object"
           },
           "thumbnail": {
             "type": "string"
@@ -1165,8 +1229,44 @@
           "isOwner",
           "ownerName",
           "name",
+          "isVisible",
           "file"
         ]
+      },
+      "CategoryRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Model3dUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "object"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryRequest"
+            }
+          }
+        }
       }
     }
   }

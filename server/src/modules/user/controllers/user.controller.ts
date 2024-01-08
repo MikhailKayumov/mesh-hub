@@ -21,8 +21,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { UserRoles } from '@/constants';
-import { ALLOWED_AVATAR_FILE_TYPES, MAX_AVATAR_FILE_SIZE } from '@/constants/files';
+import { UserRoles, ALLOWED_AVATAR_FILE_TYPES, MAX_AVATAR_FILE_SIZE } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { User } from '@/decorators/user/user.decorator';

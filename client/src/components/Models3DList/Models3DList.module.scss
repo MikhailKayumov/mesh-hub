@@ -1,26 +1,85 @@
-.root {
-  .card {
-    height: 100%;
+.card {
+  cursor: pointer;
+  height: 100%;
+  transition: transform 180ms ease-in, border-color 170ms ease-out, box-shadow 170ms ease-out;
 
-    transition: transform 110ms ease-in-out, box-shadow 170ms ease-out;
+  .thumbnail {
+    overflow: hidden;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-bottom: var(--_paper-border);
+    transition: border-color 170ms ease-out;
+    background-color: var(--mantine-color-dark-7);
+
+    .image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.17s cubic-bezier(.59,.2,.78,.58);
+    }
+
+    .fallback {
+      transition: transform 0.17s cubic-bezier(.59,.2,.78,.58);
+      & .cube-top,& .cube-right,& .cube-left {
+        transition: fill 0.17s ease-out;
+        fill: var(--mantine-color-dark-4)
+      }
+    }
+  }
+
+  .model-name {
+    word-break: break-all;
+    color: var(--mantine-color-text);
+    text-decoration: none;
+    flex: 1;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--mantine-color-primary-filled);
+
+    .thumbnail {
+      border-color: var(--mantine-color-primary-filled);
+
+      .image {
+        transform: scale(1.08);
+      }
+
+      .fallback {
+        transform: scale(1.08);
+        & .cube-top,& .cube-right,& .cube-left {
+          fill: var(--mantine-color-primary-filled-hover)
+        }
+      }
+    }
+  }
+}
+
+[data-mantine-color-scheme=light] {
+  .card {
+    box-shadow: var(--mantine-shadow-sm);
+
+    .thumbnail {
+      background-color: var(--mantine-color-gray-2);
+
+      .fallback  {
+        & .cube-top,& .cube-right,& .cube-left {
+          fill: var(--mantine-color-gray-4)
+        }
+      }
+    }
 
     &:hover {
       box-shadow: var(--mantine-shadow-lg);
-    }
 
-    &:active {
-      box-shadow: var(--mantine-shadow-xs);
-    }
-
-    .thumbnail {
-      aspect-ratio: 16 / 9;
-    }
-
-    .model-name {
-      word-break: break-all;
-      color: var(--mantine-color-text);
-      text-decoration: none;
-      flex: 1;
+      .thumbnail {
+        .fallback  {
+          & .cube-top,& .cube-right,& .cube-left {
+            fill: var(--mantine-color-primary-filled-hover)
+          }
+        }
+      }
     }
   }
 }

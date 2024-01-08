@@ -1,0 +1,87 @@
+.root {
+  & :global(.mantine-ScrollArea-root) {
+    position: relative;
+    padding-top: 76px;
+  }
+
+  & :global(.mantine-ScrollArea-viewport) > div {
+    height: 100%;
+  }
+
+  & :global(.mantine-Drawer-inner) {
+    height: 100%;
+  }
+
+  & :global(.mantine-Drawer-content) {
+    height: 100%;
+  }
+
+  & :global(.mantine-Drawer-header) {
+    height: 76px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  & :global(.mantine-Drawer-body) {
+    height: 100%;
+  }
+}
+
+.form {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  .model-name-field {
+    flex: 1;
+
+    & :global(.mantine-TextInput-input) {
+      --_input-padding-right: rem(42px);
+    }
+
+    & :global(.mantine-TextInput-section[data-position='right']) {
+      --_input-right-section-size: rem(42px);
+    }
+
+    .model-name-field-remaining {
+      border-radius: var(--_input-radius);
+      padding: 0;
+      width: rem(30px);
+    }
+  }
+
+  .model-visible-field {
+    & :global(.mantine-Switch-body) {
+      height: rem(36px);
+      display: flex;
+      align-items: center;
+    }
+
+    .eye-icon, .eye-off-icon {
+      color: var(--mantine-primary-color-6);
+      width: rem(14px);
+      height: rem(14px);
+    }
+
+    .eye-off-icon {
+      color: var(--mantine-color-dimmed);
+    }
+  }
+
+  .wysiwyg {
+    flex: 1;
+  }
+
+  .buttons {
+    position: sticky;
+    bottom: 24px;
+    right: 0;
+  }
+
+  .button {
+    width: 160px;
+  }
+}

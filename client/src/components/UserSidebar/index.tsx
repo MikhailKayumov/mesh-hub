@@ -1,4 +1,4 @@
-import { Box, NavLink, rem, Skeleton, Text, Tooltip } from '@mantine/core';
+import { Box, NavLink, Skeleton, Text, Tooltip } from '@mantine/core';
 import { IconCube, IconSettings, IconUser } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { NavLink as RRDNavLink } from 'react-router-dom';
@@ -20,18 +20,10 @@ export default function UserSidebar({ className }: UserSidebarProps) {
     <Box visibleFrom="sm" className={clsx(classes.root, className)}>
       <Avatar user={user} isLoading={isUserLoading} />
       <Skeleton visible={isUserLoading} mb={24} h={42}>
-        <Tooltip
-          withArrow
-          arrowSize={6}
-          label={user ? getUserFullName(user, true) : ''}
-          position="right"
-          openDelay={500}
-          fz={12}
-          lh={rem(17)}
-        >
+        <Tooltip label={user ? getUserFullName(user, true) : ''} position="right" openDelay={500}>
           <Text ta="center">{user ? getUserFullName(user) : ''}</Text>
         </Tooltip>
-        <Tooltip withArrow arrowSize={6} label={user?.email} position="right" openDelay={500} fz={12} lh={rem(17)}>
+        <Tooltip label={user?.email} position="right" openDelay={500}>
           <Text ta="center" truncate="end" size="xs" c="dimmed">
             {user?.email}
           </Text>

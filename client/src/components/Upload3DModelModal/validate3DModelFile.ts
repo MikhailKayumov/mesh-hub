@@ -1,5 +1,5 @@
 import { ErrorCode, FileError } from 'react-dropzone-esm';
-import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants/files.ts';
+import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
 import formatBytes from '@/utils/format-bytes.ts';
 
 export default function validate3DModelFile(file: File | DataTransferItem): FileError | null {

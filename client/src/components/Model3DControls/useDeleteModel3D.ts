@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useDelete3DModelMutation } from '@/api/models-3d.ts';
 import RouterPaths from '@/router/paths.ts';
 
-export default function useDeleteModel3D(id: string) {
+export default function useDeleteModel3D(id?: string | null) {
   const navigate = useNavigate();
   const [deleteModel, { isLoading: isDeleting }] = useDelete3DModelMutation();
 
   const onDelete = async () => {
+    if (!id) return;
+
     try {
       await deleteModel(id).unwrap();
       notifications.show({

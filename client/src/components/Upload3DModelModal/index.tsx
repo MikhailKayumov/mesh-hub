@@ -4,7 +4,7 @@ import { notifications } from '@mantine/notifications';
 import { IconCubePlus, IconUpload } from '@tabler/icons-react';
 import { FileRejection } from 'react-dropzone-esm';
 import validate3DModelFile from '@/components/Upload3DModelModal/validate3DModelFile.ts';
-import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants/files.ts';
+import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
 import formatBytes from '@/utils/format-bytes.ts';
 import classes from './Upload3DModelModal.module.scss';
@@ -98,7 +98,7 @@ export default function Upload3DModelModal() {
           </Stack>
         </Dropzone>
         <Group mt={12} justify="space-between" c={!model ? 'dimmed' : undefined} gap={16} wrap="nowrap" align="center">
-          <Tooltip label={model?.name} position="bottom-start" withArrow fz={12} lh={rem(17)} multiline maw={380}>
+          <Tooltip label={model?.name ?? 'Файл не выбран'} position="top-start" openDelay={500}>
             <Text lh={rem(20)} size="sm" truncate="end">
               {model ? model.name : 'Файл не выбран'}
             </Text>

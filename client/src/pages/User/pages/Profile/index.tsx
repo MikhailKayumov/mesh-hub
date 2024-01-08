@@ -34,7 +34,7 @@ export default function ProfilePage() {
               placeholder="Введите ваш номер телефона"
               mb={16}
             />
-            <Tooltip label="Email изменить нельзя" position="right" withArrow offset={0} fz={12}>
+            <Tooltip label="Email изменить нельзя" position="right" offset={2}>
               <TextInput {...form.getInputProps('email')} readOnly label="Email" placeholder="your@email.ru" mb={16} />
             </Tooltip>
             <Textarea

@@ -1,4 +1,4 @@
-import { Container, createTheme, DEFAULT_THEME, mergeMantineTheme } from '@mantine/core';
+import { Container, createTheme, DEFAULT_THEME, mergeMantineTheme, rem, Tooltip } from '@mantine/core';
 import { clsx } from 'clsx';
 import {
   bluegrayColors,
@@ -40,6 +40,17 @@ export const baseTheme = mergeMantineTheme(
         classNames: (_, { size, fluid }) => ({
           root: clsx({ 'responsive-container': size === 'responsive' && !fluid }),
         }),
+      }),
+      Tooltip: Tooltip.extend({
+        defaultProps: {
+          withArrow: true,
+          arrowSize: 6,
+          arrowOffset: 17,
+          fz: 12,
+          lh: rem(17),
+          multiline: true,
+          maw: 320,
+        },
       }),
     },
   }),

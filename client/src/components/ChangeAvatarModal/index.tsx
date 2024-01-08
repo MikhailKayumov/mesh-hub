@@ -5,7 +5,7 @@ import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { FileWithPath } from 'react-dropzone-esm';
 import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
-import { MAX_AVATAR_FILE_SIZE } from '@/constants/files.ts';
+import { MAX_AVATAR_FILE_SIZE } from '@/constants';
 import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
 import formatBytes from '@/utils/format-bytes.ts';
 import classes from './ChangeAvatarModal.module.scss';

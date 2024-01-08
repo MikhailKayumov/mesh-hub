@@ -7,7 +7,7 @@ import { MAX_MODEL_3D_CATEGORIES_LENGTH, MAX_MODEL_3D_NAME_LENGTH } from '@/cons
 import classes from './Model3DEditPropertiesDrawer.module.scss';
 
 export default function Model3DEditPropertiesDrawer({ model, opened, onClose }: Model3DEditPropertiesDrawerProps) {
-  const { form, categories, isSubmitting, onSubmit } = useModel3DEditPropertiesForm(model);
+  const { form, categories, isSubmitting, onSubmit } = useModel3DEditPropertiesForm(model, onClose);
 
   const onCancel = () => {
     form.reset();

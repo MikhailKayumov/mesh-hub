@@ -15,7 +15,7 @@ import getFormDirtyFields from '@/utils/getFormDirtyFields.ts';
 import processFormSubmitError from '@/utils/processFormSubmitError.ts';
 import { Model3DPropertiesForm } from './model.ts';
 
-export default function useModel3DEditPropertiesForm(model: Model3DResponseDto) {
+export default function useModel3DEditPropertiesForm(model: Model3DResponseDto, onClose: () => void) {
   const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);
   const [update] = useUpdateModel3DMutation();
   const { data: categories } = useCategoriesQuery();
@@ -43,6 +43,7 @@ export default function useModel3DEditPropertiesForm(model: Model3DResponseDto) 
         submitStart();
         await update({ id: model.id, body: transformValuesFromFormToRequest(data, categories) }).unwrap();
         notifications.show({ message: 'Информация о модели успешно изменена', color: 'green', autoClose: 3000 });
+        onClose();
       } catch (e) {
         processFormSubmitError<Model3DPropertiesForm>(form, e);
       } finally {

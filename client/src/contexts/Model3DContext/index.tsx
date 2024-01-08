@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
-import { UseModel3DDataReturn } from '@/pages/Models3D/Model3D/useModel3DData.ts';
+import { UseModel3DDataReturn } from '@/pages/Models3D/pages/Model3D/useModel3DData.ts';
 import Model3DContext from './context.ts';
 
 export interface Model3DContextProviderProps {

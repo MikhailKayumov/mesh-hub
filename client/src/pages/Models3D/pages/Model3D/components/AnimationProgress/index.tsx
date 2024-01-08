@@ -2,14 +2,11 @@ import { Group, Slider } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useEffect, useState } from 'react';
 import { UseAnimationsReturn } from '@/components/Viewer/hooks/useAnimations.ts';
+import { formatAnimationTime } from '@/pages/Models3D/pages/Model3D/components/AnimationProgress/utils.ts';
 import classes from './AnimationProgress.module.scss';
 
 export interface AnimationProgressProps {
   animations: UseAnimationsReturn;
-}
-
-export function formatAnimationTime(value: number) {
-  return `${value.toFixed(2)}`;
 }
 
 // @refresh reset

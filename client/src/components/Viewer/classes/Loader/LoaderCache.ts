@@ -6,7 +6,7 @@ export default class LoaderCache {
   private static readonly store = new Map<string, ViewerModel3D>();
 
   public static getItem(name: string): ViewerModel3D | undefined {
-    return undefined; // this.store.get(name);
+    return this.store.get(name);
   }
 
   public static setItem(name: string, data: ViewerModel3D): LoaderCache {

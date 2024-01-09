@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup } from 'three';
-import { Viewer } from '@/components/Viewer/classes/types';
+import { Viewer } from '../classes/types';
 
 export interface UseAnimationsProps {
   clips: AnimationClip[];

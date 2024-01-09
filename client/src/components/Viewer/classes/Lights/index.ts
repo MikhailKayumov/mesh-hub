@@ -7,11 +7,7 @@ import {
   SpotLightHelper,
   MathUtils,
 } from 'three';
-import {
-  BuildAmbientLightOptions,
-  BuildDirectionLightOptions,
-  BuildSpotLightOptions,
-} from '@/components/Viewer/classes/Lights/types.ts';
+import { BuildAmbientLightOptions, BuildDirectionLightOptions, BuildSpotLightOptions } from './types.ts';
 
 export function buildAmbientLight({ color = 0x000000, intensity = 0.2 }: BuildAmbientLightOptions = {}): AmbientLight {
   return new AmbientLight(color, intensity);

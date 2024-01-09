@@ -1,7 +1,6 @@
 import CameraControls from 'camera-controls';
 import {
   Box3,
-  Clock,
   MathUtils,
   Matrix4,
   PerspectiveCamera,
@@ -29,8 +28,6 @@ CameraControls.install({
   },
 });
 
-const clock = new Clock();
-
 export class CameraController {
   public camera: PerspectiveCamera;
   public control: CameraControls | null = null;
@@ -47,11 +44,6 @@ export class CameraController {
 
     this.resize();
     this.createControl();
-
-    // this.control?.addEventListener('control', (event: any) => {
-    //   // console.log(event.target.distance);
-    //   // console.log([event.target.boundaryFriction, event.target.azimuthAngle, event.target.polarAngle]);
-    // });
   }
 
   public off(): void {
@@ -59,8 +51,8 @@ export class CameraController {
     this.control?.dispose();
   }
 
-  public update() {
-    return this.control?.update(clock.getDelta());
+  public update(delta: number) {
+    return this.control?.update(delta);
   }
 
   public resize() {

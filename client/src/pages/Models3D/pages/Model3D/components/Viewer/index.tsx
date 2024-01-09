@@ -1,6 +1,6 @@
 import { ActionIcon, Box, Tooltip } from '@mantine/core';
+import { useFullscreen } from '@mantine/hooks';
 import { IconPhotoSensor } from '@tabler/icons-react';
-import { useRef } from 'react';
 import useAnimations from '@/components/Viewer/hooks/useAnimations.ts';
 import usePreventMiddleClick from '@/components/Viewer/hooks/usePreventMiddleClick';
 import useViewer, { UseViewerProps } from '@/components/Viewer/hooks/useViewer.ts';
@@ -11,7 +11,7 @@ import classes from './Viewer.module.scss';
 export interface Model3DPageViewerProps extends Omit<UseViewerProps, 'model'> {}
 
 export default function Model3DPageViewer({ onInit, onLoad }: Model3DPageViewerProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const { ref: rootRef, toggle: toggleFullscreen, fullscreen } = useFullscreen();
   const { onMouseEnter, onMouseLeave } = usePreventMiddleClick();
   const { model, saveThumbnail, isThumbnailSaving } = useModel3DContext();
   const { viewer, placeRef, animationData } = useViewer({ model, onLoad, onInit });
@@ -20,15 +20,6 @@ export default function Model3DPageViewer({ onInit, onLoad }: Model3DPageViewerP
   const onSaveThumbnailClick = () => {
     if (!viewer || !saveThumbnail) return;
     saveThumbnail(viewer.renderer.getScreenshot());
-  };
-  const toggleFullscreen = async () => {
-    if (!rootRef.current) return;
-
-    if (!document.fullscreenElement) {
-      await rootRef.current.requestFullscreen();
-    } else if (document.exitFullscreen) {
-      await document.exitFullscreen();
-    }
   };
 
   return (
@@ -52,6 +43,7 @@ export default function Model3DPageViewer({ onInit, onLoad }: Model3DPageViewerP
           autorun
           animations={animations}
           className={classes['animation-toolbar']}
+          fullscreen={fullscreen}
           toggleFullscreen={toggleFullscreen}
         />
       )}

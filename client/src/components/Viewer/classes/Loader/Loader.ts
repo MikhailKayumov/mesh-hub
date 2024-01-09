@@ -1,9 +1,9 @@
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Model3DResponseDto } from '@/api/dto.ts';
-import LoaderCache from '@/components/Viewer/classes/Loader/LoaderCache.ts';
-import { ViewerModel3D } from '@/components/Viewer/classes/types';
 import { getModel3DFileSrc } from '@/utils/model3d.ts';
+import { ViewerModel3D } from '../types';
+import { LoaderCache } from './LoaderCache.ts';
 
 export class Loader {
   public static async load({ file }: Model3DResponseDto): Promise<ViewerModel3D> {

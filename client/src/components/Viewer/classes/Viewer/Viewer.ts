@@ -1,6 +1,6 @@
-import { CameraController } from '@/components/Viewer/classes/Camera/Camera.ts';
-import { Renderer } from '@/components/Viewer/classes/Renderer/Renderer.ts';
-import { World } from '@/components/Viewer/classes/World';
+import { CameraController } from '../Camera';
+import { Renderer } from '../Renderer';
+import { World } from '../World';
 
 export class Viewer {
   public world: World;

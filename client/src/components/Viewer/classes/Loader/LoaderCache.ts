@@ -1,7 +1,7 @@
 import { ViewerModel3D } from '@/components/Viewer/classes/types';
 import { isImageBitmapSource, isTexture } from '@/components/Viewer/classes/utils';
 
-export default class LoaderCache {
+export class LoaderCache {
   private static readonly MAX_SIZE = 10;
   private static readonly store = new Map<string, ViewerModel3D>();
 
@@ -41,7 +41,7 @@ export default class LoaderCache {
 
   public static clear(removeItemCount?: number): LoaderCache {
     if (!removeItemCount || removeItemCount >= this.store.size) {
-      Array.from(this.store.keys()).forEach(this.removeItem, this);
+      this.store.clear();
     } else {
       const keys = Array.from(this.store.keys());
       for (let i = 0; i < removeItemCount; i++) {

@@ -1,34 +1,17 @@
-import {
-  Clock,
-  // NoToneMapping,
-  // LinearToneMapping,
-  ReinhardToneMapping,
-  // CineonToneMapping,
-  // ACESFilmicToneMapping,
-  // CustomToneMapping,
-} from 'three';
-import { Color, PCFSoftShadowMap, WebGLRenderer, WebGLRendererParameters, ColorRepresentation, WebGLInfo } from 'three';
-import { CameraController } from '../Camera/Camera.ts';
+import { Clock, ReinhardToneMapping, Color, PCFSoftShadowMap, WebGLRenderer } from 'three';
+import { CameraController } from '../Camera';
+import { RendererParameters } from '../types';
 import { World } from '../World';
-
-export interface RendererParameters extends WebGLRendererParameters {
-  world: World;
-  cameraController: CameraController;
-  place?: HTMLDivElement;
-  pixelRatio?: number;
-  clearColor?: Color;
-}
 
 export class Renderer {
   private place: HTMLDivElement | null = null;
   private placeObserver: ResizeObserver | null = null;
 
-  private renderer: WebGLRenderer;
-  private world: World;
+  private readonly renderer: WebGLRenderer;
+  private readonly world: World;
   private cameraController: CameraController;
 
   public renderCallbacks: Array<(delta: number) => void> = [];
-
   public readonly clock = new Clock();
 
   public constructor({ world, cameraController, place, ...parameters }: RendererParameters) {
@@ -49,10 +32,6 @@ export class Renderer {
     return this.renderer.domElement;
   }
 
-  public setClearColor(clearColor: ColorRepresentation = new Color('#282828')) {
-    this.renderer.setClearColor(clearColor);
-  }
-
   public getPlace(): HTMLDivElement | null {
     return this.place;
   }
@@ -70,14 +49,6 @@ export class Renderer {
     this.resize();
     this.placeObserver = new ResizeObserver(() => this.resize());
     this.placeObserver.observe(this.place);
-  }
-
-  public getRenderer(): WebGLRenderer {
-    return this.renderer;
-  }
-
-  public getInfo(): WebGLInfo {
-    return this.renderer.info;
   }
 
   public addCallback(callback: (delta: number) => void): this {
@@ -101,7 +72,7 @@ export class Renderer {
   public render() {
     const delta = this.clock.getDelta();
 
-    this.cameraController.update();
+    this.cameraController.update(delta);
     this.renderCallbacks.forEach((cb) => cb(delta));
     this.renderer.render(this.world, this.cameraController.camera);
   }

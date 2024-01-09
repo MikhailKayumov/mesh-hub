@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
 import { Model3DResponseDto } from '@/api/dto.ts';
-import { initViewer } from '@/components/Viewer/classes';
-import { Viewer } from '@/components/Viewer/classes/types';
-import { isMesh, isSkinnedMesh } from '@/components/Viewer/classes/utils';
-import { prepareWorld } from '@/components/Viewer/classes/World/prepareWorld.ts';
-import { UseAnimationsProps } from '@/components/Viewer/hooks/useAnimations.ts';
 import sleep from '@/utils/sleep.ts';
+import { initViewer } from '../classes';
 import { Loader } from '../classes/Loader';
+import { Viewer } from '../classes/types';
+import { isMesh, isSkinnedMesh } from '../classes/utils';
+import { UseAnimationsProps } from './useAnimations.ts';
 
 export interface UseViewerProps {
   model?: Model3DResponseDto;
@@ -96,7 +95,7 @@ export default function useViewer({ model, onLoad }: UseViewerProps) {
       scene.translateY(bb.min.y * -1);
       bb.translate(new Vector3(0, bb.min.y * -1, 0));
 
-      await prepareWorld(viewer.world);
+      await viewer.world.prepare();
 
       if (ag.stats.objects.total && loadedAnimations?.length) {
         setAnimationData({ objectGroup: ag, clips: loadedAnimations });

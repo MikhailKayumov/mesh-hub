@@ -1,7 +1,7 @@
 import Stats from 'three/addons/libs/stats.module.js';
-import { Viewer } from '@/components/Viewer/classes/types';
-import { CameraController } from './Camera/Camera.ts';
-import { Renderer } from './Renderer/Renderer.ts';
+import { CameraController } from './Camera';
+import { Renderer } from './Renderer';
+import { Viewer } from './types';
 import { World } from './World';
 
 export function initViewer(place: HTMLDivElement): Viewer {

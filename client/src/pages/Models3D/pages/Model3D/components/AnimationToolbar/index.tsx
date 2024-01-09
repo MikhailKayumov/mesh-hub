@@ -1,10 +1,5 @@
 import { ActionIcon, Group } from '@mantine/core';
-import {
-  IconArrowsMaximize,
-  IconArrowsMinimize,
-  IconPlayerPauseFilled,
-  IconPlayerPlayFilled,
-} from '@tabler/icons-react';
+import { IconPlayerPauseFilled, IconPlayerPlayFilled } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { UseAnimationsReturn } from '@/components/Viewer/hooks/useAnimations.ts';
@@ -19,19 +14,10 @@ export interface AnimationToolbarProps {
     fadeOutDuration: number;
   };
   autorun?: boolean;
-  fullscreen?: boolean;
   className?: string;
-  toggleFullscreen?: () => void;
 }
 
-export default function AnimationToolbar({
-  animations,
-  blends,
-  autorun = false,
-  fullscreen,
-  className,
-  toggleFullscreen,
-}: AnimationToolbarProps) {
+export default function AnimationToolbar({ animations, blends, autorun = false, className }: AnimationToolbarProps) {
   const prevActionRef = useRef(animations.action);
   const [isPaused, setIsPaused] = useState(autorun);
 
@@ -70,9 +56,6 @@ export default function AnimationToolbar({
         )}
       </ActionIcon>
       <AnimationProgress animations={animations} />
-      <ActionIcon c="dimmed" variant="transparent" onClick={toggleFullscreen}>
-        {fullscreen ? <IconArrowsMinimize className={classes.icon} /> : <IconArrowsMaximize className={classes.icon} />}
-      </ActionIcon>
       <AnimationList animations={animations} />
     </Group>
   );

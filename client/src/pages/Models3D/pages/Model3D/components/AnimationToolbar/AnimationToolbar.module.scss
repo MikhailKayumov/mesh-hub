@@ -5,7 +5,7 @@
   left: 0;
   z-index: 1;
   padding: rem(18px) rem(24px);
-  background-color: var(--mantine-color-white);
+  //background-color: var(--mantine-color-white);
 
   .icon {
     width: rem(22px);
@@ -15,6 +15,6 @@
 
 [data-mantine-color-scheme=dark] {
   .root {
-    background-color: var(--mantine-color-dark-8);
+    //background-color: var(--mantine-color-dark-8);
   }
 }

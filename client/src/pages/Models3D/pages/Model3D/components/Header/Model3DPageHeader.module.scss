@@ -1,0 +1,12 @@
+.model-name-title {
+  flex: 1;
+
+  .model-name-title-skeleton {
+    flex: 1;
+    height: rem(38px);
+  }
+
+  .model-name-title-text {
+    transform: translateY(-3px);
+  }
+}

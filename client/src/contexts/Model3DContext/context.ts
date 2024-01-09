@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import { UseModel3DDataReturn } from '@/pages/Models3D/pages/Model3D/useModel3DData.ts';
+import { Model3DResponseDto } from '@/api/dto.ts';
 
-const Model3DContext = createContext<Partial<UseModel3DDataReturn>>({});
+const Model3DContext = createContext<Model3DResponseDto | null>(null);
 
 export default Model3DContext;

@@ -2,14 +2,12 @@ import { Badge, Button, Drawer, Group, Input, MultiSelect, ScrollArea, Switch, T
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
 import WysiwygEditor from '@/components/WysiwygEditor';
 import { MAX_MODEL_3D_CATEGORIES_LENGTH, MAX_MODEL_3D_NAME_LENGTH } from '@/constants';
-import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
-import { Model3DEditPropertiesDrawerProps } from '@/pages/Models3D/pages/Model3D/components/Header/components/EditPropertiesDrawer/model.ts';
-import useModel3DEditPropertiesForm from '@/pages/Models3D/pages/Model3D/components/Header/components/EditPropertiesDrawer/useModel3DEditPropertiesForm.ts';
+import { Model3DEditPropertiesDrawerProps } from './model.ts';
 import classes from './Model3DEditPropertiesDrawer.module.scss';
+import useModel3DEditPropertiesForm from './useModel3DEditPropertiesForm.ts';
 
 export default function Model3DEditPropertiesDrawer({ opened, onClose }: Model3DEditPropertiesDrawerProps) {
-  const model = useModel3DContext();
-  const { form, categories, isSubmitting, onSubmit } = useModel3DEditPropertiesForm(model, onClose);
+  const { form, categories, isSubmitting, onSubmit } = useModel3DEditPropertiesForm(onClose);
 
   const onCancel = () => {
     form.reset();
@@ -75,7 +73,7 @@ export default function Model3DEditPropertiesDrawer({ opened, onClose }: Model3D
           <Button variant="outline" className={classes.button} onClick={onCancel} disabled={isSubmitting}>
             Отмена
           </Button>
-          <Button type="submit" className={classes.button} loading={isSubmitting}>
+          <Button type="submit" className={classes.button} loading={isSubmitting} disabled={!form.isDirty()}>
             Сохранить
           </Button>
         </Group>

@@ -23,7 +23,7 @@ export default function Model3DPage() {
       <Model3DPageHeader />
       <Paper withBorder p={0} className={classes.content}>
         <Box className={classes['viewer-wrapper']}>
-          <Model3DViewer onLoad={() => setIsViewerLoading(false)} />
+          <Model3DViewer model={model3d} onReady={() => setIsViewerLoading(false)} />
           <LoadingOverlay
             zIndex={10}
             className={classes['viewer-loader']}

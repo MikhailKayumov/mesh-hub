@@ -1,17 +1,12 @@
 import { Center, Container, Flex, Loader, Pagination, Stack } from '@mantine/core';
-import { useWindowScroll } from '@mantine/hooks';
-import { useEffect } from 'react';
 import Models3DList from '@/components/Models3DList';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
-import useModels from './useModels.ts';
+import useModels3D from './useModels3D.ts';
 
 export default function MainPage() {
   useDocumentTitle('Главная');
 
-  const { models, isModelsLoading, page, setPage, totalPages } = useModels();
-
-  const [, scrollTo] = useWindowScroll();
-  useEffect(() => scrollTo({ y: 0 }), [page]);
+  const { models, isModelsLoading, page, setPage, totalPages } = useModels3D();
 
   return (
     <Container style={{ flex: 1, flexDirection: 'column' }} display="flex">

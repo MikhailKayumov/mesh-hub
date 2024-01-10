@@ -1,14 +1,22 @@
-import { ActionIcon, Group } from '@mantine/core';
-import { IconArrowsMaximize, IconArrowsMinimize } from '@tabler/icons-react';
-import AnimationToolbar from '@/pages/Models3D/pages/Model3D/components/AnimationToolbar';
-import classes from '@/pages/Models3D/pages/Model3D/components/Model3DViewer/Viewer.module.scss';
+import { Group } from '@mantine/core';
+import classes from './BottomBar.module.scss';
+import AnimationToolbar from './components/AnimationToolbar';
+import ToggleFullscreenButton from './components/ToggleFullscreenButton';
 
-export default function Model3DViewerBottomBar() {
+export interface Model3DViewerBottomBarProps {
+  fullscreen: boolean;
+  toggleFullscreen: () => void;
+}
+
+export default function Model3DViewerBottomBar({ fullscreen, toggleFullscreen }: Model3DViewerBottomBarProps) {
   return (
-    <Group className={classes['bottom-toolbar']}>
-      {/*{animations.clips && (*/}
-      {/*  <AnimationToolbar autorun={false} animations={animations} className={classes['animation-toolbar']} />*/}
-      {/*)}*/}
+    <Group className={classes.root} gap={0}>
+      <AnimationToolbar autorun className={classes.animations} />
+      <ToggleFullscreenButton
+        className={classes['toggle-fullscreen-button']}
+        fullscreen={fullscreen}
+        toggleFullscreen={toggleFullscreen}
+      />
     </Group>
   );
 }

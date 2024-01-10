@@ -2,12 +2,12 @@ import { Center, Flex, Group, Loader, Pagination, Stack, Title } from '@mantine/
 import Models3DList from '@/components/Models3DList';
 import Upload3DModelModal from '@/components/Upload3DModelModal';
 import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
-import useModels from '@/pages/User/pages/Models3D/useModels.ts';
+import useModels3D from './useModels3D.ts';
 
 export default function ModelsPage() {
   useDocumentTitle('Модели');
 
-  const { models, isModelsLoading, page, setPage, totalPages } = useModels();
+  const { models, isModelsLoading, page, setPage, totalPages } = useModels3D();
 
   return (
     <>

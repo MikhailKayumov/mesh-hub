@@ -31,10 +31,6 @@ export class Renderer {
     return this.renderer.domElement;
   }
 
-  public getPlace(): HTMLDivElement | null {
-    return this.place;
-  }
-
   public setPlace(place: HTMLDivElement): void {
     if (this.place) {
       this.placeObserver?.unobserve(this.place);

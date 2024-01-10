@@ -1,11 +1,22 @@
-import { ActionIcon } from '@mantine/core';
+import { ActionIcon, rem } from '@mantine/core';
 import { IconArrowsMaximize, IconArrowsMinimize } from '@tabler/icons-react';
-import classes from '@/pages/Models3D/pages/Model3D/components/Model3DViewer/Viewer.module.scss';
 
-export default function ToggleFullscreenButton() {
+export interface ToggleFullscreenButtonProps {
+  fullscreen: boolean;
+  toggleFullscreen: () => void;
+  className?: string;
+}
+
+const iconStyle = { width: rem(18), height: rem(18) };
+
+export default function ToggleFullscreenButton({
+  fullscreen,
+  toggleFullscreen,
+  className,
+}: ToggleFullscreenButtonProps) {
   return (
-    // <ActionIcon c="dimmed" variant="transparent" onClick={toggleFullscreen}>
-    //   {fullscreen ? <IconArrowsMinimize className={classes.icon} /> : <IconArrowsMaximize className={classes.icon} />}
-    // </ActionIcon>
+    <ActionIcon c="dimmed" variant="transparent" onClick={toggleFullscreen} className={className}>
+      {fullscreen ? <IconArrowsMinimize style={iconStyle} /> : <IconArrowsMaximize style={iconStyle} />}
+    </ActionIcon>
   );
 }

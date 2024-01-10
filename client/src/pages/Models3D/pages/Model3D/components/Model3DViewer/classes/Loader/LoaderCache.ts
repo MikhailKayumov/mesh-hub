@@ -2,28 +2,28 @@ import { ViewerModel3D } from '../types';
 import { isImageBitmapSource, isTexture } from '../utils';
 
 export class LoaderCache {
-  private static readonly MAX_SIZE = 10;
-  private static readonly store = new Map<string, ViewerModel3D>();
+  private readonly maxSize: number;
 
-  public static getItem(name: string): ViewerModel3D | undefined {
-    return this.store.get(name);
+  private readonly store: Map<string, ViewerModel3D>;
+
+  public constructor(maxSize = 2) {
+    this.maxSize = maxSize;
+    this.store = new Map<string, ViewerModel3D>();
   }
 
-  public static setItem(name: string, data: ViewerModel3D): LoaderCache {
-    if (data) {
-      if (this.store.size >= this.MAX_SIZE) {
-        this.clear(1);
-      }
+  public get(name: string): ViewerModel3D | null {
+    return this.store.get(name) ?? null;
+  }
 
-      this.store.set(name, data);
-    } else {
-      this.removeItem(name);
+  public set(name: string, data: ViewerModel3D): void {
+    if (this.store.size >= this.maxSize) {
+      this.clear(1);
     }
 
-    return this;
+    this.store.set(name, data);
   }
 
-  public static removeItem(name: string): boolean {
+  public delete(name: string): boolean {
     const item = this.store.get(name);
     if (!item) return false;
 
@@ -39,16 +39,14 @@ export class LoaderCache {
     return this.store.delete(name);
   }
 
-  public static clear(removeItemCount?: number): LoaderCache {
+  public clear(removeItemCount?: number): void {
     if (!removeItemCount || removeItemCount >= this.store.size) {
-      this.store.clear();
+      this.store.forEach((_, key) => this.delete(key));
     } else {
       const keys = Array.from(this.store.keys());
       for (let i = 0; i < removeItemCount; i++) {
-        this.removeItem(keys[i]);
+        this.delete(keys[i]);
       }
     }
-
-    return this;
   }
 }

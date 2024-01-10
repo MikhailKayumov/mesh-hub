@@ -1,69 +1,94 @@
-import { useEffect, useMemo, useState } from 'react';
-import { AnimationAction, AnimationClip, AnimationMixer, AnimationObjectGroup } from 'three';
-import { Viewer } from '../classes/types';
+import { useEffect, useRef, useState } from 'react';
+import { AnimationAction, AnimationClip, AnimationMixer } from 'three';
+import useViewerContext from './useViewerContext';
 
+export type AnimationState = 'play' | 'pause';
 export interface UseAnimationsProps {
-  clips: AnimationClip[];
-  objectGroup: AnimationObjectGroup;
+  blends?: {
+    fadeInDuration: number;
+    fadeOutDuration: number;
+  };
+  autorun?: boolean;
 }
-
 export interface UseAnimationsReturn {
   mixer: AnimationMixer | null;
   clips: AnimationClip[] | null;
   clip: AnimationClip | null;
   action: AnimationAction | null;
+  state: AnimationState;
   setAnimation: (clip: AnimationClip) => void;
+  setAnimationState: (state: AnimationState) => void;
 }
 
-export default function useAnimations(viewer: Viewer | null, props?: UseAnimationsProps): UseAnimationsReturn {
+export default function useAnimations({ blends, autorun = false }: UseAnimationsProps): UseAnimationsReturn | null {
+  const viewer = useViewerContext();
+  const prevActionRef = useRef<AnimationAction | null>(null);
   const [mixer, setMixer] = useState<AnimationMixer | null>(null);
   const [clips, setClips] = useState<AnimationClip[] | null>(null);
   const [clip, setClip] = useState<AnimationClip | null>(null);
   const [action, setAction] = useState<AnimationAction | null>(null);
+  const [state, setState] = useState<AnimationState>(autorun ? 'play' : 'pause');
 
+  // Init animations
   useEffect(() => {
-    if (!props?.objectGroup || !props.clips.length) return;
+    if (!viewer?.model?.animations?.objectGroup || !viewer?.model?.animations?.clips.length) return;
 
-    setMixer(() => new AnimationMixer(props.objectGroup));
-    setClips(() => props.clips);
-  }, [props]);
-  useEffect(() => {
-    if (!mixer || !clips?.length || !viewer) {
-      return;
-    }
+    const am = new AnimationMixer(viewer.model.animations.objectGroup);
+    const clip = viewer.model.animations.clips[0];
+    const action = am.clipAction(clip);
 
-    const onRender = mixer.update.bind(mixer);
+    setMixer(am);
+    setClips(viewer.model.animations.clips);
+    setClip(clip);
+    setAction(action);
 
+    const onRender = am.update.bind(am);
     viewer.renderer.addCallback(onRender);
-
-    setAnimation(clips[0]);
 
     return () => {
       viewer.renderer.removeCallback(onRender);
-      mixer.stopAllAction();
+      am.stopAllAction();
     };
-  }, [mixer, clips, viewer]);
+  }, [viewer?.model?.animations]);
+  // Run animation
+  useEffect(() => {
+    if (!action) return;
 
-  const setAnimation = (c: AnimationClip) => {
-    if (!mixer) {
-      console.warn('Mixer is null');
-      return;
-    }
+    prevActionRef.current = action;
+    action.reset().fadeIn(blends?.fadeInDuration ?? 0.25);
+    action.play();
 
-    const action = mixer.clipAction(c);
+    setState(prevActionRef.current?.paused ?? !autorun ? 'pause' : 'play');
 
-    setClip(c);
-    setAction(action);
+    return () => {
+      prevActionRef.current?.fadeOut(blends?.fadeOutDuration ?? 0.25);
+    };
+  }, [action]);
+  // Set animation state
+  useEffect(() => {
+    if (!action) return;
+    action.paused = state === 'pause';
+  }, [action, state]);
+
+  if (!mixer) return null;
+
+  return {
+    mixer,
+    clips,
+    clip,
+    action,
+    state,
+    setAnimation: (c: AnimationClip) => {
+      if (!mixer) {
+        console.warn('Mixer is null');
+        return;
+      }
+
+      const action = mixer.clipAction(c);
+
+      setClip(c);
+      setAction(action);
+    },
+    setAnimationState: setState,
   };
-
-  return useMemo(
-    () => ({
-      mixer,
-      clips,
-      clip,
-      action,
-      setAnimation,
-    }),
-    [mixer, clips, clip, action],
-  );
 }

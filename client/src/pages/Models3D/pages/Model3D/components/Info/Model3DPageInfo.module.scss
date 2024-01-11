@@ -1,0 +1,11 @@
+.root {
+  border-top: var(--_paper-border);
+
+  & :global(.mantine-RichTextEditor-root) {
+    border: none;
+  }
+
+  & :global(.ProseMirror) {
+    padding: 0;
+  }
+}

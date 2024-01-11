@@ -1,16 +1,19 @@
 import { ActionIcon, Group, Skeleton, Title, Tooltip } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
-import Model3DControls from '@/components/Model3DControls';
-import Model3DDownloadButton from '@/components/Model3DDownloadButton';
 import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
-import classes from '@/pages/Models3D/pages/Model3D/Model3DPage.module.scss';
+import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
 import RouterPaths from '@/router/paths.ts';
 import canNavigateBack from '@/utils/canNavigateBack.ts';
+import Model3DPageHeaderControls from './components/Controls';
+import Model3DPageHeaderDownloadButton from './components/DownloadButton';
+import classes from './Model3DPageHeader.module.scss';
 
 export default function Model3DPageHeader() {
-  const { model } = useModel3DContext();
   const navigate = useNavigate();
+  const model = useModel3DContext();
+
+  useDocumentTitle(model?.name ?? '3D Модель');
 
   const onBack = () => navigate(canNavigateBack() ? -1 : (RouterPaths.Base as any));
 
@@ -30,7 +33,7 @@ export default function Model3DPageHeader() {
           </Title>
         </Skeleton>
       </Group>
-      {model && <>{model.isOwner ? <Model3DControls /> : <Model3DDownloadButton />}</>}
+      {model && <>{model.isOwner ? <Model3DPageHeaderControls /> : <Model3DPageHeaderDownloadButton />}</>}
     </Group>
   );
 }

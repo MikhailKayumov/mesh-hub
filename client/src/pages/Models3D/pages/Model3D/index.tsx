@@ -1,37 +1,36 @@
 import { Box, LoadingOverlay, Paper } from '@mantine/core';
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { NotFoundError } from '@/components/Errors';
-import { Model3DContextProvider } from '@/contexts/Model3DContext';
-import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
-import Modal3DPageDescription from './components/Description';
+import Model3DContextProvider from '@/contexts/Model3DContext';
+import useModel3D from '@/hooks/useModel3D.ts';
 import Model3DPageHeader from './components/Header';
-import Model3DPageViewer from './components/Viewer';
+import Model3DPageInfo from './components/Info';
+import Model3DViewer from './components/Model3DViewer';
 import classes from './Model3DPage.module.scss';
-import useModel3DData from './useModel3DData';
 
 export default function Model3DPage() {
+  const { id } = useParams<{ id: string }>();
+  const { model3d, isModelLoading } = useModel3D({ id });
   const [isViewerLoading, setIsViewerLoading] = useState(true);
-  const data = useModel3DData();
 
-  useDocumentTitle(data.model?.name ?? '3D Модель');
-
-  if (!data.isModelLoading && !data.model) {
+  if (!isModelLoading && !model3d) {
     return <NotFoundError />;
   }
 
   return (
-    <Model3DContextProvider model={data}>
+    <Model3DContextProvider model={model3d}>
       <Model3DPageHeader />
       <Paper withBorder p={0} className={classes.content}>
         <Box className={classes['viewer-wrapper']}>
-          <Model3DPageViewer onLoad={() => setIsViewerLoading(false)} />
+          <Model3DViewer model={model3d} onReady={() => setIsViewerLoading(false)} />
           <LoadingOverlay
             zIndex={10}
             className={classes['viewer-loader']}
-            visible={data.isModelLoading || isViewerLoading}
+            visible={isModelLoading || isViewerLoading}
           />
         </Box>
-        <Modal3DPageDescription />
+        <Model3DPageInfo />
       </Paper>
     </Model3DContextProvider>
   );

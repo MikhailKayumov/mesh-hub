@@ -1,0 +1,12 @@
+.animation-list-item {
+  width: 240px;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  .play-icon {
+    width: rem(14px);
+    height: rem(14px);
+    transition: opacity 0.1s ease-out;
+  }
+}

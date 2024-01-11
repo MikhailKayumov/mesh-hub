@@ -1,16 +1,3 @@
-.model-name-title {
-  flex: 1;
-
-  .model-name-title-skeleton {
-    flex: 1;
-    height: rem(38px);
-  }
-
-  .model-name-title-text {
-    transform: translateY(-3px);
-  }
-}
-
 .content {
   overflow: hidden;
   display: flex;
@@ -22,18 +9,6 @@
     height: 77dvh;
     overflow: hidden;
     background-color: var(--mantine-color-gray-0);
-  }
-
-  .description {
-    border-top: var(--_paper-border);
-
-    & :global(.mantine-RichTextEditor-root) {
-      border: none;
-    }
-
-    & :global(.ProseMirror) {
-      padding: 0;
-    }
   }
 
   .viewer-loader {

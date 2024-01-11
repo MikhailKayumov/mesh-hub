@@ -20,18 +20,6 @@ export default function Model3DViewer(props: Model3DPageViewerProps) {
         <Model3DViewerTopBar />
         <Box ref={placeRef} className={classes.viewer} />
         <Model3DViewerBottomBar fullscreen={fullscreen} toggleFullscreen={toggleFullscreen} />
-        {/*<Group className={classes['bottom-toolbar']}>*/}
-        {/*  {animations.clips && (*/}
-        {/*    <AnimationToolbar autorun={false} animations={animations} className={classes['animation-toolbar']} />*/}
-        {/*  )}*/}
-        {/*  <ActionIcon c="dimmed" variant="transparent" onClick={toggleFullscreen}>*/}
-        {/*    {fullscreen ? (*/}
-        {/*      <IconArrowsMinimize className={classes.icon} />*/}
-        {/*    ) : (*/}
-        {/*      <IconArrowsMaximize className={classes.icon} />*/}
-        {/*    )}*/}
-        {/*  </ActionIcon>*/}
-        {/*</Group>*/}
       </Box>
     </ViewerContextProvider>
   );

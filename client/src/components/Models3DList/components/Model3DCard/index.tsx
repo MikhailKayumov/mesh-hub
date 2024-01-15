@@ -17,7 +17,7 @@ export default function Model3DCard({ model }: Model3DCard) {
       <Model3DCardThumbnail id={model.id} name={model.name} fileId={model.file.id} thumbnail={model.thumbnail} />
       <Group wrap="nowrap" gap={0} p="xs" py="xs">
         <Tooltip label={model.ownerName} withArrow position="top-start" offset={1} openDelay={500}>
-          <Avatar radius="xs" src={getAvatarSrcByString(model.ownerAvatar)} color="primary" size={22}></Avatar>
+          <Avatar radius="xs" src={getAvatarSrcByString(model.ownerAvatar)} color="primary" size={22} />
         </Tooltip>
         <Tooltip label={model.name} position="top-start" openDelay={500}>
           <Text

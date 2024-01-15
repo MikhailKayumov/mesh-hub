@@ -8,4 +8,25 @@
   & :global(.ProseMirror) {
     padding: 0;
   }
+
+  .category-icon {
+    flex: 0 0 rem(24px);
+    width: rem(24px);
+    height: rem(24px);
+    color: var(--mantine-color-dimmed)
+  }
+
+  .categories {
+    gap: rem(8px);
+  }
+
+  .category {
+    border-radius: rem(4px);
+    border: 1px solid var(--mantine-color-dimmed);
+    padding: rem(2px) rem(4px);
+    height: rem(24px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

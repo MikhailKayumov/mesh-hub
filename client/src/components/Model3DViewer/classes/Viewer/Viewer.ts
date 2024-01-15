@@ -1,12 +1,12 @@
 import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import { Model3DResponseDto } from '@/api/dto.ts';
-import { Loader } from '@/pages/Models3D/pages/Model3D/components/Model3DViewer/classes/Loader';
-import { isMesh, isSkinnedMesh } from '@/pages/Models3D/pages/Model3D/components/Model3DViewer/classes/utils';
 import sleep from '@/utils/sleep.ts';
 import { CameraController } from '../Camera';
+import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';
 import { LoadedModel3D, ViewerModel3D } from '../types';
+import { isMesh, isSkinnedMesh } from '../utils';
 import { World } from '../World';
 
 export class Viewer {

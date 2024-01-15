@@ -1,6 +1,6 @@
 import { ActionIcon, Menu, rem, ScrollArea, Text } from '@mantine/core';
 import { IconPlayerPlayFilled, IconPlaylist } from '@tabler/icons-react';
-import { UseAnimationsReturn } from '@/pages/Models3D/pages/Model3D/components/Model3DViewer/hooks/useAnimations.ts';
+import { UseAnimationsReturn } from '@/components/Model3DViewer/hooks/useAnimations.ts';
 import classes from './AnimationList.module.scss';
 
 export interface AnimationListProps {

@@ -1,6 +1,6 @@
 import { ActionIcon, rem } from '@mantine/core';
 import { IconPlayerPauseFilled, IconPlayerPlayFilled } from '@tabler/icons-react';
-import { UseAnimationsReturn } from '@/pages/Models3D/pages/Model3D/components/Model3DViewer/hooks/useAnimations.ts';
+import { UseAnimationsReturn } from '@/components/Model3DViewer/hooks/useAnimations.ts';
 
 export interface AnimationToggleStateButtonProps {
   animations: UseAnimationsReturn;

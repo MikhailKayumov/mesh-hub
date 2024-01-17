@@ -15,7 +15,7 @@ export default function Model3DPageInfo() {
         <Avatar radius="sm" src={getAvatarSrcByString(model.ownerAvatar)} color="primary" size={36} />
         <Text>{model.ownerName}</Text>
       </Group>
-      {model.categories?.length && (
+      {!!model.categories?.length && (
         <Group mt={16} gap={12}>
           <Tooltip label="Категории" openDelay={500}>
             <IconCategory className={classes['category-icon']} />

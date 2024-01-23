@@ -9,6 +9,7 @@ import Model3DPageHeader from './components/Header';
 import Model3DPageInfo from './components/Info';
 import classes from './Model3DPage.module.scss';
 
+// @refresh reset
 export default function Model3DPage() {
   const { id } = useParams<{ id: string }>();
   const { model3d, isModelLoading } = useModel3D({ id });

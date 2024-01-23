@@ -81,10 +81,19 @@ const routes: RouteObject[] = [
       },
     ],
   },
-  // {
-  //   path: 'editor',
-  //   lazy: () => import('@/pages/Editor'),
-  // },
+  {
+    path: RouterPaths.Editor,
+    children: [
+      {
+        index: true,
+        element: <Navigate replace to={RouterPaths.Base} />,
+      },
+      {
+        path: RouterPaths.Id,
+        lazy: async () => ({ Component: (await import('@/pages/Editor')).default }),
+      },
+    ],
+  },
 ];
 
 const router = createBrowserRouter(routes);

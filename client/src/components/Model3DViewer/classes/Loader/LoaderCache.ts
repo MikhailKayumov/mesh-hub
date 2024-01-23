@@ -1,3 +1,4 @@
+import { Destroyer } from '@/components/Model3DViewer/classes/Destroyer';
 import { ViewerModel3D } from '../types';
 import { isImageBitmapSource, isTexture } from '../utils';
 
@@ -31,7 +32,7 @@ export class LoaderCache {
     if (associations) {
       for (const association of associations) {
         if (isTexture(association) && isImageBitmapSource(association.source)) {
-          association.source.data.close();
+          Destroyer.destroyImageBitmap(association.source.data);
         }
       }
     }

@@ -1,0 +1,34 @@
+.root {
+  padding: 0;
+
+  & :global(.mantine-Tabs-root) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tabs {
+    .tab {
+      padding: rem(8px);
+
+      :global(.mantine-Tabs-tabLabel) {
+        display: block;
+        width: rem(18px);
+        height: rem(18px);
+      }
+
+      .tab-icon {
+        width: rem(18px);
+        height: rem(18px);
+
+        svg {
+          stroke-width: 1;
+        }
+      }
+    }
+  }
+
+  .content {
+    flex: 1;
+  }
+}

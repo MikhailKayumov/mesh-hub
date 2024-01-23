@@ -9,7 +9,7 @@ import {
 } from 'three';
 import { BuildAmbientLightOptions, BuildDirectionLightOptions, BuildSpotLightOptions } from './types.ts';
 
-export function buildAmbientLight({ color = 0x000000, intensity = 0.2 }: BuildAmbientLightOptions = {}): AmbientLight {
+export function buildAmbientLight({ color = 0xffffff, intensity = 0.2 }: BuildAmbientLightOptions = {}): AmbientLight {
   return new AmbientLight(color, intensity);
 }
 
@@ -37,11 +37,11 @@ export function buildDirectionalLight({
 }
 
 export function buildSpotLight({
-  color = 0x000000,
+  color = 0xffffff,
   intensity = 1,
   power = 18.75,
   distance = 100,
-  penumbra = 0,
+  penumbra = 0.2,
   angel = 45,
   at = new Vector3(0, 1, 0),
   to = new Vector3(0, 0, 0),

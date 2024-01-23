@@ -1,0 +1,58 @@
+.root {
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+
+  .action-button {
+    height: 100%;
+    aspect-ratio: 1;
+    border-radius: 0;
+  }
+
+  .icon {
+    width: rem(16px);
+    height: rem(16px);
+  }
+
+  .right {
+    width: 40%;
+
+    > p {
+      white-space: nowrap;
+    }
+  }
+
+  .file-info {
+    flex-wrap: nowrap;
+    overflow: hidden;
+
+    &-row {
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+
+    &-size {
+      max-width: 120px;
+    }
+    &-name {
+      max-width: 220px;
+    }
+    &-created {
+      width: 121px;
+    }
+    &-updated {
+      width: 134px;
+    }
+
+    &-text {
+      font-size: 10px;
+      white-space: nowrap;
+    }
+  }
+
+  .left {
+    margin-left: auto;
+  }
+}

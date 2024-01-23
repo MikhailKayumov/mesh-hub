@@ -19,6 +19,10 @@ import {
 } from 'three';
 import { isObject } from '@/utils/type-guards.ts';
 
+export const isObject3D = (object: unknown): object is Object3D => {
+  return isObject(object) && (object as Object3D).isObject3D;
+};
+
 export const isBone = (object: unknown): object is Bone => {
   return isObject(object) && (object as Bone).isBone;
 };
@@ -49,7 +53,7 @@ export const isImageBitmap = (object: unknown): object is ImageBitmap => {
   return isObject(object) && object instanceof ImageBitmap;
 };
 
-export const isImageBitmapSource = (object: unknown): object is Texture => {
+export const isImageBitmapSource = (object: unknown): object is ImageBitmapSource => {
   return isSource(object) && isImageBitmap(object.data);
 };
 

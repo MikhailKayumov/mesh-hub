@@ -1,0 +1,36 @@
+.header {}
+
+.navbar {}
+
+.main {
+  height: 100%;
+  display: flex;
+  padding: rem(30px) 0 rem(26px) var(--app-shell-navbar-width);
+}
+
+.viewer-box {
+  flex-basis: 100%;
+  flex-grow: 0;
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+
+  .viewer-loader {
+    :global(.mantine-Overlay-root) {
+      opacity: 1;
+      background-color: var(--mantine-color-gray-0);
+    }
+  }
+}
+
+.footer {}
+
+[data-mantine-color-scheme=dark] {
+  .viewer-box {
+    .viewer-loader {
+      :global(.mantine-Overlay-root) {
+        background-color: var(--mantine-color-dark-7);
+      }
+    }
+  }
+}

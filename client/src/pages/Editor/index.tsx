@@ -1,27 +1,62 @@
-import { Button } from '@mantine/core';
+import { AppShell, Box, LoadingOverlay, rem } from '@mantine/core';
 import { useState } from 'react';
-// import Viewer from '@/components/Viewer';
+import { useParams } from 'react-router-dom';
+import { NotFoundError } from '@/components/Errors';
+import Model3DViewer from '@/components/Model3DViewer';
+import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
+import Model3DContextProvider from '@/contexts/Model3DContext';
+import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
+import useModel3D from '@/hooks/useModel3D.ts';
+import { Footer } from '@/pages/Editor/components/Footer';
+import Header from '@/pages/Editor/components/Header';
+import Navbar from '@/pages/Editor/components/Navbar';
+import classes from './EditorPage.module.scss';
 
-export function Component() {
-  const [count, setCount] = useState(0);
+const headerConfig = { height: rem(30) };
+const footerConfig = { height: rem(26) };
+const navbarConfig = { width: 360, breakpoint: 'sm', collapsed: { mobile: true } };
 
-  const onClick = () => {
-    setCount((prev) => prev + 1);
-  };
+// @refresh reset
+export default function EditorPage() {
+  const { isLight } = useCurrentColorScheme();
+  const { id } = useParams<{ id: string }>();
+  const { model3d, isModelLoading } = useModel3D({ id });
+  const [isViewerReady, setIsViewerReady] = useState(false);
+  const [viewer, setViewer] = useState<Viewer | null>(null);
+
+  if (!isModelLoading && !model3d) {
+    return <NotFoundError />;
+  }
 
   return (
-    <div>
-      <div>{/*<Viewer />*/}</div>
-      <div>
-        <div>MainPageReRenders: {count}</div>
-        <div>
-          <Button size="sm" onClick={onClick}>
-            Rerender
-          </Button>
-        </div>
-      </div>
-    </div>
+    <Model3DContextProvider model={model3d}>
+      <AppShell
+        h="100%" //
+        padding="md"
+        header={headerConfig}
+        footer={footerConfig}
+        navbar={navbarConfig}
+      >
+        <Header className={classes.header} viewer={viewer} />
+        <Navbar className={classes.navbar} viewer={viewer} />
+
+        <AppShell.Main className={classes.main} bg={isLight ? 'gray.0' : 'dark.7'}>
+          <Box className={classes['viewer-box']}>
+            <Model3DViewer
+              model={model3d} //
+              onInit={(v) => setViewer(v)}
+              onReady={() => setIsViewerReady(true)}
+            />
+            <LoadingOverlay
+              zIndex={10}
+              className={classes['viewer-loader']}
+              visible={isModelLoading || !isViewerReady}
+            />
+          </Box>
+        </AppShell.Main>
+
+        <Footer className={classes.footer} viewer={viewer} />
+      </AppShell>
+    </Model3DContextProvider>
   );
 }
-
-Component.displayName = 'EditorPage';

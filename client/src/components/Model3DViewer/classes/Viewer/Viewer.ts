@@ -6,7 +6,7 @@ import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';
 import { LoadedModel3D, ViewerModel3D } from '../types';
-import { isMesh, isSkinnedMesh } from '../utils';
+import { isMesh, isObject3D, isSkinnedMesh } from '../utils';
 import { World } from '../World';
 
 export class Viewer {
@@ -51,12 +51,10 @@ export class Viewer {
     this.model = Loader.cache.get(modelData.id);
 
     if (this.model) {
-      await this.world.spawn(this.model.scene);
-      this.renderer.render();
+      await this.world.spawn([this.model.scene]);
+      await this.renderer.render();
     } else {
       const loadedModel = await Loader.load(modelData.file);
-
-      await this.processLoadedModel(loadedModel);
 
       this.model = {
         data: modelData,
@@ -67,16 +65,16 @@ export class Viewer {
     }
   }
 
-  public async run(onReady?: (viewer: Viewer) => void) {
+  public async run(onReady?: (viewer: Viewer) => void | Promise<void>) {
     if (!this.model) return;
 
-    await this.world.prepare();
+    await this.world.prepare(this.model.sceneBoundingBox);
     this.renderer.run();
 
     await sleep(0.02);
-    onReady?.(this);
-
-    // viewer.world.spawn(new Box3Helper(bb, '#5d5d5d'));
+    await this.camera.moveToInitPosition(this.model.sceneBoundingBox);
+    await sleep(0.02);
+    await onReady?.(this);
     await this.camera.fitToBox(this.model.sceneBoundingBox);
   }
 
@@ -122,7 +120,7 @@ export class Viewer {
     associations,
   }: LoadedModel3D): Promise<Omit<ViewerModel3D, 'data'>> {
     await this.world.spawn(scene);
-    this.renderer.render();
+    await this.renderer.render();
 
     const bb = new Box3().makeEmpty();
     const ag: AnimationObjectGroup = new AnimationObjectGroup();
@@ -146,19 +144,40 @@ export class Viewer {
         object.geometry.computeBoundingBox();
         object.geometry.computeBoundingSphere();
       }
+
+      if (isMesh(object)) {
+        if (Array.isArray(object.material)) {
+          object.material.forEach((m) => {
+            m.needsUpdate = true;
+          });
+        } else {
+          object.material.needsUpdate = true;
+        }
+      }
+
+      if (isObject3D(object)) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
     });
 
-    bb.isEmpty() && bb.setFromObject(scene);
+    if (bb.isEmpty()) {
+      bb.setFromObject(scene);
+    }
 
-    scene.translateY(bb.min.y * -1);
-    bb.translate(new Vector3(0, bb.min.y * -1, 0));
+    const centerX = bb.max.x - (bb.max.x - bb.min.x) / 2;
+    const centerZ = bb.max.z - (bb.max.z - bb.min.z) / 2;
 
-    const hasAnimations = ag.stats.objects.total && animations?.length;
+    const bbCenter = new Vector3();
+    bb.getCenter(bbCenter);
+
+    scene.position.set(centerX * -1, bb.min.y * -1, centerZ * -1);
+    bb.translate(new Vector3(centerX * -1, bb.min.y * -1, centerZ * -1));
 
     return {
       scene,
       sceneBoundingBox: bb,
-      animations: hasAnimations ? { objectGroup: ag, clips: animations } : null,
+      animations: ag.stats.objects.total && animations?.length ? { objectGroup: ag, clips: animations } : null,
       associations,
     };
   }

@@ -61,7 +61,7 @@ export default function Header({ className }: HeaderProps) {
           </Group>
         )}
 
-        <Group className={classes.left} gap={0}>
+        <Group wrap="nowrap" className={classes.left} gap={0}>
           <ColorSchemeSelect size={16} variant="subtle" radius={0} />
           <ActionIcon variant="subtle" className={classes['action-button']}>
             <IconDeviceFloppy className={classes.icon} />

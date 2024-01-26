@@ -12,7 +12,7 @@ export function TreeGroup({ item, level, selected, selectNode, filterNode }: Obj
   return (
     <Box className={clsx(classes.group)}>
       <UnstyledButton size="xs" className={clsx(classes.row, classes.leaf)} onClick={toggle}>
-        <Group gap={4} wrap="nowrap" className={clsx(classes.cell, classes['name-column'])}>
+        <Group gap={4} pl={16 * level} wrap="nowrap" className={clsx(classes.cell, classes['name-column'])}>
           {opened ? (
             <IconFolderOpen className={classes['group-arrow-icon']} />
           ) : (

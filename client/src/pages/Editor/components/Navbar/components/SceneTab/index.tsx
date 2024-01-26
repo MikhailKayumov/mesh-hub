@@ -53,7 +53,7 @@ export function SceneTab({ className, viewer }: SceneTabProps) {
   return (
     <div className={clsx(classes.root, className)}>
       <Object3DOutliner key={key} data={viewer?.world.scene.children ?? []} filterNode={filterNode} />
-      <LayersCheckboxGroup defaultOpened={false} form={form} />
+      <LayersCheckboxGroup defaultOpened={true} form={form} />
     </div>
     /*<div className={clsx(classes.root, className)}>
       <Select

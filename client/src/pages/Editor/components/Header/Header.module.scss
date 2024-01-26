@@ -38,15 +38,21 @@
     }
 
     &-size {
-      max-width: 120px;
+      flex-grow: 0;
+      flex-shrink: 0;
+      width: 70px;
     }
     &-name {
+      flex: 1;
       max-width: 220px;
     }
     &-created {
-      width: 124px;
+      flex-grow: 0;
+      flex-shrink: 0;
+      width: 122px;
     }
     &-updated {
+      flex-shrink: 0;
       width: 134px;
     }
 

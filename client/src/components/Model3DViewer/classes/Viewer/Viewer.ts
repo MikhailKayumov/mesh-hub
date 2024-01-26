@@ -1,7 +1,6 @@
 import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import { Model3DResponseDto } from '@/api/dto.ts';
-import sleep from '@/utils/sleep.ts';
 import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';
@@ -51,8 +50,7 @@ export class Viewer {
     this.model = Loader.cache.get(modelData.id);
 
     if (this.model) {
-      await this.world.spawn([this.model.scene]);
-      await this.world.spawnSceneBoundingBoxHelper(this.model.sceneBoundingBox);
+      await this.world.spawn(this.model.scene);
       await this.renderer.render();
     } else {
       const loadedModel = await Loader.load(modelData.file);
@@ -67,15 +65,9 @@ export class Viewer {
     }
   }
 
-  public async run(onReady?: (viewer: Viewer) => void | Promise<void>) {
+  public async run() {
     if (!this.model) return;
-
     this.renderer.run();
-
-    await this.camera.moveToInitPosition(this.model.sceneBoundingBox);
-    await sleep(0.1);
-    await onReady?.(this);
-    await this.camera.fitToBox(this.model.sceneBoundingBox);
   }
 
   public destroy(): void {
@@ -173,7 +165,6 @@ export class Viewer {
 
     scene.position.set(centerX * -1, bb.min.y * -1, centerZ * -1);
     bb.translate(new Vector3(centerX * -1, bb.min.y * -1, centerZ * -1));
-    this.world.spawnSceneBoundingBoxHelper(bb);
 
     return {
       scene,

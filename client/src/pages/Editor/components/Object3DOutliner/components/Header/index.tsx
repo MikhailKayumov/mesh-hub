@@ -7,7 +7,7 @@ export function TreeHeader() {
     <Group wrap="nowrap" className={clsx(classes.row, classes['header-row'])}>
       <Box className={clsx(classes.cell, classes['header-cell'], classes['name-column'])}>
         <Text fw={600} truncate="end">
-          {'Name '.repeat(4)}
+          Name
         </Text>
       </Box>
       <Box className={clsx(classes.cell, classes['header-cell'], classes['type-column'])}>

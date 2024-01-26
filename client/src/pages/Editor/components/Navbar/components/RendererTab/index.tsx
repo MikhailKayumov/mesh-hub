@@ -1,10 +1,11 @@
-import { ColorInput, Group, Input, LoadingOverlay, NumberInput, rem, Select, Slider } from '@mantine/core';
+import { ColorInput, LoadingOverlay, rem, Select } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { IconFocus2 } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';
 import { isMesh } from '@/components/Model3DViewer/classes/utils';
+import { NumberInputSlider } from '@/components/NumberInputSlider';
 import sleep from '@/utils/sleep.ts';
 import {
   colorSpaceOptions,
@@ -62,83 +63,54 @@ export function RendererTab({ className, viewer }: RendererTabProps) {
 
   return (
     <form className={clsx(classes.root, className)} onSubmit={onSubmit}>
-      <Select
-        label="Color space"
-        placeholder="Pick color space"
-        size="xs"
-        radius="xs"
-        data={colorSpaceOptions}
-        {...form.getInputProps('outputColorSpace')}
-      />
+      <>
+        <Select
+          label="Color space"
+          placeholder="Pick color space"
+          size="xs"
+          radius="xs"
+          data={colorSpaceOptions}
+          {...form.getInputProps('outputColorSpace')}
+        />
 
-      <Select
-        label="Shadow map type"
-        placeholder="Pick shadow map type"
-        size="xs"
-        radius="xs"
-        data={shadowMapTypeOptions}
-        {...form.getInputProps('shadowMapType')}
-      />
+        <Select
+          label="Shadow map type"
+          placeholder="Pick shadow map type"
+          size="xs"
+          radius="xs"
+          data={shadowMapTypeOptions}
+          {...form.getInputProps('shadowMapType')}
+        />
 
-      <Select
-        label="Tone mapping"
-        placeholder="Pick tone mapping"
-        size="xs"
-        unselectable="on"
-        radius="xs"
-        data={toneMappingOptions}
-        {...form.getInputProps('toneMapping')}
-      />
+        <Select
+          label="Tone mapping"
+          placeholder="Pick tone mapping"
+          size="xs"
+          unselectable="on"
+          radius="xs"
+          data={toneMappingOptions}
+          {...form.getInputProps('toneMapping')}
+        />
+      </>
 
-      <Input.Wrapper label="Tone mapping exposure" size="xs">
-        <Group className={classes['slider-row']} gap={8}>
-          <Slider
-            size="sm"
-            className={classes['slider-row-slider']}
-            defaultValue={60}
-            min={0}
-            max={10}
-            step={0.05}
-            {...form.getInputProps('toneMappingExposure')}
-          />
-          <NumberInput
-            min={0}
-            max={100}
-            step={0.1}
-            size="xs"
-            radius="xs"
-            allowNegative={false}
-            decimalScale={2}
-            className={classes['slider-row-input']}
-            {...form.getInputProps('toneMappingExposure')}
-          />
-        </Group>
-      </Input.Wrapper>
-
-      <Input.Wrapper label="Clear alpha" size="xs">
-        <Group className={classes['slider-row']} gap={8}>
-          <Slider
-            size="sm"
-            className={classes['slider-row-slider']}
-            defaultValue={60}
-            min={0}
-            max={1}
-            step={0.01}
-            {...form.getInputProps('clearAlpha')}
-          />
-          <NumberInput
-            min={0}
-            max={1}
-            step={0.01}
-            size="xs"
-            radius="xs"
-            allowNegative={false}
-            decimalScale={2}
-            className={classes['slider-row-input']}
-            {...form.getInputProps('clearAlpha')}
-          />
-        </Group>
-      </Input.Wrapper>
+      <>
+        <NumberInputSlider
+          allowNegative={false}
+          label="Tone mapping exposure"
+          min={0}
+          max={10}
+          step={0.1}
+          {...form.getInputProps('toneMappingExposure')}
+        />
+        <NumberInputSlider
+          allowNegative={false}
+          label="Clear alpha"
+          min={0}
+          max={1}
+          step={0.01}
+          {...form.getInputProps('clearAlpha')}
+        />
+      </>
 
       <ColorInput
         eyeDropperIcon={<IconFocus2 style={{ width: rem(18), height: rem(18) }} stroke={1.5} />}

@@ -47,7 +47,8 @@ export function buildDirectionalLight({
   let helper: DirectionalLightHelper | null = null;
   if (widthHelper) {
     helper = new DirectionalLightHelper(dl, 2);
-    helper.layers.set(4);
+    helper.layers.disableAll();
+    helper.layers.set(3);
   }
 
   return [dl, helper];

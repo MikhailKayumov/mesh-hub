@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NumberInputSliderProps } from './model.ts';
 import classes from './NumberInputSlider.module.scss';
 
+// @refresh reset
 export const NumberInputSlider = ({
   label,
   value,
@@ -13,6 +14,7 @@ export const NumberInputSlider = ({
   step,
   stepSlider,
   allowNegative = true,
+  decimalScale = 3,
   onChange,
   onFocus,
   onBlur,
@@ -20,6 +22,7 @@ export const NumberInputSlider = ({
   const [localValue, setLocalValue] = useState(value ?? 0);
 
   const ref = useRef<HTMLDivElement>(null);
+  const addValueRef = useRef<NumberInputSliderProps['onChange']>(onChange);
   const sliderRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
 
@@ -28,11 +31,6 @@ export const NumberInputSlider = ({
       setLocalValue(value ?? 0);
     }
   }, [value]);
-  useEffect(() => {
-    if (value !== localValue) {
-      onChange?.(localValue);
-    }
-  }, [localValue, onChange]);
 
   const onInputChange = (val: string | number) => {
     if (typeof val !== 'number') {
@@ -49,21 +47,25 @@ export const NumberInputSlider = ({
     setLocalValue(val);
   };
 
+  addValueRef.current = (delta: number) => {
+    const result = allowNegative ? localValue + delta : Math.max(localValue + delta, 0);
+
+    onChange?.(result);
+    setLocalValue(result);
+  };
+
   useEffect(() => {
     const change = (e: WheelEvent) => {
       e.preventDefault();
 
-      let multiplier = 100;
+      let multiplier = 1 * (e.deltaY < 0 ? 1 : -1);
       if (e.shiftKey) {
-        multiplier /= 10;
-      } else if (e.ctrlKey) {
         multiplier *= 10;
+      } else if (e.ctrlKey) {
+        multiplier *= 0.1;
       }
 
-      setLocalValue((prev) => {
-        const result = prev + e.deltaY / -multiplier;
-        return allowNegative ? result : Math.max(result, 0);
-      });
+      addValueRef.current?.((step ?? 1) * multiplier);
     };
 
     const moveIn = () => {
@@ -80,7 +82,7 @@ export const NumberInputSlider = ({
       ref.current?.removeEventListener('mouseenter', moveIn);
       ref.current?.removeEventListener('mouseleave', moveOut);
     };
-  }, [allowNegative]);
+  }, [allowNegative, step, decimalScale]);
 
   return (
     <Input.Wrapper label={label} size="xs">
@@ -104,7 +106,8 @@ export const NumberInputSlider = ({
           size="xs"
           radius="xs"
           allowNegative={allowNegative}
-          decimalScale={2}
+          allowLeadingZeros={false}
+          decimalScale={decimalScale}
           className={classes.input}
           value={localValue}
           onChange={onInputChange}

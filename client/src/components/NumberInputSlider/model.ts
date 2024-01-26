@@ -12,6 +12,7 @@ export interface NumberInputSliderProps {
   stepSlider?: number;
 
   allowNegative?: boolean;
+  decimalScale?: number;
 
   onChange?: (value: number) => void;
   onFocus?: any;

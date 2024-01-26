@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Model3DResponseDto } from '@/api/dto.ts';
+import sleep from '@/utils/sleep.ts';
 import { Viewer } from '../classes/Viewer';
 
 export interface UseViewerProps {
@@ -40,7 +41,16 @@ export default function useViewer({ model, onReady, onInit, onDestroy }: UseView
     const run = async () => {
       await viewer.loadModel(model);
       await viewer.world.prepare(viewer.model?.sceneBoundingBox);
-      await viewer.run(onReady);
+      await viewer.run();
+
+      if (viewer.model?.sceneBoundingBox) {
+        await viewer.camera.moveToInitPosition(viewer.model?.sceneBoundingBox);
+      }
+
+      await onReady?.(viewer);
+      await sleep(0.1);
+
+      viewer.model?.sceneBoundingBox && (await viewer.camera.fitToBox(viewer.model?.sceneBoundingBox));
     };
 
     run();

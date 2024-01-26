@@ -11,18 +11,17 @@ import {
 } from 'three';
 
 // new
-export interface WorldHelpers {
-  grid: GridHelper | null;
-  axis: AxesHelper | null;
-  ground: Mesh | null;
-  sceneBoundingBox: Box3Helper | null;
-}
+export type WorldObject3D = Object3D | Promise<Object3D>;
+
+export type WorldObjects3D = Array<WorldObject3D | WorldObject3D[]>;
+
+// methods
+export type WorldSpawnOptions = {
+  layer?: number;
+  silent?: boolean;
+};
 
 // old
-
-export type WorldObject3D = Object3D | Object3D[] | PromiseWorldObject3D | PromiseWorldObject3D[];
-
-export type PromiseWorldObject3D = Promise<Object3D | Object3D[]>;
 
 export type WorldLight<T extends Light = Light, H extends Object3D | undefined = undefined> = { light: T; helper?: H };
 

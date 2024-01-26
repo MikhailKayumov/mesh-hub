@@ -34,7 +34,7 @@ export class CameraController {
   private canvas: HTMLCanvasElement | null = null;
 
   public constructor() {
-    this.camera = new PerspectiveCamera(45, 1, 0.05, 4000);
+    this.camera = new PerspectiveCamera(45, 1, 0.05, 5000);
     this.camera.position.set(0, 0, 1);
   }
 
@@ -134,7 +134,10 @@ export class CameraController {
 
     this.control = new CameraControls(this.camera, this.canvas);
 
+    this.control.minDistance = Number.EPSILON;
+    this.control.maxDistance = 2000;
     this.control.smoothTime = 0.16;
+
     this.control.mouseButtons.left = CameraControls.ACTION.TRUCK;
     this.control.mouseButtons.right = CameraControls.ACTION.ROTATE;
     this.control.mouseButtons.middle = CameraControls.ACTION.NONE;

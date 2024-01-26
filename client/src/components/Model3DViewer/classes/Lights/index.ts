@@ -9,6 +9,8 @@ import {
 } from 'three';
 import { BuildAmbientLightOptions, BuildDirectionLightOptions, BuildSpotLightOptions } from './types.ts';
 
+export * from './LightBuilder.ts';
+
 export function buildAmbientLight({ color = 0xffffff, intensity = 0.2 }: BuildAmbientLightOptions = {}): AmbientLight {
   return new AmbientLight(color, intensity);
 }
@@ -29,11 +31,26 @@ export function buildDirectionalLight({
   if (shadow) {
     dl.castShadow = true;
     dl.shadow.mapSize.setScalar(shadow.size ?? 512);
+    dl.shadow.bias = shadow.bias ?? 0;
+    dl.shadow.blurSamples = shadow.blurSamples ?? 0;
     dl.shadow.camera.near = shadow.near ?? 1;
     dl.shadow.camera.far = shadow.far ?? 1000;
+
+    dl.shadow.camera.top = shadow.top ?? 10;
+    dl.shadow.camera.bottom = shadow.bottom ?? -10;
+    dl.shadow.camera.right = shadow.right ?? 10;
+    dl.shadow.camera.left = shadow.left ?? -10;
+
+    dl.shadow.needsUpdate = true;
   }
 
-  return [dl, widthHelper ? new DirectionalLightHelper(dl, 2) : null];
+  let helper: DirectionalLightHelper | null = null;
+  if (widthHelper) {
+    helper = new DirectionalLightHelper(dl, 2);
+    helper.layers.set(4);
+  }
+
+  return [dl, helper];
 }
 
 export function buildSpotLight({

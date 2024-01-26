@@ -23,4 +23,4 @@ export const MATERIAL_TEXTURE_MAP_FIELDS = [
   'specularColorMap',
   'thicknessMap',
   'transmissionMap',
-];
+] as const;

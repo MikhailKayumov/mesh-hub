@@ -5,6 +5,8 @@
   justify-content: flex-start;
   flex-wrap: nowrap;
 
+  border-width: 0 0 0 0;
+
   .action-button {
     height: 100%;
     aspect-ratio: 1;
@@ -17,6 +19,7 @@
   }
 
   .right {
+    height: 100%;
     width: 40%;
 
     > p {
@@ -25,6 +28,7 @@
   }
 
   .file-info {
+    height: 100%;
     flex-wrap: nowrap;
     overflow: hidden;
 
@@ -40,7 +44,7 @@
       max-width: 220px;
     }
     &-created {
-      width: 121px;
+      width: 124px;
     }
     &-updated {
       width: 134px;
@@ -53,6 +57,14 @@
   }
 
   .left {
+    height: 100%;
     margin-left: auto;
+
+    & > button {
+      height: 100%;
+      aspect-ratio: 1;
+      display: inline-flex;
+      border: none;
+    }
   }
 }

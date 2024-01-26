@@ -3,6 +3,7 @@ import { IconDeviceFloppy, IconX } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
+import ColorSchemeSelect from '@/components/ColorSchemeSelect';
 import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
 import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
 import RouterPaths from '@/router/paths.ts';
@@ -61,6 +62,7 @@ export default function Header({ className }: HeaderProps) {
         )}
 
         <Group className={classes.left} gap={0}>
+          <ColorSchemeSelect size={16} variant="subtle" radius={0} />
           <ActionIcon variant="subtle" className={classes['action-button']}>
             <IconDeviceFloppy className={classes.icon} />
           </ActionIcon>

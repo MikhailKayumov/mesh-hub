@@ -16,6 +16,7 @@ import {
   Source,
   SkinnedMesh,
   Bone,
+  Group,
 } from 'three';
 import { isObject } from '@/utils/type-guards.ts';
 
@@ -23,16 +24,20 @@ export const isObject3D = (object: unknown): object is Object3D => {
   return isObject(object) && (object as Object3D).isObject3D;
 };
 
+export const isGroup = (object: unknown): object is Group => {
+  return isObject3D(object) && (object as Group).isGroup;
+};
+
 export const isBone = (object: unknown): object is Bone => {
-  return isObject(object) && (object as Bone).isBone;
+  return isObject3D(object) && (object as Bone).isBone;
 };
 
 export const isMesh = (object: unknown): object is Mesh => {
-  return isObject(object) && (object as Mesh).isMesh;
+  return isObject3D(object) && (object as Mesh).isMesh;
 };
 
 export const isSkinnedMesh = (object: unknown): object is SkinnedMesh => {
-  return isMesh(object) && (object as SkinnedMesh).isSkinnedMesh;
+  return isObject3D(object) && (object as SkinnedMesh).isSkinnedMesh;
 };
 
 // ####### materials #######
@@ -76,27 +81,27 @@ export const isMeshPhysicalMaterial = (object: unknown): object is MeshPhysicalM
 //end ####### materials #######
 
 export const isPerspectiveCamera = (object: unknown): object is PerspectiveCamera => {
-  return isObject(object) && (object as PerspectiveCamera).isPerspectiveCamera;
+  return isObject3D(object) && (object as PerspectiveCamera).isPerspectiveCamera;
 };
 
 export const isOrthographicCamera = (object: unknown): object is OrthographicCamera => {
-  return isObject(object) && (object as OrthographicCamera).isOrthographicCamera;
+  return isObject3D(object) && (object as OrthographicCamera).isOrthographicCamera;
 };
 
 export function isGrid(object: unknown): object is GridHelper {
-  return isObject(object) && (object as GridHelper)?.type === 'GridHelper';
+  return isObject3D(object) && (object as GridHelper)?.type === 'GridHelper';
 }
 
 export function isAxis(object: unknown): object is AxesHelper {
-  return isObject(object) && (object as AxesHelper)?.type === 'AxesHelper';
+  return isObject3D(object) && (object as AxesHelper)?.type === 'AxesHelper';
 }
 
 export function isLight(object: unknown): object is Light {
-  return isObject(object) && (object as Light).isLight;
+  return isObject3D(object) && (object as Light).isLight;
 }
 
 export function isLineSegments(object: unknown): object is LineSegments {
-  return isObject(object) && (object as LineSegments).isLineSegments;
+  return isObject3D(object) && (object as LineSegments).isLineSegments;
 }
 
 export function isDisposableObject3D(object: unknown): object is Object3D & { dispose: () => void } {

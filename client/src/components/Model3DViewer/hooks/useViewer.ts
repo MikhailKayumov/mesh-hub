@@ -1,4 +1,3 @@
-import { useSafeMantineTheme } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import { Model3DResponseDto } from '@/api/dto.ts';
 import { Viewer } from '../classes/Viewer';
@@ -14,7 +13,6 @@ export interface UseViewerProps {
 export default function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps) {
   const placeRef = useRef<HTMLDivElement>(null);
   const [viewer, setViewer] = useState<Viewer | null>(null);
-  const theme = useSafeMantineTheme();
 
   // init viewer
   useEffect(() => {
@@ -41,28 +39,14 @@ export default function useViewer({ model, onReady, onInit, onDestroy }: UseView
 
     const run = async () => {
       await viewer.loadModel(model);
-
-      viewer.camera.camera.layers.enable(1);
-      viewer.camera.camera.layers.enable(2);
-      viewer.camera.camera.layers.enable(3);
-
+      await viewer.world.prepare(viewer.model?.sceneBoundingBox);
       await viewer.run(onReady);
     };
 
     run();
+
+    return () => {};
   }, [viewer, model?.file.id]);
-  // spawn helpers
-  useEffect(() => {
-    if (!viewer) return;
-
-    // viewer.world.spawnGridHelper(50, 50, theme.colors.dark[4], theme.colors.dark[6]);
-    viewer.world.spawnAxisHelper(1.25);
-    viewer.world.spawnGroundHelper(theme.colors.dark[7], 1500, 1500, 150, 150);
-
-    if (viewer?.model?.sceneBoundingBox) {
-      // viewer.world.spawnSceneBoundingBoxHelper(viewer.model.sceneBoundingBox, theme.colors.dark[1]);
-    }
-  }, [viewer, theme]);
 
   return {
     placeRef,

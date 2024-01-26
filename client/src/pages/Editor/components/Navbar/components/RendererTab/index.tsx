@@ -36,7 +36,7 @@ export function RendererTab({ className, viewer }: RendererTabProps) {
     viewer.renderer.setSettings(transformFromForm(form.values));
 
     if (form.isDirty('shadowMapType')) {
-      viewer.world.traverse((object) => {
+      viewer.world.scene.traverse((object) => {
         if (isMesh(object)) {
           if (Array.isArray(object.material)) {
             object.material.forEach((m) => {
@@ -98,13 +98,13 @@ export function RendererTab({ className, viewer }: RendererTabProps) {
             defaultValue={60}
             min={0}
             max={10}
-            step={0.01}
+            step={0.05}
             {...form.getInputProps('toneMappingExposure')}
           />
           <NumberInput
             min={0}
             max={100}
-            step={0.01}
+            step={0.1}
             size="xs"
             radius="xs"
             allowNegative={false}

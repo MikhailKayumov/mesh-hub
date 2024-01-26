@@ -19,4 +19,4 @@ export interface RendererSettings {
   shadowMapType?: WebGLRenderer['shadowMap']['type'];
 }
 
-export type RenderCallback = (delta: number, elapsed: number, clock: Clock) => void | Promise<void>;
+export type RenderCallback = (delta: number, elapsed: number, clock: Clock) => any | Promise<any>;

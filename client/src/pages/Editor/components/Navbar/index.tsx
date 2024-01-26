@@ -2,34 +2,42 @@ import { AppShell, Tabs } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
+import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
 import { TabValue } from '@/pages/Editor/components/Navbar/model.ts';
 import classes from './Navbar.module.scss';
-import { createTabsElements, getTabsConfig } from './utils.tsx';
+import { getTabsConfig } from './utils.tsx';
+
 export interface NavbarProps {
   className?: string;
   viewer: Viewer | null;
+  defaultTab?: TabValue;
 }
 
-export default function Navbar({ className, viewer }: NavbarProps) {
+export default function Navbar({ className, viewer, defaultTab = TabValues.Scene }: NavbarProps) {
   const [tabValue, setTabValue] = useState<TabValue | undefined | null>(undefined);
-  const [lists, panels, defaultValue] = useMemo(() => {
-    const config = getTabsConfig(viewer);
-    if (!config) {
-      return [null, null, undefined];
-    }
+  const config = useMemo(() => getTabsConfig(viewer), [viewer]);
 
-    return [...createTabsElements(config), config[0].value];
-  }, [viewer]);
-
-  useEffect(() => {
-    setTabValue(defaultValue);
-  }, [defaultValue]);
+  useEffect(() => setTabValue(defaultTab), [defaultTab]);
 
   return (
     <AppShell.Navbar p={0} withBorder className={clsx(classes.root, className)}>
       <Tabs value={tabValue} onChange={(v) => setTabValue(v as TabValue)}>
-        <Tabs.List className={classes.tabs}>{lists}</Tabs.List>
-        {panels}
+        <Tabs.List className={classes.tabs}>
+          {config?.map((c) => (
+            <Tabs.Tab
+              key={c.value}
+              value={c.value}
+              className={clsx(classes.tab, tabValue === c.value && classes.active)}
+            >
+              {c.title}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+        {config?.map((c) => (
+          <Tabs.Panel key={c.value} value={c.value} className={classes.tab}>
+            {c.content}
+          </Tabs.Panel>
+        ))}
       </Tabs>
     </AppShell.Navbar>
   );

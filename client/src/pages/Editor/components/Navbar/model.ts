@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-export type TabValue = 'renderer' | 'scene';
+export type TabValue = 'renderer' | 'scene' | 'lights';
 
 export interface TabsConfig {
   value: TabValue;

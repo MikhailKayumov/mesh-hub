@@ -63,7 +63,7 @@ export class Renderer {
     await Promise.all(callbacks);
 
     this.renderer.clear();
-    this.renderer.render(this.world, this.cameraController.camera);
+    this.renderer.render(this.world.scene, this.cameraController.camera);
   }
 
   public getCanvas(): HTMLCanvasElement {
@@ -155,7 +155,7 @@ export class Renderer {
     this.renderer.shadowMap.type = shadowMapType ?? this.renderer.shadowMap.type ?? BasicShadowMap;
     this.renderer.shadowMap.needsUpdate = true;
 
-    this.world.traverse((object) => {
+    this.world.scene.traverse((object) => {
       if (isMesh(object)) {
         if (Array.isArray(object.material)) {
           object.material.forEach((m) => {

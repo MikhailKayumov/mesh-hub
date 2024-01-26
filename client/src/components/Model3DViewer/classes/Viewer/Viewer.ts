@@ -52,6 +52,7 @@ export class Viewer {
 
     if (this.model) {
       await this.world.spawn([this.model.scene]);
+      await this.world.spawnSceneBoundingBoxHelper(this.model.sceneBoundingBox);
       await this.renderer.render();
     } else {
       const loadedModel = await Loader.load(modelData.file);
@@ -60,6 +61,7 @@ export class Viewer {
         data: modelData,
         ...(await this.processLoadedModel(loadedModel)),
       };
+      this.model.scene.name = modelData.name;
 
       Loader.cache.set(modelData.id, this.model);
     }
@@ -68,12 +70,10 @@ export class Viewer {
   public async run(onReady?: (viewer: Viewer) => void | Promise<void>) {
     if (!this.model) return;
 
-    await this.world.prepare(this.model.sceneBoundingBox);
     this.renderer.run();
 
-    await sleep(0.02);
     await this.camera.moveToInitPosition(this.model.sceneBoundingBox);
-    await sleep(0.02);
+    await sleep(0.1);
     await onReady?.(this);
     await this.camera.fitToBox(this.model.sceneBoundingBox);
   }
@@ -173,6 +173,7 @@ export class Viewer {
 
     scene.position.set(centerX * -1, bb.min.y * -1, centerZ * -1);
     bb.translate(new Vector3(centerX * -1, bb.min.y * -1, centerZ * -1));
+    this.world.spawnSceneBoundingBoxHelper(bb);
 
     return {
       scene,

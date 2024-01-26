@@ -20,9 +20,11 @@ export class Destroyer {
     if (isWithGeometryObject3D(object)) {
       object.geometry.dispose();
     }
+
     if (isWithMaterialObject3D(object)) {
-      this.destroyMaterial(object.material);
+      Destroyer.destroyMaterial(object.material);
     }
+
     if (isDisposableObject3D(object)) {
       object.dispose();
     }
@@ -30,11 +32,11 @@ export class Destroyer {
 
   public static destroyMaterial(material: Material | Material[]) {
     if (Array.isArray(material)) {
-      material.forEach(this.destroyMaterial, this);
+      material.forEach(Destroyer.destroyMaterial);
     } else {
       MATERIAL_TEXTURE_MAP_FIELDS.forEach((field) => {
         const texture = (material as any)[field] as Texture | undefined;
-        if (texture) this.destroyTexture(texture);
+        if (texture) Destroyer.destroyTexture(texture);
       });
 
       material.dispose();

@@ -1,0 +1,31 @@
+.root {
+  .label {
+    text-align: left;
+    width: 100%;
+    color: var(--text-color);
+    padding: 0;
+    height: auto;
+    border: none;
+    display: block;
+
+    :global(.mantine-Button-inner) {
+      justify-content: space-between;
+    }
+
+    &-icon {
+      width: rem(16px);
+      height: rem(16px);
+
+      transform: rotate(-90deg);
+      transition: transform 0.214s ease-out;
+
+      &.opened {
+        transform: rotate(0);
+      }
+    }
+  }
+
+  .collapsed {
+    border-bottom: 1px solid var(--_app-shell-border-color);
+  }
+}

@@ -1,5 +1,5 @@
-import { AppShell, Box, LoadingOverlay, rem } from '@mantine/core';
-import { useState } from 'react';
+import { AppShell, Box, LoadingOverlay, rem, useSafeMantineTheme } from '@mantine/core';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { NotFoundError } from '@/components/Errors';
 import Model3DViewer from '@/components/Model3DViewer';
@@ -23,6 +23,16 @@ export default function EditorPage() {
   const { model3d, isModelLoading } = useModel3D({ id });
   const [isViewerReady, setIsViewerReady] = useState(false);
   const [viewer, setViewer] = useState<Viewer | null>(null);
+  const theme = useSafeMantineTheme();
+
+  // spawn helpers
+  useEffect(() => {
+    if (!viewer) return;
+
+    viewer.world.spawnGridHelper(50, 50, theme.colors.dark[4], theme.colors.dark[6]);
+    viewer.world.spawnAxisHelper(1.25);
+    viewer.world.spawnGroundHelper('#ffffff', 1500, 1500, 1, 1, 1);
+  }, [viewer, theme]);
 
   if (!isModelLoading && !model3d) {
     return <NotFoundError />;
@@ -57,6 +67,7 @@ export default function EditorPage() {
 
         <Footer className={classes.footer} viewer={viewer} />
       </AppShell>
+      <LoadingOverlay visible={isModelLoading} className={classes.loader} />
     </Model3DContextProvider>
   );
 }

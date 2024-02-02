@@ -1,11 +1,11 @@
 import { ColorRepresentation, LightShadow, OrthographicCamera, Vector3 } from 'three';
 
 export interface BuildBaseLightOptions {
+  name?: string;
   color?: ColorRepresentation;
   intensity?: number;
   at?: Vector3;
   to?: Vector3;
-  widthHelper?: boolean;
   shadow?: Partial<Pick<OrthographicCamera, 'top' | 'bottom' | 'left' | 'right' | 'near' | 'far'>> &
     Partial<Pick<LightShadow, 'bias' | 'blurSamples'>> &
     (

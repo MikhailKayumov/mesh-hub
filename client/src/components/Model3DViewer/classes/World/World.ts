@@ -36,7 +36,9 @@ export class World extends EventTarget {
   }
 
   public add(object: Object3D, layer = DEFAULT_LAYER): void {
-    object.layers.set(layer);
+    object.traverse((o) => {
+      o.layers.set(layer);
+    });
     this.scene.add(object);
   }
 
@@ -57,7 +59,7 @@ export class World extends EventTarget {
       return;
     }
 
-    if (isLight(object)) this.lights.push();
+    if (isLight(object)) this.lights.push(object);
 
     this.add(object, options?.layer);
 
@@ -74,10 +76,10 @@ export class World extends EventTarget {
 
     this.helpers.axis = new AxesHelper(size);
     this.helpers.axis.name = 'Axes helper';
-    return this.spawn(this.helpers.axis);
+    return this.spawn(this.helpers.axis, { layer: 10 });
   }
 
-  public spawnGridHelper(size = 30, division = 30, color1 = '#dee2e6', color2 = '#e9ecef', layer = 3): Promise<void> {
+  public spawnGridHelper(size = 30, division = 30, color1 = '#dee2e6', color2 = '#e9ecef', layer = 10): Promise<void> {
     if (this.helpers.grid) {
       Destroyer.destroyObject(this.helpers.grid);
       this.scene.remove(this.helpers.grid);
@@ -88,7 +90,7 @@ export class World extends EventTarget {
     return this.spawn(this.helpers.grid, { layer });
   }
 
-  public spawnSceneBoundingBoxHelper(bb: Box3, color = '#dee2e6', layer = 3) {
+  public spawnSceneBoundingBoxHelper(bb: Box3, color = '#dee2e6', layer = 11) {
     if (this.helpers.sceneBoundingBox) {
       Destroyer.destroyObject(this.helpers.sceneBoundingBox);
       this.scene.remove(this.helpers.sceneBoundingBox);
@@ -104,7 +106,7 @@ export class World extends EventTarget {
   public spawnGroundHelper(
     w = 10,
     h = 10,
-    layer = 3,
+    layer = 9,
     options = {
       segments: { w: 1, h: 1 },
       color: new Color(0),
@@ -128,7 +130,7 @@ export class World extends EventTarget {
 
   // helpers end
 
-  public prepare(sceneBB?: Box3) {
+  public async prepare(sceneBB?: Box3) {
     const min = sceneBB?.min ?? new Vector3(-1, -1, -1);
     const max = sceneBB?.max ?? new Vector3(1, 1, 1);
     const length = max.manhattanDistanceTo(min);
@@ -136,21 +138,21 @@ export class World extends EventTarget {
     const center = new Vector3();
     sceneBB?.getCenter(center);
 
-    const widthHelper = true;
-    const [dl1] = buildDirectionalLight({
+    const [dl1, dlh1] = buildDirectionalLight({
+      color: 'rgb(152,214,255)',
       at: new Vector3(min.x - 0.3 * min.x, center.y - 0.7 * center.y, min.z * 3),
-      intensity: 3,
-      widthHelper,
+      intensity: 2.4,
+      name: 'Directional light 1',
     });
-    dl1.name = 'Directional light 1';
 
-    const [dl2] = buildDirectionalLight({
+    const [dl2, dlh2] = buildDirectionalLight({
+      color: 'rgb(255,236,204)',
       at: new Vector3(Math.min(min.x - 0.3 * min.x, -3), max.y + 0.46 * max.y, Math.max(max.z * 2, 3)),
-      intensity: 10,
-      widthHelper,
+      intensity: 28,
+      name: 'Directional light 2',
       shadow: {
-        size: 6128,
-        bias: -0.005,
+        size: 1024,
+        bias: -0.0005,
         near: 0.1,
         far: Math.max(length * 2, 100),
         top: length / 2,
@@ -159,27 +161,28 @@ export class World extends EventTarget {
         left: -length / 2,
       },
     });
-    dl2.name = 'Directional light 2';
 
     const [dl3, dlh3] = buildDirectionalLight({
+      color: 'rgb(255, 204, 51)',
       at: new Vector3(min.x + 0.1 * min.x, center.y - 1.2 * center.y, center.z),
-      intensity: 6,
-      widthHelper,
+      intensity: 1.6,
+      name: 'Directional light 3',
     });
-    dl3.name = 'Directional light 3';
-    console.log(dlh3);
 
-    const al = buildAmbientLight();
+    const al = buildAmbientLight({ intensity: 0.2 });
     al.name = 'Ambient light';
 
-    return this.spawn([
-      al, //
-      dl1,
-      // dlh1,
-      dl2,
-      // dlh2,
-      dl3,
-      // dlh3,
+    await Promise.all([
+      this.spawn(
+        [
+          al, //
+          dl1,
+          dl2,
+          dl3,
+        ],
+        { layer: 1 },
+      ), //
+      this.spawn([dlh1, dlh2, dlh3], { layer: 13 }),
     ]);
   }
 

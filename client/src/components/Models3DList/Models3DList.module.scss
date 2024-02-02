@@ -1,6 +1,11 @@
+.root {}
+
+.row {}
+
 .card {
   cursor: pointer;
   height: 100%;
+  will-change: transform, border-color;
   transition: transform 180ms ease-in, border-color 170ms ease-out, box-shadow 170ms ease-out;
 
   .thumbnail {
@@ -33,6 +38,10 @@
     color: var(--mantine-color-text);
     text-decoration: none;
     flex: 1;
+  }
+
+  .menu-button {
+    min-width: rem(16px);
   }
 
   &:hover {

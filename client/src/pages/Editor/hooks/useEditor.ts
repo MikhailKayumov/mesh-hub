@@ -14,10 +14,10 @@ export const addHelpers = (viewer: Viewer | null, isLight: boolean, { colors }: 
   const color1 = isLight ? colors.gray[4] : colors.dark[4];
   const color2 = isLight ? colors.gray[3] : colors.dark[6];
 
-  viewer.world.spawnGridHelper(500, 50, color1, color2);
+  viewer.world.spawnGridHelper(50, 50, color1, color2);
   viewer.world.spawnAxisHelper(Math.max(1.25, boundingBoxLength * 0.1));
-  viewer.world.spawnGroundHelper(boundingBoxLength * 10, boundingBoxLength * 10, 1);
-  viewer.world.spawnSceneBoundingBoxHelper(boundingBox, color1, 5);
+  viewer.world.spawnGroundHelper(boundingBoxLength * 10, boundingBoxLength * 10);
+  viewer.world.spawnSceneBoundingBoxHelper(boundingBox, color1);
 };
 
 export function useEditor() {
@@ -33,21 +33,8 @@ export function useEditor() {
     if (!viewer) return;
 
     addHelpers(viewer, isLight, theme);
+    console.log('# ===== Viewer world ===== #', viewer.world);
     setIsViewerLoading(false);
-
-    const onCameraUpdate = (e: any) => {
-      console.log(e.target.distance);
-      console.log(viewer.world.helpers.grid);
-      if (viewer.world.helpers.grid) {
-        viewer.world.helpers.grid.scale.set(5, 5, 5);
-      }
-    };
-
-    viewer.camera.control?.addEventListener('control', onCameraUpdate);
-
-    return () => {
-      viewer.camera.control?.removeEventListener('control', onCameraUpdate);
-    };
   }, [viewer, key, isLight]);
 
   return {

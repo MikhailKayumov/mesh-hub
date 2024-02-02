@@ -1,14 +1,4 @@
-import {
-  AmbientLight,
-  AxesHelper,
-  Box3Helper,
-  GridHelper,
-  Light,
-  Mesh,
-  Object3D,
-  SpotLight,
-  SpotLightHelper,
-} from 'three';
+import { AmbientLight, Light, Object3D, SpotLight, SpotLightHelper } from 'three';
 
 // new
 export type WorldObject3D = Object3D | Promise<Object3D>;

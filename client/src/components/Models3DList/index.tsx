@@ -2,12 +2,15 @@ import { Flex, Grid } from '@mantine/core';
 import { Model3DResponseDto } from '@/api/dto.ts';
 import EmptyData from '@/components/EmptyData';
 import Model3DCard from './components/Model3DCard';
+import classes from './Models3DList.module.scss';
 
 export interface Models3DList {
   mode?: 'user' | 'all';
   models: Model3DResponseDto[];
   emptyLabel: string;
 }
+
+export const GRID_COLUMN_SPAN = { base: 12, md: 6, lg: 4 };
 
 export default function Models3DList({ models, emptyLabel }: Models3DList) {
   if (!models.length) {
@@ -19,9 +22,9 @@ export default function Models3DList({ models, emptyLabel }: Models3DList) {
   }
 
   return (
-    <Grid align="stretch">
+    <Grid align="stretch" className={classes.root}>
       {models.map((model) => (
-        <Grid.Col key={model.id} span={{ base: 12, md: 6, lg: 4 }}>
+        <Grid.Col key={model.id} span={GRID_COLUMN_SPAN} className={classes.root}>
           <Model3DCard model={model} />
         </Grid.Col>
       ))}

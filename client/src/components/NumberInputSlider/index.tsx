@@ -23,8 +23,6 @@ export const NumberInputSlider = ({
 
   const ref = useRef<HTMLDivElement>(null);
   const addValueRef = useRef<NumberInputSliderProps['onChange']>(onChange);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (value !== localValue) {
@@ -82,13 +80,12 @@ export const NumberInputSlider = ({
       ref.current?.removeEventListener('mouseenter', moveIn);
       ref.current?.removeEventListener('mouseleave', moveOut);
     };
-  }, [allowNegative, step, decimalScale]);
+  }, [step]);
 
   return (
     <Input.Wrapper label={label} size="xs">
       <Group ref={ref} className={classes.root} gap={8}>
         <Slider
-          ref={sliderRef}
           size="sm"
           className={classes.slider}
           defaultValue={value}
@@ -99,7 +96,6 @@ export const NumberInputSlider = ({
           onChange={onSliderChange}
         />
         <NumberInput
-          ref={inputRef}
           min={min}
           max={max}
           step={step}

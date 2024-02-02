@@ -1,4 +1,4 @@
-import { UseFormReturnType } from '@mantine/form';
+import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
 
 export interface SceneLayer {
   value: number;
@@ -6,10 +6,11 @@ export interface SceneLayer {
   checked: boolean;
 }
 
-export interface LayersCheckboxGroupProps<
-  FormValues extends Record<string | number, any> = Record<string | number, any>,
-> {
-  form: UseFormReturnType<FormValues & { layers: SceneLayer[] }>;
+export type SceneLayersFormValues = { layers: SceneLayer[] };
+
+export interface LayersCheckboxGroupProps {
+  viewer: Viewer | null;
   className?: string;
   defaultOpened?: boolean;
+  onChange?: (layers: SceneLayer[]) => void;
 }

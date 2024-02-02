@@ -10,7 +10,6 @@ export interface UseViewerProps {
   onDestroy?: (viewer?: Viewer) => void | Promise<void>;
 }
 
-// @refresh reset
 export default function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps) {
   const placeRef = useRef<HTMLDivElement>(null);
   const [viewer, setViewer] = useState<Viewer | null>(null);
@@ -23,9 +22,7 @@ export default function useViewer({ model, onReady, onInit, onDestroy }: UseView
     }
 
     const v: Viewer = (viewer ?? new Viewer()).setPlace(placeRef.current).init();
-    if (!viewer) {
-      setViewer(v);
-    }
+    if (!viewer) setViewer(v);
 
     onInit?.(v);
 
@@ -39,6 +36,10 @@ export default function useViewer({ model, onReady, onInit, onDestroy }: UseView
     if (!viewer || !model) return;
 
     const run = async () => {
+      if (viewer.model?.data.id === model.id) return;
+
+      viewer.camera.enableLayer(1);
+      viewer.world.destroy();
       await viewer.loadModel(model);
       await viewer.world.prepare(viewer.model?.sceneBoundingBox);
       await viewer.run();

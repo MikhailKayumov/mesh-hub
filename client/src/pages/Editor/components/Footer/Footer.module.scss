@@ -1,1 +1,5 @@
-.root {}
+.root {
+  * {
+    font-size: rem(10px);
+  }
+}

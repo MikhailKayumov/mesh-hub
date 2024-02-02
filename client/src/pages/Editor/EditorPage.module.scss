@@ -32,6 +32,13 @@
 
 .footer {}
 
+.not-found {
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 [data-mantine-color-scheme=dark] {
   .loader {
     :global(.mantine-Overlay-root) {

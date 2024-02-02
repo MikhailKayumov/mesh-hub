@@ -6,19 +6,24 @@ import { themeSelector } from '@/store/user/selectors.ts';
 import { themes } from '@/theme/themes.ts';
 import classes from './ColorThemeSwitcher.module.scss';
 
-export default function ColorThemeSwitcher() {
+export interface ColorThemeSwitcherProps {
+  space?: number;
+  size?: number;
+}
+
+export default function ColorThemeSwitcher({ size = 36, space = 12 }: ColorThemeSwitcherProps) {
   const dispatch = useDispatch();
   const currentThemeName = useSelector(themeSelector);
 
   return (
-    <Group gap={12} className={classes.root}>
+    <Group gap={space} className={classes.root}>
       {Object.entries(themes).map(([name, theme]) => {
         const color = theme.colors[theme.primaryColor][theme.primaryShade];
 
         return (
           <ColorSwatch
             key={name}
-            size={36}
+            size={size}
             withShadow={false}
             color={color}
             style={{ '--shadow-color': color }}

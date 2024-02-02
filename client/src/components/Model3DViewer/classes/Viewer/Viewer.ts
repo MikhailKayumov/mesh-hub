@@ -1,6 +1,7 @@
 import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import { Model3DResponseDto } from '@/api/dto.ts';
+import { getModel3DFileSrc } from '@/utils/model3d.ts';
 import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';
@@ -52,21 +53,21 @@ export class Viewer {
     if (this.model) {
       await this.world.spawn(this.model.scene);
       await this.renderer.render();
-    } else {
-      const loadedModel = await Loader.load(modelData.file);
-
-      this.model = {
-        data: modelData,
-        ...(await this.processLoadedModel(loadedModel)),
-      };
-      this.model.scene.name = modelData.name;
-
-      Loader.cache.set(modelData.id, this.model);
+      return;
     }
+
+    const loadedModel = await Loader.load(getModel3DFileSrc(modelData.file.id, modelData.file.name));
+
+    this.model = {
+      data: modelData,
+      ...(await this.processLoadedModel(loadedModel)),
+    };
+    this.model.scene.name = modelData.name;
+
+    // Loader.cache.set(modelData.id, this.model);
   }
 
   public async run() {
-    if (!this.model) return;
     this.renderer.run();
   }
 

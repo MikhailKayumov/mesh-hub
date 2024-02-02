@@ -1,4 +1,4 @@
-import { AppShell, LoadingOverlay, rem } from '@mantine/core';
+import { AppShell, Box, LoadingOverlay, rem } from '@mantine/core';
 import { useParams } from 'react-router-dom';
 import { NotFoundError } from '@/components/Errors';
 import Model3DContextProvider from '@/contexts/Model3DContext';
@@ -14,14 +14,17 @@ const headerConfig = { height: rem(30) };
 const footerConfig = { height: rem(26) };
 const navbarConfig = { width: 360, breakpoint: 'sm', collapsed: { mobile: true } };
 
-// @refresh reset
 export default function EditorPage() {
   const { id } = useParams<{ id: string }>();
   const { model3d, isModelLoading } = useModel3D({ id });
   const { viewer, isViewerLoading, onViewerReady } = useEditor();
 
   if (!isModelLoading && !model3d) {
-    return <NotFoundError />;
+    return (
+      <Box className={classes['not-found']}>
+        <NotFoundError />
+      </Box>
+    );
   }
 
   return (

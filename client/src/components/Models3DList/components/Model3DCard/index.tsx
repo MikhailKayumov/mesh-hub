@@ -1,4 +1,5 @@
-import { Avatar, Card, Group, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Avatar, Card, Group, Menu, Text, Tooltip } from '@mantine/core';
+import { IconDotsVertical, IconSettings } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { Model3DResponseDto } from '@/api/dto.ts';
 import RouterPaths from '@/router/paths.ts';
@@ -32,6 +33,24 @@ export default function Model3DCard({ model }: Model3DCard) {
             {model.name}
           </Text>
         </Tooltip>
+        {model.isOwner && (
+          <Menu position="top-end" width={200} offset={1} trigger="hover" withArrow>
+            <Menu.Target>
+              <ActionIcon size="xs" radius="50%" variant="subtle" className={classes['menu-button']}>
+                <IconDotsVertical size={14} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item
+                component={Link}
+                to={buildAbsolutePath([RouterPaths.Editor, model.id])}
+                leftSection={<IconSettings size={16} />}
+              >
+                3D настройки
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        )}
       </Group>
     </Card>
   );

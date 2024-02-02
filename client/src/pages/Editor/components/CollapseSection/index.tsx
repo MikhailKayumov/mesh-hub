@@ -22,7 +22,7 @@ export const CollapseSection = ({ title, children, defaultOpened = false, classN
         {title}
       </Button>
       <Collapse in={opened}>
-        <Box mt={6} pb={6} px={6} className={classes.collapsed}>
+        <Box mt={6} pl={8} py={4} className={classes.collapsed}>
           {children}
         </Box>
       </Collapse>

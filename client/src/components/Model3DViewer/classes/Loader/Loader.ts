@@ -1,14 +1,17 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Model3DFileResponseDto } from '@/api/dto.ts';
-import { getModel3DFileSrc } from '@/utils/model3d.ts';
 import { LoadedModel3D } from '../types';
 import { LoaderCache } from './LoaderCache.ts';
 
 export class Loader {
   public static readonly cache = new LoaderCache(3);
+  public static readonly loaders = {
+    gltf: new GLTFLoader(),
+  };
 
-  public static async load({ id, name }: Model3DFileResponseDto): Promise<LoadedModel3D> {
-    const { scene, animations, parser } = await new GLTFLoader().loadAsync(getModel3DFileSrc(id, name));
+  public static async load(filepath: string): Promise<LoadedModel3D> {
+    const { scene, animations, parser, ...rest } = await this.loaders.gltf.loadAsync(filepath);
+
+    console.log('==== GLTF ====', { scene, animations, parser, ...rest });
 
     return {
       scene,

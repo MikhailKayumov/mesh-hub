@@ -8,7 +8,11 @@ export default defineConfig(({ mode }) => {
   const port = env.PORT && !isNaN(+env.PORT) ? +env.PORT : 8000;
 
   return {
-    plugins: [react()],
+    plugins: [
+      react({
+        include: '**/Model3DViewer/classes/**/*.(ts|js)x?',
+      }),
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),
@@ -24,7 +28,7 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': {
           ws: false,
-          secure: false,
+          secure: true,
           changeOrigin: true,
           target: env.API_PROXY_URL,
           rewrite: (path) => path.replace(/^\/api/, '/api'),
@@ -32,16 +36,16 @@ export default defineConfig(({ mode }) => {
         '/socket.io': {
           target: env.WS_PROXY,
           ws: true,
-          secure: false,
+          secure: true,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/socket.io/, '/socket.io'),
         },
         '/files': {
           ws: false,
-          secure: false,
+          secure: true,
           changeOrigin: true,
           target: env.API_PROXY_URL,
-          rewrite: (path) => path.replace(/^\/files/, '/'),
+          rewrite: (path) => path.replace(/^\/files/, ''),
         },
       },
     },

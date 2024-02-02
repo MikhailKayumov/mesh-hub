@@ -19,13 +19,15 @@ export const Object3DOutliner = memo(
     }, [selected]);
 
     const onClick = useCallback((item: SelectedObject3D) => {
-      const index = selected.findIndex((i) => i.object.uuid === item.object.uuid);
+      setSelected((prev) => {
+        const index = prev.findIndex((i) => i.object.uuid === item.object.uuid);
 
-      if (~index) {
-        setSelected((prev) => prev.filter((i) => i.object !== item.object));
-      } else {
-        setSelected((prev) => (multiple ? [...prev, item] : [item]));
-      }
+        if (~index) {
+          return prev.filter((i) => i.object !== item.object);
+        } else {
+          return multiple ? [...prev, item] : [item];
+        }
+      });
     }, []);
 
     return (

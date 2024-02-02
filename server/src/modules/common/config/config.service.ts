@@ -44,8 +44,8 @@ export class ConfigService {
         const originsWhitelist = this.get<string>('CORS_ORIGINS_WHITE_LIST', '*');
 
         let originResult: boolean | string = false;
-        if (originsWhitelist === '*' || originsWhitelist.split(',').includes(origin)) {
-          originResult = origin;
+        if (!origin || originsWhitelist === '*' || originsWhitelist.split(',').includes(origin)) {
+          originResult = origin ?? true;
         }
 
         callback(null, originResult);

@@ -1,7 +1,8 @@
-import { AppShell, Group, Text } from '@mantine/core';
+import { AppShell, Box, Group, Text } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useEffect, useState } from 'react';
 import { WebGLRenderer } from 'three';
+import ColorThemeSwitcher from '@/components/ColorThemeSwitcher';
 import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
 import classes from './Footer.module.scss';
 
@@ -36,7 +37,7 @@ export function Footer({ className, viewer }: FooterProps) {
   return (
     <AppShell.Footer className={clsx(classes.root, className)}>
       <Group align="center" h="100%" px={8} gap={0}>
-        <Group gap={8} ml="auto">
+        <Group gap={8}>
           <Group gap={4}>
             <Text size="xs">Triangles:</Text>
             <Text size="xs">{info?.render.triangles}</Text>
@@ -57,6 +58,9 @@ export function Footer({ className, viewer }: FooterProps) {
             <Text size="xs">{info?.render.calls}</Text>
           </Group>
         </Group>
+        <Box ml="auto">
+          <ColorThemeSwitcher size={12} space={4} />
+        </Box>
       </Group>
     </AppShell.Footer>
   );

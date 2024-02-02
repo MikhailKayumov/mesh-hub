@@ -28,10 +28,8 @@ export default function Model3DViewerTopBar() {
   const saveThumbnail = async () => {
     if (!viewer || !viewer.model || !viewer.model.data.isOwner) return;
 
-    viewer?.camera.disableLayer(3);
     await sleep(0.05);
     const base64 = viewer.renderer.getScreenshot();
-    viewer?.camera.enableLayer(3);
 
     const decodedData = base64.replace(/^data:image\/png;base64,/, '');
     if (!AppRegexp.Base64.test(decodedData)) return;

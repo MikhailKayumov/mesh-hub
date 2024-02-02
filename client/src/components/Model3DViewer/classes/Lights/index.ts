@@ -21,12 +21,13 @@ export function buildDirectionalLight({
   color = 0xffffff,
   intensity = 1,
   shadow,
-  widthHelper = false,
-}: BuildDirectionLightOptions = {}): [DirectionalLight, DirectionalLightHelper | null] {
+  name,
+}: BuildDirectionLightOptions = {}): [DirectionalLight, DirectionalLightHelper] {
   const dl = new DirectionalLight(color, intensity);
 
   dl.position.copy(at);
   dl.target.position.copy(to);
+  dl.name = name ?? 'Directional light';
 
   if (shadow) {
     dl.castShadow = true;
@@ -44,12 +45,8 @@ export function buildDirectionalLight({
     dl.shadow.needsUpdate = true;
   }
 
-  let helper: DirectionalLightHelper | null = null;
-  if (widthHelper) {
-    helper = new DirectionalLightHelper(dl, 2);
-    helper.layers.disableAll();
-    helper.layers.set(3);
-  }
+  const helper = new DirectionalLightHelper(dl, 2);
+  helper.name = `${name} (helper)` ?? 'Directional light (helper)';
 
   return [dl, helper];
 }
@@ -64,8 +61,7 @@ export function buildSpotLight({
   at = new Vector3(0, 1, 0),
   to = new Vector3(0, 0, 0),
   shadow,
-  widthHelper = false,
-}: BuildSpotLightOptions = {}): [SpotLight, SpotLightHelper | null] {
+}: BuildSpotLightOptions = {}): [SpotLight, SpotLightHelper] {
   const sl = new SpotLight(color, intensity);
 
   sl.intensity = intensity;
@@ -84,5 +80,5 @@ export function buildSpotLight({
     sl.shadow.camera.far = shadow.far ?? 1000;
   }
 
-  return [sl, widthHelper ? new SpotLightHelper(sl) : null];
+  return [sl, new SpotLightHelper(sl)];
 }

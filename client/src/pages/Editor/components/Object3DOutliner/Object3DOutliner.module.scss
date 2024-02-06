@@ -49,6 +49,7 @@
   .group {}
 
   .leaf {
+    outline: none;
     font-size: rem(11px);
 
     transition-property: background-color, color;

@@ -11,7 +11,7 @@ const iconStyle = { width: rem(18), height: rem(18) };
 
 export default function AnimationList({ animations }: AnimationListProps) {
   return (
-    <Menu position="top-end" closeOnItemClick={false} withinPortal={false}>
+    <Menu position="top-start" closeOnItemClick={false} withinPortal={false}>
       <Menu.Target>
         <ActionIcon c="dimmed" variant="transparent" className={classes['toggle-menu-button']}>
           <IconPlaylist style={iconStyle} />

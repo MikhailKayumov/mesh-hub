@@ -4,12 +4,12 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLoginMutation } from '@/api/auth.ts';
 import { LoginRequestDto } from '@/api/dto.ts';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { userActions } from '@/store/user/reducer.ts';
-import processFormSubmitError from '@/utils/processFormSubmitError.ts';
+import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
 import { initialValues, transformValues, validationSchema } from './constants.ts';
 
-export default function useLoginForm() {
+export function useLoginForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 

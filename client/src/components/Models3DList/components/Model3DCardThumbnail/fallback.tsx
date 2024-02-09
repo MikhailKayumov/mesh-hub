@@ -1,7 +1,7 @@
 import { Center } from '@mantine/core';
 import classes from '@/components/Models3DList/Models3DList.module.scss';
 
-export default function Fallback() {
+export function Fallback() {
   return (
     <Center w="100%" h="100%" className={classes.fallback}>
       <svg

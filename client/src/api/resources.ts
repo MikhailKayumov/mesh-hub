@@ -1,9 +1,9 @@
-import Api from './base';
+import { Api } from './base';
 import { CategoryResponse, CgSoftResponse } from './dto';
-import ApiTags from './tags';
-import ApiUrls from './urls';
+import { ApiTags } from './tags';
+import { ApiUrls } from './urls';
 
-const ResourcesApi = Api.injectEndpoints({
+export const ResourcesApi = Api.injectEndpoints({
   endpoints: (build) => ({
     cgSoft: build.query<CgSoftResponse[], void>({
       providesTags: [ApiTags.Reset, ApiTags.CGSoft],
@@ -24,5 +24,3 @@ const ResourcesApi = Api.injectEndpoints({
 });
 
 export const { useCgSoftQuery, useCategoriesQuery } = ResourcesApi;
-
-export default ResourcesApi;

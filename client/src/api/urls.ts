@@ -1,4 +1,4 @@
-const ApiUrls = {
+export const ApiUrls = {
   // auth
   Register: 'auth/signup',
   Login: 'auth/login',
@@ -24,5 +24,3 @@ const ApiUrls = {
 } as const;
 
 export type ApiUrl = keyof typeof ApiUrls;
-
-export default ApiUrls;

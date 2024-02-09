@@ -12,12 +12,12 @@ import { Notifications } from '@mantine/notifications';
 import { Provider } from 'react-redux';
 import { RouterProvider } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
-import router from '@/router';
+import { router } from '@/router';
 import { persist, store } from '@/store';
-import Theme from '@/theme';
+import { Theme } from '@/theme';
 import '@/utils/date.ts';
 
-export default function App() {
+export function App() {
   return (
     <Provider store={store}>
       <PersistGate persistor={persist} loading={<>Loading</>}>

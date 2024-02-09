@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
-import BaseLayout from '@/layouts/Base';
+import { BaseLayout } from '@/layouts/Base';
 
-export default function BasePage() {
+export function BasePage() {
   return (
     <BaseLayout>
       <Outlet />

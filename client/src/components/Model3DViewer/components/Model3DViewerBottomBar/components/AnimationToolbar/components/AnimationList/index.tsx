@@ -9,7 +9,7 @@ export interface AnimationListProps {
 
 const iconStyle = { width: rem(18), height: rem(18) };
 
-export default function AnimationList({ animations }: AnimationListProps) {
+export function AnimationList({ animations }: AnimationListProps) {
   return (
     <Menu position="top-start" closeOnItemClick={false} withinPortal={false}>
       <Menu.Target>

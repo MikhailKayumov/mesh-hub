@@ -1,13 +1,13 @@
 import { MantineSize, rem, Stack, Text, useSafeMantineTheme } from '@mantine/core';
 import { ComponentPropsWithoutRef } from 'react';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
 
 export interface EmptyDataProps extends ComponentPropsWithoutRef<'svg'> {
   label?: string;
   labelSize?: MantineSize;
 }
 
-export default function EmptyData({
+export function EmptyData({
   label,
   labelSize = 'md',
   width = '100%',

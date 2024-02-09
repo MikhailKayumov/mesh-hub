@@ -1,12 +1,12 @@
 import { Menu } from '@mantine/core';
 import { IconCube, IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import useLogout from '@/hooks/useLogout.ts';
-import RouterPaths from '@/router/paths.ts';
+import { useLogout } from '@/hooks/useLogout.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import UserButton from '../UserButton';
+import { UserButton } from '../UserButton';
 
-export default function User() {
+export function User() {
   const onLogout = useLogout();
 
   return (

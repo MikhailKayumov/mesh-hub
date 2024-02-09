@@ -5,12 +5,12 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '@/api/auth.ts';
 import { SignupRequestDto } from '@/api/dto.ts';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { userActions } from '@/store/user/reducer.ts';
-import processFormSubmitError from '@/utils/processFormSubmitError.ts';
+import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
 import { validationSchema, initialValues, transformValues } from './constants.ts';
 
-export default function useRegisterForm() {
+export function useRegisterForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 

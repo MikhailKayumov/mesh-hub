@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 import { Vector3 } from 'three';
 import { useSaveThumbnailFromBase64Mutation } from '@/api/models-3d.ts';
 import { AppRegexp } from '@/constants';
-import sleep from '@/utils/sleep.ts';
-import useViewerContext from '../../hooks/useViewerContext.ts';
+import { sleep } from '@/utils/sleep.ts';
+import { useViewerContext } from '../../hooks/useViewerContext.ts';
 import classes from './TopBar.module.scss';
 
-export default function Model3DViewerTopBar() {
+export function Model3DViewerTopBar() {
   const viewer = useViewerContext();
   const [resetCameraTargetPosition, setResetCameraTargetPosition] = useState(new Vector3());
   const [isCameraResetting, setIsCameraResetting] = useState(false);

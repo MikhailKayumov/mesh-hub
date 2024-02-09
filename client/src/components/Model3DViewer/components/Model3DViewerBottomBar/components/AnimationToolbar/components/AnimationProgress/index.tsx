@@ -2,7 +2,7 @@ import { Group, Slider } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { AnimationState, UseAnimationsReturn } from '@/components/Model3DViewer/hooks/useAnimations.ts';
-import useViewerContext from '@/components/Model3DViewer/hooks/useViewerContext.ts';
+import { useViewerContext } from '@/components/Model3DViewer/hooks/useViewerContext.ts';
 import classes from './AnimationProgress.module.scss';
 import { formatAnimationTime } from './utils.ts';
 
@@ -10,7 +10,7 @@ export interface AnimationProgressProps {
   animations: UseAnimationsReturn;
 }
 
-export default function AnimationProgress({ animations }: AnimationProgressProps) {
+export function AnimationProgress({ animations }: AnimationProgressProps) {
   const viewer = useViewerContext();
   const prevAnimationStateRef = useRef<AnimationState>(animations.state);
   const [animationTime, setAnimationTime] = useState(0);

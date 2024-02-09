@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 import { DataTableColumn } from 'mantine-datatable';
 import { SessionResponseDto } from '@/api/dto.ts';
-import UserAgentColumn from '@/components/SessionTable/UserAgentColumn.tsx';
-import CloseSessionColumn from './CloseSessionColumn.tsx';
+import { UserAgentColumn } from '@/components/SessionTable/UserAgentColumn.tsx';
+import { CloseSessionColumn } from './CloseSessionColumn.tsx';
 
-const columns: DataTableColumn<SessionResponseDto>[] = [
+export const columns: DataTableColumn<SessionResponseDto>[] = [
   {
     accessor: 'createdAt',
     title: 'Дата создания',
@@ -44,5 +44,3 @@ const columns: DataTableColumn<SessionResponseDto>[] = [
     render: ({ id }) => <CloseSessionColumn id={id} />,
   },
 ];
-
-export default columns;

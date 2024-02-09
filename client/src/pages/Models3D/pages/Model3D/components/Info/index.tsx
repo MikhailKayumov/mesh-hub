@@ -1,11 +1,11 @@
 import { Avatar, Box, Group, Text, Tooltip } from '@mantine/core';
 import { IconCategory } from '@tabler/icons-react';
-import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
-import Model3DDescription from '@/pages/Models3D/pages/Model3D/components/Info/components/Description';
+import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
+import { Model3DDescription } from '@/pages/Models3D/pages/Model3D/components/Info/components/Description';
 import { getAvatarSrcByString } from '@/utils/user.ts';
 import classes from './Model3DPageInfo.module.scss';
 
-export default function Model3DPageInfo() {
+export function Model3DPageInfo() {
   const model = useModel3DContext();
   if (!model) return;
 

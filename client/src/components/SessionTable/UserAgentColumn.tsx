@@ -1,11 +1,11 @@
 import { Text, Tooltip } from '@mantine/core';
-import parseUserAgent from '@/utils/parseUserAgent.ts';
+import { parseUserAgent } from '@/utils/parseUserAgent.ts';
 
 export interface UserAgentColumnProps {
   userAgent: string | undefined;
 }
 
-export default function UserAgentColumn({ userAgent }: UserAgentColumnProps) {
+export function UserAgentColumn({ userAgent }: UserAgentColumnProps) {
   if (!userAgent) {
     return (
       <Text size="sm" c="dimmed">

@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { FileWithPath } from 'react-dropzone-esm';
 import { useNavigate } from 'react-router-dom';
 import { useUpload3DModelMutation } from '@/api/models-3d.ts';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
 
-export default function useUpload3DModal() {
+export function useUpload3DModal() {
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
   const [model, setModel] = useState<FileWithPath | null>(null);

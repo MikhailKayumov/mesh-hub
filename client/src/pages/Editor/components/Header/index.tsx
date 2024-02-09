@@ -3,12 +3,12 @@ import { IconDeviceFloppy, IconX } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import ColorSchemeSelect from '@/components/ColorSchemeSelect';
+import { ColorSchemeSelect } from '@/components/ColorSchemeSelect';
 import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
-import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
-import RouterPaths from '@/router/paths.ts';
-import canNavigateBack from '@/utils/canNavigateBack.ts';
-import formatBytes from '@/utils/format-bytes.ts';
+import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
+import { RouterPaths } from '@/router/paths.ts';
+import { canNavigateBack } from '@/utils/canNavigateBack.ts';
+import { formatBytes } from '@/utils/format-bytes.ts';
 import classes from './Header.module.scss';
 
 export interface HeaderProps {
@@ -16,7 +16,7 @@ export interface HeaderProps {
   viewer: Viewer | null;
 }
 
-export default function Header({ className }: HeaderProps) {
+export function Header({ className }: HeaderProps) {
   const model3D = useModel3DContext();
 
   const navigate = useNavigate();

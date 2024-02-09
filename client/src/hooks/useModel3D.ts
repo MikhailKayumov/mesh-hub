@@ -1,14 +1,14 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModel3DQuery } from '@/api/models-3d.ts';
-import RouterPaths from '@/router/paths.ts';
-import sleep from '@/utils/sleep.ts';
+import { RouterPaths } from '@/router/paths.ts';
+import { sleep } from '@/utils/sleep.ts';
 
 export interface UseModel3DProps {
   id?: string;
 }
 
-export default function useModel3D({ id }: UseModel3DProps) {
+export function useModel3D({ id }: UseModel3DProps) {
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useModel3DQuery(id ?? '', { skip: !id });

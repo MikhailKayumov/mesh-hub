@@ -1,6 +1,6 @@
 import { UseFormReturnType } from '@mantine/form';
 
-export default function getFormDirtyFields<T extends Record<string | number, any>>(
+export function getFormDirtyFields<T extends Record<string | number, any>>(
   form: UseFormReturnType<T>,
   data: T,
 ): [Partial<T>, number] {

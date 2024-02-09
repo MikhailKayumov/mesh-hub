@@ -1,7 +1,7 @@
 import { Button, Text } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import ErrorContainer from '@/components/Errors/ErrorContainer';
-import RouterPaths from '@/router/paths.ts';
+import { ErrorContainer } from '@/components/Errors/ErrorContainer';
+import { RouterPaths } from '@/router/paths.ts';
 
 export function NotFoundError() {
   return (

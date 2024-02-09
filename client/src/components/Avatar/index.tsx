@@ -5,7 +5,7 @@ import { IconBucket, IconEdit, IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
 import { UserCurrentResponseDto } from '@/api/dto.ts';
 import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
-import ChangeAvatarModal from '@/components/ChangeAvatarModal';
+import { ChangeAvatarModal } from '@/components/ChangeAvatarModal';
 import { getAvatarSrc } from '@/utils/user.ts';
 import classes from './Avatar.module.scss';
 
@@ -14,7 +14,7 @@ export interface AvatarProps {
   isLoading: boolean;
 }
 
-export default function Avatar({ user, isLoading }: AvatarProps) {
+export function Avatar({ user, isLoading }: AvatarProps) {
   const [opened, { open, close }] = useDisclosure(false);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
   const [saveAvatar, { isLoading: isDeleting }] = useUpdateCurrentUserAvatarMutation();

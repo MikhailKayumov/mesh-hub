@@ -1,8 +1,4 @@
-export default function declineWord(
-  number: number,
-  worlds: readonly [string, string, string],
-  onlyWorld = false,
-): string {
+export function declineWord(number: number, worlds: readonly [string, string, string], onlyWorld = false): string {
   const module = number % 100;
   if (module > 5 && module < 20) {
     return `${!onlyWorld ? `${number} ` : ''}${worlds[2]}`;

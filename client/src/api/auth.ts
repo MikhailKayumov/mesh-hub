@@ -1,9 +1,9 @@
-import Api from './base';
+import { Api } from './base';
 import { LoginRequestDto, PaginationDto, PaginationResponseDto, SessionResponseDto, SignupRequestDto } from './dto';
-import ApiTags from './tags';
-import ApiUrls from './urls';
+import { ApiTags } from './tags';
+import { ApiUrls } from './urls';
 
-const AuthApi = Api.injectEndpoints({
+export const AuthApi = Api.injectEndpoints({
   endpoints: (build) => ({
     register: build.mutation<SessionResponseDto, SignupRequestDto>({
       invalidatesTags: [ApiTags.CurrentUser, ApiTags.Get3DModel],
@@ -62,5 +62,3 @@ export const {
   useCloseCurrentUserSessionMutation,
   useCloseCurrentUserSessionsMutation,
 } = AuthApi;
-
-export default AuthApi;

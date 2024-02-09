@@ -5,11 +5,11 @@ import zod from 'zod';
 import { UserResetPasswordRequestDto } from '@/api/dto.ts';
 import { useResetPasswordMutation } from '@/api/user.ts';
 import { ValidationErrorMessages } from '@/constants';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import processFormSubmitError from '@/utils/processFormSubmitError.ts';
+import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
 
-export default function useResetPasswordForm() {
+export function useResetPasswordForm() {
   const navigate = useNavigate();
   const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);
   const [resetPassword, { isSuccess }] = useResetPasswordMutation();

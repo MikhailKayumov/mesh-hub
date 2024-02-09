@@ -1,5 +1,5 @@
 import { Button, Text } from '@mantine/core';
-import ErrorContainer from '@/components/Errors/ErrorContainer';
+import { ErrorContainer } from '@/components/Errors/ErrorContainer';
 
 export function ServiceUnavailableError() {
   return (

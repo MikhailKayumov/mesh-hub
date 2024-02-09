@@ -11,7 +11,7 @@ export interface ColorThemeSwitcherProps {
   size?: number;
 }
 
-export default function ColorThemeSwitcher({ size = 36, space = 12 }: ColorThemeSwitcherProps) {
+export function ColorThemeSwitcher({ size = 36, space = 12 }: ColorThemeSwitcherProps) {
   const dispatch = useDispatch();
   const currentThemeName = useSelector(themeSelector);
 

@@ -1,20 +1,20 @@
 import { AppShell, Box, LoadingOverlay, rem } from '@mantine/core';
 import { useParams } from 'react-router-dom';
 import { NotFoundError } from '@/components/Errors';
-import Model3DContextProvider from '@/contexts/Model3DContext';
-import useModel3D from '@/hooks/useModel3D.ts';
-import { Footer } from '@/pages/Editor/components/Footer';
-import Header from '@/pages/Editor/components/Header';
-import { Main } from '@/pages/Editor/components/Main';
-import Navbar from '@/pages/Editor/components/Navbar';
-import { useEditor } from '@/pages/Editor/hooks/useEditor.ts';
+import { Model3DContextProvider } from '@/contexts/Model3DContext';
+import { useModel3D } from '@/hooks/useModel3D.ts';
+import { Footer } from './components/Footer';
+import { Header } from './components/Header';
+import { Main } from './components/Main';
+import { Navbar } from './components/Navbar';
 import classes from './EditorPage.module.scss';
+import { useEditor } from './hooks/useEditor.ts';
 
 const headerConfig = { height: rem(30) };
 const footerConfig = { height: rem(26) };
 const navbarConfig = { width: 360, breakpoint: 'sm', collapsed: { mobile: true } };
 
-export default function EditorPage() {
+export function EditorPage() {
   const { id } = useParams<{ id: string }>();
   const { model3d, isModelLoading } = useModel3D({ id });
   const { viewer, isViewerLoading, onViewerReady } = useEditor();

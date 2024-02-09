@@ -5,7 +5,7 @@ export interface ErrorTitleProps {
   status: number;
 }
 
-export default function ErrorTitle({ text, status }: ErrorTitleProps) {
+export function ErrorTitle({ text, status }: ErrorTitleProps) {
   return (
     <Title fz={40} fw={400} style={{ whiteSpace: 'nowrap' }}>
       {text}{' '}

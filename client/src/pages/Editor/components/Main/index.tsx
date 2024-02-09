@@ -1,8 +1,8 @@
 import { AppShell, Box, LoadingOverlay } from '@mantine/core';
 import { Model3DResponseDto } from '@/api/dto.ts';
-import Model3DViewer from '@/components/Model3DViewer';
+import { Model3DViewer } from '@/components/Model3DViewer';
 import { UseViewerProps } from '@/components/Model3DViewer/hooks/useViewer.ts';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
 import classes from '@/pages/Editor/EditorPage.module.scss';
 import { isNil } from '@/utils/type-guards.ts';
 

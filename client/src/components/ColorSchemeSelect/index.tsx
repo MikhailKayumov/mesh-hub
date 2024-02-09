@@ -2,14 +2,9 @@ import { ActionIcon, Menu, useMantineColorScheme } from '@mantine/core';
 import { IconDeviceDesktop, IconMoon, IconSun } from '@tabler/icons-react';
 import { getButtonIconStyle, MENU_ICON_STYLE } from '@/components/ColorSchemeSelect/constants.ts';
 import { ColorSchemeSelectProps } from '@/components/ColorSchemeSelect/model.ts';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
 
-export default function ColorSchemeSelect({
-  size = 22,
-  variant = 'transparent',
-  color,
-  radius,
-}: ColorSchemeSelectProps) {
+export function ColorSchemeSelect({ size = 22, variant = 'transparent', color, radius }: ColorSchemeSelectProps) {
   const { isLight, isDark } = useCurrentColorScheme();
   const { setColorScheme } = useMantineColorScheme();
 

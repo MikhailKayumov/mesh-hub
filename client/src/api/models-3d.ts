@@ -1,9 +1,9 @@
-import Api from '@/api/base.ts';
+import { Api } from '@/api/base.ts';
 import { PaginationResponseDto, Model3DResponseDto, PaginationDto, Model3DUpdateRequestDto } from '@/api/dto.ts';
-import ApiTags from '@/api/tags.ts';
-import ApiUrls from '@/api/urls.ts';
+import { ApiTags } from '@/api/tags.ts';
+import { ApiUrls } from '@/api/urls.ts';
 
-const Models3dApi = Api.injectEndpoints({
+export const Models3dApi = Api.injectEndpoints({
   endpoints: (build) => ({
     models3D: build.query<PaginationResponseDto<Model3DResponseDto>, PaginationDto<any>>({
       providesTags: [ApiTags.Get3DModels],
@@ -78,5 +78,3 @@ export const {
   useModel3DQuery,
   useSaveThumbnailFromBase64Mutation,
 } = Models3dApi;
-
-export default Models3dApi;

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Model3DResponseDto } from '@/api/dto.ts';
-import sleep from '@/utils/sleep.ts';
+import { sleep } from '@/utils/sleep.ts';
 import { Viewer } from '../classes/Viewer';
 
 export interface UseViewerProps {
@@ -10,7 +10,7 @@ export interface UseViewerProps {
   onDestroy?: (viewer?: Viewer) => void | Promise<void>;
 }
 
-export default function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps) {
+export function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps) {
   const placeRef = useRef<HTMLDivElement>(null);
   const [viewer, setViewer] = useState<Viewer | null>(null);
 

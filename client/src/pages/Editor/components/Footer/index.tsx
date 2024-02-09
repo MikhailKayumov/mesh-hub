@@ -2,7 +2,7 @@ import { AppShell, Box, Group, Text } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useEffect, useState } from 'react';
 import { WebGLRenderer } from 'three';
-import ColorThemeSwitcher from '@/components/ColorThemeSwitcher';
+import { ColorThemeSwitcher } from '@/components/ColorThemeSwitcher';
 import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
 import classes from './Footer.module.scss';
 

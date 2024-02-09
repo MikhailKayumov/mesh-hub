@@ -4,7 +4,7 @@ import { notifications } from '@mantine/notifications';
 import { useEffect, useMemo } from 'react';
 import { useCgSoftQuery } from '@/api/resources.ts';
 import { useUpdateCurrentUserMutation } from '@/api/user.ts';
-import useCurrentUser from '@/hooks/useCurrentUser.ts';
+import { useCurrentUser } from '@/hooks/useCurrentUser.ts';
 import {
   initialValues,
   transformValuesFromFormToRequest,
@@ -12,10 +12,10 @@ import {
   validationSchema,
 } from '@/pages/User/pages/Profile/constants.ts';
 import { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
-import getFormDirtyFields from '@/utils/getFormDirtyFields.ts';
-import processFormSubmitError from '@/utils/processFormSubmitError.ts';
+import { getFormDirtyFields } from '@/utils/getFormDirtyFields.ts';
+import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
 
-export default function useProfileForm() {
+export function useProfileForm() {
   const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);
   const [update] = useUpdateCurrentUserMutation();
   const { user, isUserLoading } = useCurrentUser();

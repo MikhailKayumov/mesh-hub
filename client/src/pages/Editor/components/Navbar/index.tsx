@@ -13,7 +13,7 @@ export interface NavbarProps {
   defaultTab?: TabValue;
 }
 
-export default function Navbar({ className, viewer, defaultTab = TabValues.Scene }: NavbarProps) {
+export function Navbar({ className, viewer, defaultTab = TabValues.Renderer }: NavbarProps) {
   const [tabValue, setTabValue] = useState<TabValue | undefined | null>(undefined);
   const config = useMemo(() => getTabsConfig(viewer), [viewer]);
 

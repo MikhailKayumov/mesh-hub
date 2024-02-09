@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistStore } from 'redux-persist';
-import Api from '@/api/base';
+import { Api } from '@/api/base';
 import { rtkErrorLogger } from '@/api/utils';
 import { userReducer } from '@/store/user/reducer.ts';
 

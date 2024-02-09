@@ -1,10 +1,10 @@
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '@/api/auth.ts';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { userActions } from '@/store/user/reducer.ts';
 
-export default function useLogout() {
+export function useLogout() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [logout] = useLogoutMutation();

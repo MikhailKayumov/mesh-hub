@@ -4,12 +4,12 @@ import { notifications } from '@mantine/notifications';
 import { useLayoutEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useNewPasswordMutation } from '@/api/user.ts';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import processFormSubmitError from '@/utils/processFormSubmitError.ts';
+import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
 import { initialValues, transformValues, UserNewPasswordFormData, validationSchema } from './constants.ts';
 
-export default function useNewPasswordForm() {
+export function useNewPasswordForm() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestId = searchParams.get('request');

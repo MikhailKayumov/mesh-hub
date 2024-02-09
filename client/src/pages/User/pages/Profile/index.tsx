@@ -1,11 +1,11 @@
 import { Paper, Title, TextInput, Button, Textarea, Group, Tooltip, TagsInput, Loader, Center } from '@mantine/core';
-import ChangePasswordModal from '@/components/ChangePasswordModal';
-import PhoneInput from '@/components/PhoneInput';
-import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
+import { PhoneInput } from '@/components/PhoneInput';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle.ts';
 import classes from './ProfilePage.module.scss';
-import useProfileForm from './useProfileForm.ts';
+import { useProfileForm } from './useProfileForm.ts';
 
-export default function ProfilePage() {
+export function ProfilePage() {
   useDocumentTitle('Профиль');
 
   const { form, software, isSubmitting, isLoading, onSubmit } = useProfileForm();

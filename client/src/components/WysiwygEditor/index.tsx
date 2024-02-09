@@ -19,7 +19,7 @@ export interface WysiwygEditorProps {
   className?: string;
 }
 
-export default function WysiwygEditor({ value, label, className, onChange }: WysiwygEditorProps) {
+export function WysiwygEditor({ value, label, className, onChange }: WysiwygEditorProps) {
   const onUpdate = useDebouncedCallback((e: EditorEvents['update']) => {
     onChange(!e.editor.isEmpty ? e.editor.getJSON() : null);
   });

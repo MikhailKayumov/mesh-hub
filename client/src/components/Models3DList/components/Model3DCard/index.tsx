@@ -2,17 +2,17 @@ import { ActionIcon, Avatar, Card, Group, Menu, Text, Tooltip } from '@mantine/c
 import { IconDotsVertical, IconSettings } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { Model3DResponseDto } from '@/api/dto.ts';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
 import { getAvatarSrcByString } from '@/utils/user.ts';
 import classes from '../../Models3DList.module.scss';
-import Model3DCardThumbnail from '../Model3DCardThumbnail';
+import { Model3DCardThumbnail } from '../Model3DCardThumbnail';
 
 export interface Model3DCard {
   model: Model3DResponseDto;
 }
 
-export default function Model3DCard({ model }: Model3DCard) {
+export function Model3DCard({ model }: Model3DCard) {
   return (
     <Card withBorder className={classes.card} p={0}>
       <Model3DCardThumbnail id={model.id} name={model.name} fileId={model.file.id} thumbnail={model.thumbnail} />

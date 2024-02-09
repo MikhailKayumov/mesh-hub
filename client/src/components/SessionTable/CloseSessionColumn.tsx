@@ -6,7 +6,7 @@ export interface CloseSessionColumnProps {
   id: string;
 }
 
-export default function CloseSessionColumn({ id }: CloseSessionColumnProps) {
+export function CloseSessionColumn({ id }: CloseSessionColumnProps) {
   const [close, { isLoading }] = useCloseCurrentUserSessionMutation();
 
   const onClick = () => close(id);

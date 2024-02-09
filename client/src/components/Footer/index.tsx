@@ -2,8 +2,8 @@ import { Container, Flex, Group, Stack, Text, Title } from '@mantine/core';
 import { IconPhone, IconMail, IconCopyright } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { FOOTER_MAIL, FOOTER_PHONE } from '@/components/Footer/constants.ts';
-import Logo from '@/components/Logo';
-import RouterPaths from '@/router/paths.ts';
+import { Logo } from '@/components/Logo';
+import { RouterPaths } from '@/router/paths.ts';
 
 function onMailClick() {
   window.location.href = `mailto:${FOOTER_MAIL}`;
@@ -13,7 +13,7 @@ function onPhoneClick() {
   window.location.href = `tel:${FOOTER_PHONE.replace(/[ )(-]/g, '')}`;
 }
 
-export default function Footer() {
+export function Footer() {
   return (
     <Container>
       <Group justify="space-between" align="flex-start">

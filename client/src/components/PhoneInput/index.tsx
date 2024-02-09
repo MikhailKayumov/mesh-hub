@@ -13,7 +13,7 @@ export interface PhoneInputProps extends InputProps {
   onBlur?: any;
 }
 
-const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
+export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
   ({ label, error, onChange, mask = '+7 (000) 000-00-00', value, m, mb, mt, ml, mr, ...props }, ref) => {
     const [localValue, setLocalValue] = useState(value ?? '');
 
@@ -40,5 +40,3 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     );
   },
 );
-
-export default PhoneInput;

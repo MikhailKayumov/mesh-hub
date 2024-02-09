@@ -3,15 +3,15 @@ import { IconRefresh } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
 import { useCloseCurrentUserSessionsMutation, useCurrentUserSessionsQuery } from '@/api/auth.ts';
 import { SessionResponseDto } from '@/api/dto.ts';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
-import useSearchParamsPagination from '@/hooks/useSearchParamsPagination.ts';
-import useSearchParamsTableSorting from '@/hooks/useSearchParamsTableSorting.ts';
-import useSession from '@/hooks/useSession.ts';
-import columns from './columns.tsx';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
+import { useSearchParamsPagination } from '@/hooks/useSearchParamsPagination.ts';
+import { useSearchParamsTableSorting } from '@/hooks/useSearchParamsTableSorting.ts';
+import { useSession } from '@/hooks/useSession.ts';
+import { columns } from './columns.tsx';
 
 const PAGE_SIZE = 10;
 
-export default function SessionTable() {
+export function SessionTable() {
   const session = useSession();
 
   const [closeAll, { isLoading: isClosing }] = useCloseCurrentUserSessionsMutation();

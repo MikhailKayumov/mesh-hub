@@ -1,14 +1,14 @@
-import Api from './base';
+import { Api } from './base';
 import {
   UserChangePasswordRequestDto,
   UserNewPasswordRequestDto,
   UserCurrentResponseDto,
   UserCurrentUpdateRequestDto,
 } from './dto';
-import ApiTags from './tags';
-import ApiUrls from './urls';
+import { ApiTags } from './tags';
+import { ApiUrls } from './urls';
 
-const UserApi = Api.injectEndpoints({
+export const UserApi = Api.injectEndpoints({
   endpoints: (build) => ({
     currentUser: build.query<UserCurrentResponseDto, void>({
       providesTags: [ApiTags.Reset, ApiTags.CurrentUser],
@@ -66,5 +66,3 @@ export const {
   useUpdateCurrentUserMutation,
   useUpdateCurrentUserAvatarMutation,
 } = UserApi;
-
-export default UserApi;

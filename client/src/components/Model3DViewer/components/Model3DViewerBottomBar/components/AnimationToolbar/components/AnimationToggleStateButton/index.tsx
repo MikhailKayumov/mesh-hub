@@ -8,7 +8,7 @@ export interface AnimationToggleStateButtonProps {
 
 const iconStyle = { width: rem(18), height: rem(18) };
 
-export default function AnimationToggleStateButton({ animations }: AnimationToggleStateButtonProps) {
+export function AnimationToggleStateButton({ animations }: AnimationToggleStateButtonProps) {
   const onClick = () => {
     if (!animations) return;
     animations.setAnimationState(animations.state === 'pause' ? 'play' : 'pause');

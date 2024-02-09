@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimationAction, AnimationClip, AnimationMixer } from 'three';
-import useViewerContext from './useViewerContext';
+import { useViewerContext } from './useViewerContext';
 
 export type AnimationState = 'play' | 'pause';
 export interface UseAnimationsProps {
@@ -20,7 +20,7 @@ export interface UseAnimationsReturn {
   setAnimationState: (state: AnimationState) => void;
 }
 
-export default function useAnimations({ blends, autorun = false }: UseAnimationsProps): UseAnimationsReturn | null {
+export function useAnimations({ blends, autorun = false }: UseAnimationsProps): UseAnimationsReturn | null {
   const viewer = useViewerContext();
   const prevActionRef = useRef<AnimationAction | null>(null);
   const [mixer, setMixer] = useState<AnimationMixer | null>(null);

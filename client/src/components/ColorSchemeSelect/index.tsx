@@ -1,39 +1,28 @@
-import { ActionIcon, Menu, rem, useMantineColorScheme } from '@mantine/core';
+import { ActionIcon, Menu, useMantineColorScheme } from '@mantine/core';
 import { IconDeviceDesktop, IconMoon, IconSun } from '@tabler/icons-react';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
+import { getButtonIconStyle, MENU_ICON_STYLE } from '@/components/ColorSchemeSelect/constants.ts';
+import { ColorSchemeSelectProps } from '@/components/ColorSchemeSelect/model.ts';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
 
-export default function ColorSchemeSelect() {
+export function ColorSchemeSelect({ size = 22, variant = 'transparent', color, radius }: ColorSchemeSelectProps) {
   const { isLight, isDark } = useCurrentColorScheme();
   const { setColorScheme } = useMantineColorScheme();
 
   return (
     <Menu position="bottom-end" offset={4} arrowPosition="center" shadow={isLight ? 'sm' : undefined}>
       <Menu.Target>
-        <ActionIcon variant="transparent" c={isLight ? 'black' : 'white'}>
-          {isDark ? (
-            <IconMoon style={{ width: rem(22), height: rem(22) }} />
-          ) : (
-            <IconSun style={{ width: rem(22), height: rem(22) }} />
-          )}
+        <ActionIcon variant={variant} c={color} radius={radius}>
+          {isDark ? <IconMoon style={getButtonIconStyle(size)} /> : <IconSun style={getButtonIconStyle(size)} />}
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item
-          onClick={() => setColorScheme('light')}
-          leftSection={<IconSun style={{ width: rem(16), height: rem(16) }} />}
-        >
+        <Menu.Item onClick={() => setColorScheme('light')} leftSection={<IconSun style={MENU_ICON_STYLE} />}>
           Светлая
         </Menu.Item>
-        <Menu.Item
-          onClick={() => setColorScheme('dark')}
-          leftSection={<IconMoon style={{ width: rem(16), height: rem(16) }} />}
-        >
+        <Menu.Item onClick={() => setColorScheme('dark')} leftSection={<IconMoon style={MENU_ICON_STYLE} />}>
           Темная
         </Menu.Item>
-        <Menu.Item
-          onClick={() => setColorScheme('auto')}
-          leftSection={<IconDeviceDesktop style={{ width: rem(16), height: rem(16) }} />}
-        >
+        <Menu.Item onClick={() => setColorScheme('auto')} leftSection={<IconDeviceDesktop style={MENU_ICON_STYLE} />}>
           Системная
         </Menu.Item>
       </Menu.Dropdown>

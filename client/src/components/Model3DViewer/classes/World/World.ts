@@ -1,163 +1,195 @@
 import {
   AxesHelper,
+  Box3,
+  Box3Helper,
+  Color,
   GridHelper,
-  Material,
+  Light,
   MathUtils,
   Mesh,
-  MeshStandardMaterial,
   Object3D,
   PlaneGeometry,
   Scene,
-  Texture,
+  ShadowMaterial,
   Vector3,
 } from 'three';
+import { Destroyer } from '../Destroyer';
 import { buildAmbientLight, buildDirectionalLight } from '../Lights';
-import { PromiseWorldObject3D, WorldObject3D } from '../types';
-import { isDisposableObject3D, isLight, isWithGeometryObject3D, isWithMaterialObject3D } from '../utils';
-import { MATERIAL_TEXTURE_FIELDS } from './constants.ts';
+import { WorldObject3D, WorldObjects3D, WorldSpawnOptions } from '../types';
+import { isLight, isObject3D } from '../utils';
+import { DEFAULT_LAYER, WorldEventNames } from './constants.ts';
+import { WorldHelpers } from './WorldHelpers.ts';
 
 // setting up axis
 Object3D.DEFAULT_UP = new Vector3(0, 1, 0);
 
-export class World extends Scene {
-  private grid: GridHelper | null = null;
-  private ground: Mesh | null = null;
+export class World extends EventTarget {
+  public readonly scene: Scene;
+  public readonly models: Object3D[] = [];
+  public readonly lights: Light[] = [];
+  public readonly helpers: WorldHelpers = new WorldHelpers(); //
 
-  public async spawn(object: Array<WorldObject3D | null> | WorldObject3D | null): Promise<void> {
+  public constructor(scene?: Scene) {
+    super();
+
+    this.scene = scene ?? new Scene();
+  }
+
+  public add(object: Object3D, layer = DEFAULT_LAYER): void {
+    object.traverse((o) => {
+      o.layers.set(layer);
+    });
+    this.scene.add(object);
+  }
+
+  public async spawn(object: WorldObject3D | WorldObjects3D, options?: WorldSpawnOptions): Promise<void> {
     if (!object) return;
 
     if (Array.isArray(object)) {
-      object.forEach(this.spawn, this);
-    } else {
-      if ((object as Object3D).isObject3D) {
-        this.add(object as any);
-      } else {
-        await this.spawnAsync(object as any);
-      }
-    }
-  }
+      await Promise.all(object.map((o) => this.spawn(o, options)));
 
-  public async spawnAsync(object: PromiseWorldObject3D[] | PromiseWorldObject3D): Promise<void> {
-    if (Array.isArray(object)) {
-      await Promise.all(object).then((objects) => {
-        objects.forEach((o) => this.spawn(o));
-      });
-    } else {
-      object.then((o) => this.spawn(o));
-    }
-  }
+      const event = new CustomEvent<Scene>(WorldEventNames.WorldSceneChange, { detail: this.scene });
+      !options?.silent && this.dispatchEvent(event);
 
-  public spawnAxisHelper(size = 1): this {
-    const axisHelper = new AxesHelper(size);
-
-    this.add(axisHelper);
-
-    return this;
-  }
-
-  public spawnGridHelper(size = 30, division = 30, color1 = '#dee2e6', color2 = '#e9ecef'): this {
-    if (this.grid) {
-      this.destroyObject(this.grid);
-      this.remove(this.grid);
+      return;
     }
 
-    this.grid = new GridHelper(size, division, color1, color2);
-    this.add(this.grid);
-
-    return this;
-  }
-
-  public spawnGroundHelper(color = '#dee2e6'): this {
-    if (this.ground) {
-      this.destroyObject(this.ground);
-      this.remove(this.ground);
+    if (!isObject3D(object)) {
+      object.then((o) => this.spawn(o, options));
+      return;
     }
 
-    const geometry = new PlaneGeometry(10, 10, 24, 24);
-    const material = new MeshStandardMaterial({ color });
-    this.ground = new Mesh(geometry, material);
-    this.ground.rotateX(MathUtils.degToRad(-90));
+    if (isLight(object)) this.lights.push(object);
 
-    this.add(this.ground);
+    this.add(object, options?.layer);
 
-    return this;
+    const event = new CustomEvent<Scene>(WorldEventNames.WorldSceneChange, { detail: this.scene });
+    !options?.silent && this.dispatchEvent(event);
   }
 
-  public prepare() {
-    const al = buildAmbientLight({ intensity: 0.05 });
-    const widthHelper = false;
+  // helpers
+  public spawnAxisHelper(size = 1): Promise<void> {
+    if (this.helpers.axis) {
+      Destroyer.destroyObject(this.helpers.axis);
+      this.scene.remove(this.helpers.axis);
+    }
+
+    this.helpers.axis = new AxesHelper(size);
+    this.helpers.axis.name = 'Axes helper';
+    return this.spawn(this.helpers.axis, { layer: 10 });
+  }
+
+  public spawnGridHelper(size = 30, division = 30, color1 = '#dee2e6', color2 = '#e9ecef', layer = 10): Promise<void> {
+    if (this.helpers.grid) {
+      Destroyer.destroyObject(this.helpers.grid);
+      this.scene.remove(this.helpers.grid);
+    }
+
+    this.helpers.grid = new GridHelper(size, division, color1, color2);
+    this.helpers.grid.name = 'Grid helper';
+    return this.spawn(this.helpers.grid, { layer });
+  }
+
+  public spawnSceneBoundingBoxHelper(bb: Box3, color = '#dee2e6', layer = 11) {
+    if (this.helpers.sceneBoundingBox) {
+      Destroyer.destroyObject(this.helpers.sceneBoundingBox);
+      this.scene.remove(this.helpers.sceneBoundingBox);
+    }
+
+    this.helpers.sceneBoundingBox = new Box3Helper(bb, color);
+    this.helpers.sceneBoundingBox.layers.set(layer);
+    this.helpers.sceneBoundingBox.name = 'Scene bounding box';
+
+    return this.spawn(this.helpers.sceneBoundingBox, { layer });
+  }
+
+  public spawnGroundHelper(
+    w = 10,
+    h = 10,
+    layer = 9,
+    options = {
+      segments: { w: 1, h: 1 },
+      color: new Color(0),
+    },
+  ): Promise<void> {
+    if (this.helpers.ground) {
+      Destroyer.destroyObject(this.helpers.ground);
+      this.scene.remove(this.helpers.ground);
+    }
+
+    const geometry = new PlaneGeometry(w, h, options.segments.w ?? 1, options.segments.h ?? 1);
+    const material = new ShadowMaterial({ color: options.color, opacity: 0.1 });
+
+    this.helpers.ground = new Mesh(geometry, material);
+    this.helpers.ground.name = 'Ground';
+    this.helpers.ground.receiveShadow = true;
+    this.helpers.ground.rotateX(MathUtils.degToRad(-90));
+
+    return this.spawn(this.helpers.ground, { layer });
+  }
+
+  // helpers end
+
+  public async prepare(sceneBB?: Box3) {
+    const min = sceneBB?.min ?? new Vector3(-1, -1, -1);
+    const max = sceneBB?.max ?? new Vector3(1, 1, 1);
+    const length = max.manhattanDistanceTo(min);
+
+    const center = new Vector3();
+    sceneBB?.getCenter(center);
 
     const [dl1, dlh1] = buildDirectionalLight({
-      at: new Vector3(20, 60, 30),
-      intensity: 2.17,
-      widthHelper,
-    });
-    const [dl2, dlh2] = buildDirectionalLight({
-      at: new Vector3(-40, 4, 50),
-      to: new Vector3(0, 6, 0),
-      intensity: 1.26,
-      widthHelper,
-    });
-    const [dl3, dlh3] = buildDirectionalLight({
-      at: new Vector3(-10, 5, -50),
-      to: new Vector3(6, 6, 0),
-      intensity: 2.01,
-      widthHelper,
-    });
-    const [dl4, dlh4] = buildDirectionalLight({
-      at: new Vector3(-0, -60, -0),
-      intensity: 0.8,
-      widthHelper,
+      color: 'rgb(152,214,255)',
+      at: new Vector3(min.x - 0.3 * min.x, center.y - 0.7 * center.y, min.z * 3),
+      intensity: 2.4,
+      name: 'Directional light 1',
     });
 
-    return this.spawn([al, dl1, dlh1, dl2, dlh2, dl3, dlh3, dl4, dlh4]);
+    const [dl2, dlh2] = buildDirectionalLight({
+      color: 'rgb(255,236,204)',
+      at: new Vector3(Math.min(min.x - 0.3 * min.x, -3), max.y + 0.46 * max.y, Math.max(max.z * 2, 3)),
+      intensity: 28,
+      name: 'Directional light 2',
+      shadow: {
+        size: 1024,
+        bias: -0.0005,
+        near: 0.1,
+        far: Math.max(length * 2, 100),
+        top: length / 2,
+        bottom: -length / 2,
+        right: length / 2,
+        left: -length / 2,
+      },
+    });
+
+    const [dl3, dlh3] = buildDirectionalLight({
+      color: 'rgb(255, 204, 51)',
+      at: new Vector3(min.x + 0.1 * min.x, center.y - 1.2 * center.y, center.z),
+      intensity: 1.6,
+      name: 'Directional light 3',
+    });
+
+    const al = buildAmbientLight({ intensity: 0.2 });
+    al.name = 'Ambient light';
+
+    await Promise.all([
+      this.spawn(
+        [
+          al, //
+          dl1,
+          dl2,
+          dl3,
+        ],
+        { layer: 1 },
+      ), //
+      this.spawn([dlh1, dlh2, dlh3], { layer: 13 }),
+    ]);
   }
 
   public destroy(): void {
-    this.traverse(this.destroyObject.bind(this));
-    this.clear();
-    this.environment?.dispose();
-    this.overrideMaterial?.dispose();
-  }
-
-  public destroyObject(object: Object3D): this {
-    if (isLight(object)) {
-      object.shadow?.map?.dispose();
-      object.shadow?.mapPass?.dispose();
-      object.shadow?.dispose();
-    }
-
-    if (isWithGeometryObject3D(object)) {
-      object.geometry.dispose();
-    }
-    if (isWithMaterialObject3D(object)) {
-      this.destroyMaterial(object.material);
-    }
-    if (isDisposableObject3D(object)) {
-      object.dispose();
-    }
-
-    return this;
-  }
-
-  public destroyMaterial(material: Material | Material[]): this {
-    if (Array.isArray(material)) {
-      material.forEach(this.destroyMaterial, this);
-    } else {
-      MATERIAL_TEXTURE_FIELDS.forEach((field) => {
-        const texture = (material as any)[field] as Texture | undefined;
-        if (texture) this.destroyTexture(texture);
-      });
-
-      material.dispose();
-    }
-
-    return this;
-  }
-
-  public destroyTexture(texture: Texture): this {
-    texture.dispose();
-
-    return this;
+    this.scene.traverse(Destroyer.destroyObject);
+    this.scene.clear();
+    this.scene.environment?.dispose();
+    this.scene.overrideMaterial?.dispose();
   }
 }

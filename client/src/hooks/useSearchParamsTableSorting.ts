@@ -2,7 +2,7 @@ import { DataTableSortStatus } from 'mantine-datatable';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export default function useSearchParamsTableSorting<T = Record<string, unknown>>(
+export function useSearchParamsTableSorting<T = Record<string, unknown>>(
   paramName = 'sort',
   initial?: DataTableSortStatus<T>,
 ): [DataTableSortStatus<T> | undefined, (status: DataTableSortStatus<T>) => void, string | null] {

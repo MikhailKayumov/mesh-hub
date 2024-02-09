@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
 import { FileWithPath } from 'react-dropzone-esm';
 import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
 import { MAX_AVATAR_FILE_SIZE } from '@/constants';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
-import formatBytes from '@/utils/format-bytes.ts';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
+import { formatBytes } from '@/utils/format-bytes.ts';
 import classes from './ChangeAvatarModal.module.scss';
 
 export interface ChangeAvatarModalProps {
@@ -25,7 +25,7 @@ const onReject = () => {
   });
 };
 
-export default function ChangeAvatarModal({ currentImage, opened, close }: ChangeAvatarModalProps) {
+export function ChangeAvatarModal({ currentImage, opened, close }: ChangeAvatarModalProps) {
   const { isDark } = useCurrentColorScheme();
   const [newImage, setNewImage] = useState<FileWithPath | null>(null);
   const [saveAvatar, { isLoading }] = useUpdateCurrentUserAvatarMutation();

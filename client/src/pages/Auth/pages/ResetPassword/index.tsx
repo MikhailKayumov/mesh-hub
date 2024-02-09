@@ -1,12 +1,12 @@
 import { TextInput, Button, Title, Group, Anchor, rem, Box, Center, Text } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import useDocumentTitle from '@/hooks/useDocumentTitle.ts';
-import RouterPaths from '@/router/paths.ts';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import useResetPasswordForm from './useResetPasswordForm.ts';
+import { useResetPasswordForm } from './useResetPasswordForm.ts';
 
-export default function ResetPasswordPage() {
+export function ResetPasswordPage() {
   useDocumentTitle('Не помните пароль?');
 
   const { form, isSubmitting, isSuccess, onSubmit } = useResetPasswordForm();

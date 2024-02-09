@@ -1,0 +1,122 @@
+.root {
+  gap: 0;
+  background-color: var(--mantine-color-white);
+  border: 1px solid var(--_app-shell-border-color);
+  border-radius: var(--mantine-radius-xs);
+
+  .row {
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    height: rem(20px);
+    padding: rem(2px) rem(10px) rem(2px) rem(8px);
+    gap: rem(8px);
+    border-bottom: 1px solid var(--_app-shell-border-color);
+
+    transition-property: background-color, color;
+    transition: 0.123s ease-out;
+
+    &.header-row {
+      position: sticky;
+      top: 0;
+      height: rem(22px);
+      background-color: var(--mantine-color-gray-2);
+    }
+  }
+
+  .cell {
+    flex: 1;
+    display: flex;
+    align-items: center;
+
+    & * {
+      font-size: rem(11px);
+      white-space: nowrap;
+    }
+
+    &.header-cell {
+      color: var(--mantine-color-text);
+    }
+
+    &:not(:last-child) {
+      border-right: 1px solid var(--_app-shell-border-color);
+      padding-right: rem(8px);
+    }
+  }
+
+  .group {}
+
+  .leaf {
+    outline: none;
+    font-size: rem(11px);
+
+    transition-property: background-color, color;
+    transition: 0.12s ease-out;
+
+    &:hover {
+      background-color: var(--mantine-color-gray-1);
+    }
+
+    &:active, &.active {
+      background-color: var(--mantine-color-primary-6) !important;
+      color: var(--mantine-color-white) !important;;
+
+      .type-column {
+        color: var(--mantine-color-gray-2) !important;
+      }
+
+      .name-column {
+        .folder-button {
+          color: var(--mantine-color-white) !important;;
+        }
+      }
+    }
+  }
+
+  .column {}
+
+  .name-column {
+    .folder-button {
+      width: rem(16px);
+      min-width: rem(16px);
+      height: rem(20px);
+      min-height: rem(20px);
+
+      color: var(--mantine-color-text);
+    }
+
+    .group-arrow-icon {
+      width: rem(14px);
+      height: rem(14px);
+    }
+  }
+
+  .type-column {
+    flex: 0 0 90px;
+    width: 90px;
+
+    transition: color 0.12s ease-out;
+    color: var(--mantine-color-dimmed);
+  }
+
+}
+
+[data-mantine-color-scheme=dark] {
+  .root {
+    background-color: var(--mantine-color-dark-7);
+
+    .row {
+      &.header-row {
+        background-color: var(--mantine-color-dark-6);
+      }
+    }
+
+    .leaf {
+      &:hover {
+        background-color: var(--mantine-color-dark-6);
+      }
+    }
+  }
+}

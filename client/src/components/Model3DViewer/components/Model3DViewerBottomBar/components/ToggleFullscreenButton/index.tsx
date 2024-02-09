@@ -9,11 +9,7 @@ export interface ToggleFullscreenButtonProps {
 
 const iconStyle = { width: rem(18), height: rem(18) };
 
-export default function ToggleFullscreenButton({
-  fullscreen,
-  toggleFullscreen,
-  className,
-}: ToggleFullscreenButtonProps) {
+export function ToggleFullscreenButton({ fullscreen, toggleFullscreen, className }: ToggleFullscreenButtonProps) {
   return (
     <ActionIcon c="dimmed" variant="transparent" onClick={toggleFullscreen} className={className}>
       {fullscreen ? <IconArrowsMinimize style={iconStyle} /> : <IconArrowsMaximize style={iconStyle} />}

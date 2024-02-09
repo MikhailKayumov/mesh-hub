@@ -1,6 +1,11 @@
+.root {}
+
+.row {}
+
 .card {
   cursor: pointer;
   height: 100%;
+  will-change: transform, border-color;
   transition: transform 180ms ease-in, border-color 170ms ease-out, box-shadow 170ms ease-out;
 
   .thumbnail {
@@ -8,7 +13,7 @@
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
-    border-bottom: var(--_paper-border);
+    border-bottom: calc(.0625rem*var(--mantine-scale)) solid var(--mantine-color-dark-4);
     transition: border-color 170ms ease-out;
     background-color: var(--mantine-color-dark-7);
 
@@ -35,12 +40,15 @@
     flex: 1;
   }
 
+  .menu-button {
+    min-width: rem(16px);
+  }
+
   &:hover {
-    transform: translateY(-2px);
     border-color: var(--mantine-color-primary-filled);
 
     .thumbnail {
-      border-color: var(--mantine-color-primary-filled);
+      border-color: var(--mantine-color-primary-filled) !important;
 
       .image {
         transform: scale(1.08);
@@ -62,6 +70,7 @@
 
     .thumbnail {
       background-color: var(--mantine-color-gray-2);
+      border-bottom: calc(.0625rem*var(--mantine-scale)) solid var(--mantine-color-gray-3);
 
       .fallback  {
         & .cube-top,& .cube-right,& .cube-left {

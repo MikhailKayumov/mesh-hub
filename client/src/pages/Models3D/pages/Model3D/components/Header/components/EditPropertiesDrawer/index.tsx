@@ -1,12 +1,12 @@
 import { Badge, Button, Drawer, Group, Input, MultiSelect, ScrollArea, Switch, TextInput } from '@mantine/core';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
-import WysiwygEditor from '@/components/WysiwygEditor';
+import { WysiwygEditor } from '@/components/WysiwygEditor';
 import { MAX_MODEL_3D_CATEGORIES_LENGTH, MAX_MODEL_3D_NAME_LENGTH } from '@/constants';
 import { Model3DEditPropertiesDrawerProps } from './model.ts';
 import classes from './Model3DEditPropertiesDrawer.module.scss';
-import useModel3DEditPropertiesForm from './useModel3DEditPropertiesForm.ts';
+import { useModel3DEditPropertiesForm } from './useModel3DEditPropertiesForm.ts';
 
-export default function Model3DEditPropertiesDrawer({ opened, onClose }: Model3DEditPropertiesDrawerProps) {
+export function Model3DEditPropertiesDrawer({ opened, onClose }: Model3DEditPropertiesDrawerProps) {
   const { form, categories, isSubmitting, onSubmit } = useModel3DEditPropertiesForm(onClose);
 
   const onCancel = () => {

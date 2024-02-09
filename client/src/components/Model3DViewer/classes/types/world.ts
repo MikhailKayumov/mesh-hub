@@ -1,8 +1,17 @@
 import { AmbientLight, Light, Object3D, SpotLight, SpotLightHelper } from 'three';
 
-export type PromiseWorldObject3D = Promise<Object3D | Object3D[]>;
+// new
+export type WorldObject3D = Object3D | Promise<Object3D>;
 
-export type WorldObject3D = Object3D | PromiseWorldObject3D;
+export type WorldObjects3D = Array<WorldObject3D | WorldObject3D[]>;
+
+// methods
+export type WorldSpawnOptions = {
+  layer?: number;
+  silent?: boolean;
+};
+
+// old
 
 export type WorldLight<T extends Light = Light, H extends Object3D | undefined = undefined> = { light: T; helper?: H };
 

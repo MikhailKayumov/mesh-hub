@@ -6,7 +6,7 @@ export interface FormatBytesOptions {
 const SIZES = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ'];
 const BASE = 1024;
 
-export default function formatBytes(bytes: number, { precision = 2, forceDecimal = false }: FormatBytesOptions = {}) {
+export function formatBytes(bytes: number, { precision = 2, forceDecimal = false }: FormatBytesOptions = {}) {
   if (bytes === 0) {
     return forceDecimal ? `0,${'0'.repeat(precision)}Б` : '0Б';
   }

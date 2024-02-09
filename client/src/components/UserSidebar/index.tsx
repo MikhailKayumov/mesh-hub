@@ -2,18 +2,18 @@ import { Box, NavLink, Skeleton, Text, Tooltip } from '@mantine/core';
 import { IconCube, IconSettings, IconUser } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { NavLink as RRDNavLink } from 'react-router-dom';
-import useCurrentUser from '@/hooks/useCurrentUser.ts';
-import RouterPaths from '@/router/paths.ts';
+import { useCurrentUser } from '@/hooks/useCurrentUser.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
 import { getUserFullName } from '@/utils/user.ts';
-import Avatar from '../Avatar';
+import { Avatar } from '../Avatar';
 import classes from './UserSidebar.module.scss';
 
 export interface UserSidebarProps {
   className?: string;
 }
 
-export default function UserSidebar({ className }: UserSidebarProps) {
+export function UserSidebar({ className }: UserSidebarProps) {
   const { user, isUserLoading } = useCurrentUser();
 
   return (

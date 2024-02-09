@@ -3,12 +3,12 @@ import { Dropzone } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
 import { IconCubePlus, IconUpload } from '@tabler/icons-react';
 import { FileRejection } from 'react-dropzone-esm';
-import validate3DModelFile from '@/components/Upload3DModelModal/validate3DModelFile.ts';
 import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
-import formatBytes from '@/utils/format-bytes.ts';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
+import { formatBytes } from '@/utils/format-bytes.ts';
 import classes from './Upload3DModelModal.module.scss';
-import useUpload3DModal from './useUpload3DModal.ts';
+import { useUpload3DModal } from './useUpload3DModal.ts';
+import { validate3DModelFile } from './validate3DModelFile.ts';
 
 const onReject = (fileRejections: FileRejection[]) => {
   const msg = fileRejections?.[0]?.errors?.[0]?.message;
@@ -21,7 +21,7 @@ const onReject = (fileRejections: FileRejection[]) => {
   });
 };
 
-export default function Upload3DModelModal() {
+export function Upload3DModelModal() {
   const { isDark } = useCurrentColorScheme();
   const { opened, model, isLoading, open, close, setModel, onUpload } = useUpload3DModal();
 

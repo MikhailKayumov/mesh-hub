@@ -6,7 +6,7 @@ export interface UseCurrentColorSchemeReturn {
   isDark: boolean;
 }
 
-export default function useCurrentColorScheme(): UseCurrentColorSchemeReturn {
+export function useCurrentColorScheme(): UseCurrentColorSchemeReturn {
   const currentColorScheme = useComputedColorScheme('light');
 
   return {

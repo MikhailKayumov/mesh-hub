@@ -1,15 +1,10 @@
 import { rem, useSafeMantineTheme } from '@mantine/core';
 import { ComponentPropsWithoutRef } from 'react';
-import useCurrentColorScheme from '@/hooks/useCurrentColorScheme.ts';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
 
 export interface LogoProps extends ComponentPropsWithoutRef<'svg'> {}
 
-export default function Logo({
-  width = '100%',
-  height = '100%',
-  preserveAspectRatio = 'xMidYMid meet',
-  ...props
-}: LogoProps) {
+export function Logo({ width = '100%', height = '100%', preserveAspectRatio = 'xMidYMid meet', ...props }: LogoProps) {
   const { isLight } = useCurrentColorScheme();
   const { primaryColor, colors } = useSafeMantineTheme();
   const [topColor, rightColor, frontColor] = [

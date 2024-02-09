@@ -1,0 +1,56 @@
+.header {}
+
+.navbar {}
+
+.main {
+  height: 100%;
+  display: flex;
+  padding: rem(30px) 0 rem(26px) var(--app-shell-navbar-width);
+}
+
+.loader {
+  :global(.mantine-Overlay-root) {
+    opacity: 1;
+    background-color: var(--mantine-color-gray-0);
+  }
+}
+
+.viewer-box {
+  flex-basis: 100%;
+  flex-grow: 0;
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+
+  .viewer-loader {
+    :global(.mantine-Overlay-root) {
+      opacity: 1;
+      background-color: var(--mantine-color-gray-0);
+    }
+  }
+}
+
+.footer {}
+
+.not-found {
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+[data-mantine-color-scheme=dark] {
+  .loader {
+    :global(.mantine-Overlay-root) {
+      background-color: var(--mantine-color-dark-7);
+    }
+  }
+
+  .viewer-box {
+    .viewer-loader {
+      :global(.mantine-Overlay-root) {
+        background-color: var(--mantine-color-dark-7);
+      }
+    }
+  }
+}

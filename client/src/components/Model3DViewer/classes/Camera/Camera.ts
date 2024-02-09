@@ -1,6 +1,7 @@
 import CameraControls from 'camera-controls';
 import {
   Box3,
+  Layers,
   MathUtils,
   Matrix4,
   PerspectiveCamera,
@@ -12,7 +13,6 @@ import {
   Vector3,
   Vector4,
 } from 'three';
-import sleep from '@/utils/sleep.ts';
 
 CameraControls.install({
   THREE: {
@@ -31,11 +31,10 @@ CameraControls.install({
 export class CameraController {
   public camera: PerspectiveCamera;
   public control: CameraControls | null = null;
-
   private canvas: HTMLCanvasElement | null = null;
 
   public constructor() {
-    this.camera = new PerspectiveCamera(75, 1, 0.01, 4000);
+    this.camera = new PerspectiveCamera(45, 1, 0.05, 5000);
     this.camera.position.set(0, 0, 1);
   }
 
@@ -62,6 +61,68 @@ export class CameraController {
     this.camera.updateProjectionMatrix();
   }
 
+  public testLayers(layers: Layers) {
+    return this.camera.layers.test(layers);
+  }
+
+  public enableLayer(layer: number | number[]) {
+    if (Array.isArray(layer)) {
+      layer.forEach(this.enableLayer, this);
+    } else {
+      !this.camera.layers.isEnabled(layer) && this.camera.layers.enable(layer);
+    }
+  }
+
+  public disableLayer(layer: number | number[]) {
+    if (Array.isArray(layer)) {
+      layer.forEach(this.disableLayer, this);
+    } else {
+      this.camera.layers.isEnabled(layer) && this.camera.layers.disable(layer);
+    }
+  }
+
+  public disableLayers(layers?: number[] | null) {
+    if (!layers) {
+      this.camera.layers.disableAll();
+    } else {
+      this.disableLayer(layers);
+    }
+  }
+
+  public async moveToInitPosition(boundingBox: Box3): Promise<void> {
+    if (!this.control) return;
+
+    await Promise.all([
+      this.control.fitToBox(boundingBox, false, {
+        cover: true,
+        paddingTop: 25,
+        paddingBottom: 25,
+        paddingLeft: 25,
+        paddingRight: 25,
+      }),
+      this.control.rotateTo(MathUtils.degToRad(194), MathUtils.degToRad(58), false),
+    ]);
+  }
+
+  public async fitToBox(boundingBox: Box3, padding = 0): Promise<void> {
+    if (!this.control) return;
+
+    this.control.smoothTime = 0.482;
+
+    await Promise.all([
+      this.control.fitToBox(boundingBox, true, {
+        cover: false,
+        paddingTop: padding,
+        paddingBottom: padding,
+        paddingLeft: padding,
+        paddingRight: padding,
+      }),
+      this.control.rotateTo(MathUtils.degToRad(-0), MathUtils.degToRad(76), true),
+    ]);
+
+    this.control.smoothTime = 0.16;
+  }
+
   private createControl() {
     if (this.control) {
       this.off();
@@ -73,47 +134,14 @@ export class CameraController {
 
     this.control = new CameraControls(this.camera, this.canvas);
 
+    this.control.minDistance = Number.EPSILON;
+    this.control.maxDistance = 2000;
     this.control.smoothTime = 0.16;
+
     this.control.mouseButtons.left = CameraControls.ACTION.TRUCK;
     this.control.mouseButtons.right = CameraControls.ACTION.ROTATE;
     this.control.mouseButtons.middle = CameraControls.ACTION.NONE;
 
     this.control.updateCameraUp();
-  }
-
-  public async fitToBox(boundingBox: Box3): Promise<void> {
-    if (!this.control) return;
-
-    const bbCenter = boundingBox.getCenter(new Vector3());
-    const bbMin = boundingBox.min;
-    const bbMax = boundingBox.max;
-
-    await this.control.setLookAt(
-      0,
-      bbMax.y,
-      -(Math.abs(bbMin.z) + Math.max(0.25 * bbMin.z, 20)),
-      bbCenter.x,
-      bbCenter.y,
-      bbCenter.z,
-      false,
-    );
-    await this.control.rotateTo(MathUtils.degToRad(160), MathUtils.degToRad(62), false);
-
-    this.control.smoothTime = 0.472;
-
-    await sleep(0.02);
-
-    await Promise.all([
-      this.control.fitToBox(boundingBox, true, {
-        cover: false,
-        paddingTop: 0.1,
-        paddingBottom: 0,
-        paddingLeft: 0,
-        paddingRight: 0,
-      }),
-      this.control.rotateTo(MathUtils.degToRad(10), MathUtils.degToRad(84), true),
-    ]);
-
-    this.control.smoothTime = 0.16;
   }
 }

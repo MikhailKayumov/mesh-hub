@@ -1,4 +1,4 @@
-const ApiTags = {
+export const ApiTags = {
   Reset: 'Reset',
   CurrentUser: 'CurrentUser',
   CGSoft: 'CGSoft',
@@ -10,5 +10,3 @@ const ApiTags = {
 } as const;
 
 export type ApiTag = keyof typeof ApiTags;
-
-export default ApiTags;

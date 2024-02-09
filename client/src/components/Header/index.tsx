@@ -1,14 +1,16 @@
 import { Container, Flex, Group } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import ColorSchemeSelect from '@/components/ColorSchemeSelect';
-import Logo from '@/components/Logo';
-import useSession from '@/hooks/useSession.ts';
-import RouterPaths from '@/router/paths.ts';
-import AuthButtons from './components/AuthButtons';
-import User from './components/User';
+import { ColorSchemeSelect } from '@/components/ColorSchemeSelect';
+import { Logo } from '@/components/Logo';
+import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
+import { useSession } from '@/hooks/useSession.ts';
+import { RouterPaths } from '@/router/paths.ts';
+import { AuthButtons } from './components/AuthButtons';
+import { User } from './components/User';
 import classes from './Header.module.scss';
 
-export default function Header() {
+export function Header() {
+  const { isLight } = useCurrentColorScheme();
   const session = Boolean(useSession());
 
   return (
@@ -18,7 +20,7 @@ export default function Header() {
           <Logo width={200} />
         </Link>
         <Group gap={12}>
-          <ColorSchemeSelect />
+          <ColorSchemeSelect color={isLight ? 'black' : 'white'} />
           {session ? <User /> : <AuthButtons />}
         </Group>
       </Flex>

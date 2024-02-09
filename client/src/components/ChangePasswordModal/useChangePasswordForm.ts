@@ -3,10 +3,10 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { UserChangePasswordRequestDto } from '@/api/dto.ts';
 import { useChangePasswordMutation } from '@/api/user.ts';
-import processFormSubmitError from '@/utils/processFormSubmitError.ts';
+import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
 import { initialValues, transformValues, validationSchema } from './constants.ts';
 
-export default function useChangePasswordForm(onSuccess: () => void) {
+export function useChangePasswordForm(onSuccess: () => void) {
   const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);
   const [changePassword] = useChangePasswordMutation();
 

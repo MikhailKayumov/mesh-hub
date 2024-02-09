@@ -1,4 +1,4 @@
-const RouterPaths = {
+export const RouterPaths = {
   // common
   Base: '/',
   Models: 'models-3d',
@@ -23,5 +23,3 @@ const RouterPaths = {
 export type RouterPathName = keyof typeof RouterPaths;
 
 export type RouterPath = (typeof RouterPaths)[RouterPathName];
-
-export default RouterPaths;

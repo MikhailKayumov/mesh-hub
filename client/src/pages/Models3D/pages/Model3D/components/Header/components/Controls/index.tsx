@@ -1,13 +1,16 @@
 import { ActionIcon, Button, Group, Menu, rem } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconChevronDown, IconDownload, IconEdit, IconTrash } from '@tabler/icons-react';
-import useModel3DContext from '@/contexts/Model3DContext/useModel3DContext.ts';
-import useDeleteModel3D from '@/pages/Models3D/pages/Model3D/components/Header/components/Controls/useDeleteModel3D.ts';
+import { IconChevronDown, IconDownload, IconEdit, IconSettings, IconTrash } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
+import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
+import { RouterPaths } from '@/router/paths.ts';
+import { buildAbsolutePath } from '@/router/utils';
 import { getModel3DFileSrc } from '@/utils/model3d.ts';
-import Model3DEditPropertiesDrawer from '../EditPropertiesDrawer';
+import { Model3DEditPropertiesDrawer } from '../EditPropertiesDrawer';
 import classes from './Model3DControls.module.scss';
+import { useDeleteModel3D } from './useDeleteModel3D.ts';
 
-export default function Model3DControls() {
+export function Model3DControls() {
   const model = useModel3DContext();
   const { onDelete, isDeleting } = useDeleteModel3D(model?.id);
   const [editPropertiesOpened, { open, close }] = useDisclosure(false);
@@ -34,9 +37,13 @@ export default function Model3DControls() {
             >
               Скачать
             </Menu.Item>
-            {/*<Menu.Item leftSection={<IconSettings style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}>
+            <Menu.Item
+              component={Link}
+              to={buildAbsolutePath([RouterPaths.Editor, RouterPaths.Id], { params: { id: model?.id } })}
+              leftSection={<IconSettings style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
+            >
               3D Настройки
-            </Menu.Item>*/}
+            </Menu.Item>
             <Menu.Item
               c="red"
               onClick={onDelete}

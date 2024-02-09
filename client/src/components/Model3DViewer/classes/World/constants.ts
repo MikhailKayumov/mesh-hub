@@ -1,26 +1,5 @@
-export const MATERIAL_TEXTURE_FIELDS = [
-  'alphaMap',
-  'aoMap',
-  'envMap',
-  'lightMap',
-  'map',
-  'bumpMap',
-  'displacementMap',
-  'emissiveMap',
-  'gradientMap',
-  'metalnessMap',
-  'normalMap',
-  'roughnessMap',
-  'specularMap',
-  'clearcoatMap',
-  'clearcoatNormalMap',
-  'clearcoatRoughnessMap',
-  'iridescenceMap',
-  'iridescenceThicknessMap',
-  'sheenRoughnessMap',
-  'sheenColorMap',
-  'specularIntensityMap',
-  'specularColorMap',
-  'thicknessMap',
-  'transmissionMap',
-];
+export const DEFAULT_LAYER = 0;
+
+export const WorldEventNames = {
+  WorldSceneChange: 'world-scene-change',
+} as const;

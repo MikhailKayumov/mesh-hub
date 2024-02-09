@@ -9,7 +9,9 @@ import {
 } from 'three';
 import { BuildAmbientLightOptions, BuildDirectionLightOptions, BuildSpotLightOptions } from './types.ts';
 
-export function buildAmbientLight({ color = 0x000000, intensity = 0.2 }: BuildAmbientLightOptions = {}): AmbientLight {
+export * from './LightBuilder.ts';
+
+export function buildAmbientLight({ color = 0xffffff, intensity = 0.2 }: BuildAmbientLightOptions = {}): AmbientLight {
   return new AmbientLight(color, intensity);
 }
 
@@ -19,35 +21,47 @@ export function buildDirectionalLight({
   color = 0xffffff,
   intensity = 1,
   shadow,
-  widthHelper = false,
-}: BuildDirectionLightOptions = {}): [DirectionalLight, DirectionalLightHelper | null] {
+  name,
+}: BuildDirectionLightOptions = {}): [DirectionalLight, DirectionalLightHelper] {
   const dl = new DirectionalLight(color, intensity);
 
   dl.position.copy(at);
   dl.target.position.copy(to);
+  dl.name = name ?? 'Directional light';
 
   if (shadow) {
     dl.castShadow = true;
     dl.shadow.mapSize.setScalar(shadow.size ?? 512);
+    dl.shadow.bias = shadow.bias ?? 0;
+    dl.shadow.blurSamples = shadow.blurSamples ?? 0;
     dl.shadow.camera.near = shadow.near ?? 1;
     dl.shadow.camera.far = shadow.far ?? 1000;
+
+    dl.shadow.camera.top = shadow.top ?? 10;
+    dl.shadow.camera.bottom = shadow.bottom ?? -10;
+    dl.shadow.camera.right = shadow.right ?? 10;
+    dl.shadow.camera.left = shadow.left ?? -10;
+
+    dl.shadow.needsUpdate = true;
   }
 
-  return [dl, widthHelper ? new DirectionalLightHelper(dl, 2) : null];
+  const helper = new DirectionalLightHelper(dl, 2);
+  helper.name = `${name} (helper)` ?? 'Directional light (helper)';
+
+  return [dl, helper];
 }
 
 export function buildSpotLight({
-  color = 0x000000,
+  color = 0xffffff,
   intensity = 1,
   power = 18.75,
   distance = 100,
-  penumbra = 0,
+  penumbra = 0.2,
   angel = 45,
   at = new Vector3(0, 1, 0),
   to = new Vector3(0, 0, 0),
   shadow,
-  widthHelper = false,
-}: BuildSpotLightOptions = {}): [SpotLight, SpotLightHelper | null] {
+}: BuildSpotLightOptions = {}): [SpotLight, SpotLightHelper] {
   const sl = new SpotLight(color, intensity);
 
   sl.intensity = intensity;
@@ -66,5 +80,5 @@ export function buildSpotLight({
     sl.shadow.camera.far = shadow.far ?? 1000;
   }
 
-  return [sl, widthHelper ? new SpotLightHelper(sl) : null];
+  return [sl, new SpotLightHelper(sl)];
 }

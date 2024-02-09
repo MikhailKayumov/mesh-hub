@@ -1,11 +1,11 @@
 import { Card, Image, Skeleton } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Fallback from '@/components/Models3DList/components/Model3DCardThumbnail/fallback.tsx';
-import classes from '@/components/Models3DList/Models3DList.module.scss';
-import RouterPaths from '@/router/paths.ts';
+import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
 import { getThumbnailSrc } from '@/utils/model3d.ts';
+import classes from '../../Models3DList.module.scss';
+import { Fallback } from './fallback.tsx';
 
 export interface Model3DCardThumbnail {
   id: string;
@@ -14,7 +14,7 @@ export interface Model3DCardThumbnail {
   thumbnail?: string;
 }
 
-export default function Model3DCardThumbnail({ id, name, fileId, thumbnail }: Model3DCardThumbnail) {
+export function Model3DCardThumbnail({ id, name, fileId, thumbnail }: Model3DCardThumbnail) {
   const to = buildAbsolutePath([RouterPaths.Models, id]);
 
   const [showFallback, setShowFallback] = useState(false);
@@ -36,9 +36,8 @@ export default function Model3DCardThumbnail({ id, name, fileId, thumbnail }: Mo
             <Fallback />
           ) : (
             <Image
-              // crossOrigin="use-credentials"
+              crossOrigin="use-credentials"
               alt={name}
-              // fetchPriority='high'
               decoding="sync"
               loading="eager"
               src={getThumbnailSrc(fileId, thumbnail) ?? ''}

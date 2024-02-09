@@ -1,14 +1,14 @@
 import { Group } from '@mantine/core';
-import useAnimations, { UseAnimationsProps } from '../../../../hooks/useAnimations';
-import AnimationList from './components/AnimationList';
-import AnimationProgress from './components/AnimationProgress';
-import AnimationToggleStateButton from './components/AnimationToggleStateButton';
+import { useAnimations, UseAnimationsProps } from '../../../../hooks/useAnimations';
+import { AnimationList } from './components/AnimationList';
+import { AnimationProgress } from './components/AnimationProgress';
+import { AnimationToggleStateButton } from './components/AnimationToggleStateButton';
 
 export interface AnimationToolbarProps extends UseAnimationsProps {
   className?: string;
 }
 
-export default function AnimationToolbar({ className, ...props }: AnimationToolbarProps) {
+export function AnimationToolbar({ className, ...props }: AnimationToolbarProps) {
   const animations = useAnimations(props);
   if (!animations) return;
 

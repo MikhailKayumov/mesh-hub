@@ -1,7 +1,7 @@
 import { Button, Text } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import ErrorContainer from '@/components/Errors/ErrorContainer';
-import RouterPaths from '@/router/paths.ts';
+import { ErrorContainer } from '@/components/Errors/ErrorContainer';
+import { RouterPaths } from '@/router/paths.ts';
 import { canNavigateBack } from '@/router/utils';
 
 export function ForbiddenError() {

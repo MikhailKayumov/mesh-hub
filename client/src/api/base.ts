@@ -2,10 +2,10 @@ import { SerializedError } from '@reduxjs/toolkit';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { BaseQueryFn, createApi, FetchArgs, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Mutex } from 'async-mutex';
-import ApiUrls from '@/api/urls.ts';
+import { ApiUrls } from '@/api/urls.ts';
 import { userActions } from '@/store/user/reducer.ts';
 import { HttpException } from './dto';
-import ApiTags from './tags';
+import { ApiTags } from './tags';
 import { isFetchError, isFetchQueryError, isUnauthorizedHttpException, processFetchQueryError } from './utils';
 
 export type FetchQueryError = SerializedError | FetchBaseQueryError | HttpException;
@@ -53,11 +53,9 @@ const query: BaseQueryFn<string | FetchArgs, unknown, FetchQueryError> = async (
   return result;
 };
 
-const Api = createApi({
+export const Api = createApi({
   reducerPath: '@mesh_hub/api',
   baseQuery: query,
   endpoints: () => ({}),
   tagTypes: Object.values(ApiTags),
 });
-
-export default Api;

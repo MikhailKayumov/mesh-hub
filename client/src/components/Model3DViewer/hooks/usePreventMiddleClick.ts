@@ -7,7 +7,7 @@ const onMousedown = (event: MouseEvent) => {
   }
 };
 
-export default function usePreventMiddleClick() {
+export function usePreventMiddleClick() {
   const [isOn, setIsOn] = useState(false);
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import { UseFormReturnType } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { isValidationException } from '@/api/utils.ts';
 
-export default function processFormSubmitError<FormData extends Record<string, any> = any>(
+export function processFormSubmitError<FormData extends Record<string, any> = any>(
   form: UseFormReturnType<FormData>,
   e: unknown,
 ) {

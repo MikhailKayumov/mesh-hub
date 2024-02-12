@@ -2,11 +2,9 @@ import { Object3DTreeNodeProps } from '../../model.ts';
 import { TreeGroup } from '../Group';
 import { TreeLeaf } from '../Leaf';
 
-export function TreeNode({ item, filterNode, isActive, ...props }: Object3DTreeNodeProps) {
-  if (filterNode && !filterNode(item)) return null;
-
+export function TreeNode({ item, isActive, ...props }: Object3DTreeNodeProps) {
   return item.children?.length ? (
-    <TreeGroup item={item} filterNode={filterNode} {...props} />
+    <TreeGroup item={item} {...props} />
   ) : (
     <TreeLeaf item={item} isActive={isActive} {...props} />
   );

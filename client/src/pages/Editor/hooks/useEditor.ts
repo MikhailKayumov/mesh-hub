@@ -33,7 +33,7 @@ export function useEditor() {
     if (!viewer) return;
 
     addHelpers(viewer, isLight, theme);
-    console.log('# ===== Viewer world ===== #', viewer.world);
+    // console.log('# ===== Viewer world ===== #', viewer.world);
     setIsViewerLoading(false);
   }, [viewer, key, isLight]);
 

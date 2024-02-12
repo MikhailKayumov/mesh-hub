@@ -95,21 +95,13 @@ export function RendererTab({ className, viewer }: RendererTabProps) {
 
       <>
         <NumberInputSlider
-          allowNegative={false}
           label="Tone mapping exposure"
           min={0}
           max={10}
           step={0.1}
           {...form.getInputProps('toneMappingExposure')}
         />
-        <NumberInputSlider
-          allowNegative={false}
-          label="Clear alpha"
-          min={0}
-          max={1}
-          step={0.01}
-          {...form.getInputProps('clearAlpha')}
-        />
+        <NumberInputSlider label="Clear alpha" min={0} max={1} step={0.01} {...form.getInputProps('clearAlpha')} />
       </>
 
       <ColorInput

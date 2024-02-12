@@ -1,4 +1,4 @@
-import { AmbientLight, Light, Object3D, SpotLight, SpotLightHelper } from 'three';
+import { AmbientLight, Light, Object3D, Scene, SpotLight, SpotLightHelper } from 'three';
 
 // new
 export type WorldObject3D = Object3D | Promise<Object3D>;
@@ -10,6 +10,9 @@ export type WorldSpawnOptions = {
   layer?: number;
   silent?: boolean;
 };
+
+// events
+export type WorldEventListener = (event: CustomEvent<Scene>) => void;
 
 // old
 

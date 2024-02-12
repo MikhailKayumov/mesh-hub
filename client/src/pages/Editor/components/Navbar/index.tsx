@@ -13,7 +13,7 @@ export interface NavbarProps {
   defaultTab?: TabValue;
 }
 
-export function Navbar({ className, viewer, defaultTab = TabValues.Renderer }: NavbarProps) {
+export function Navbar({ className, viewer, defaultTab = TabValues.Scene }: NavbarProps) {
   const [tabValue, setTabValue] = useState<TabValue | undefined | null>(undefined);
   const config = useMemo(() => getTabsConfig(viewer), [viewer]);
 
@@ -34,7 +34,7 @@ export function Navbar({ className, viewer, defaultTab = TabValues.Renderer }: N
           ))}
         </Tabs.List>
         {config?.map((c) => (
-          <Tabs.Panel key={c.value} value={c.value} className={classes.tab}>
+          <Tabs.Panel key={c.value} value={c.value} className={classes.content}>
             {c.content}
           </Tabs.Panel>
         ))}

@@ -33,20 +33,17 @@
   }
 
   .mantine-Dropzone-root {
-    --_dropzone-bg: var(--mantine-color-dark-7);
-    --_dropzone-border-color: var(--mantine-color-dark-4);
+    background-color: var(--mantine-color-dark-7);
 
     &:hover[data-activate-on-click]:not([data-loading]) {
-      --_dropzone-bg: var(--mantine-color-dark-6);
+      background-color: var(--mantine-color-dark-6);
     }
 
     &[data-accept] {
-      --_dropzone-bg: var(--dropzone-accept-bg);
-      --_dropzone-border-color: var(--dropzone-accept-bg);
+      background-color: var(--dropzone-accept-bg);
     }
     &[data-reject] {
-      --_dropzone-bg: var(--dropzone-reject-bg);
-      --_dropzone-border-color: var(--dropzone-reject-bg);
+      background-color: var(--dropzone-reject-bg);
     }
   }
 }
@@ -81,16 +78,12 @@
 }
 
 .main-page-content {
+  --app-shell-padding: var(--mantine-spacing-xl);
+
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  --app-shell-padding: var(--mantine-spacing-xl);
-  padding: calc(
-    var(--app-shell-header-offset, 0px) + var(--app-shell-padding))
-    var(--_main-padding-right, calc(var(--app-shell-aside-offset, 0px) + var(--app-shell-padding)))
-    calc(var(--app-shell-padding))
-    var(--_main-padding-left, calc(var(--app-shell-navbar-offset, 0px) + var(--app-shell-padding))
-  );
+  padding-inline: 0;
 }
 
 .main-page-footer {

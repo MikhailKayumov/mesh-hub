@@ -39,15 +39,15 @@
     flex: 1;
 
     & :global(.mantine-TextInput-input) {
-      --_input-padding-right: rem(42px);
+      --input-padding-inline-end: rem(42px);
     }
 
     & :global(.mantine-TextInput-section[data-position='right']) {
-      --_input-right-section-size: rem(42px);
+      --input-right-section-size: rem(42px);
     }
 
     .model-name-field-remaining {
-      border-radius: var(--_input-radius);
+      border-radius: var(--input-radius);
       padding: 0;
       width: rem(30px);
     }

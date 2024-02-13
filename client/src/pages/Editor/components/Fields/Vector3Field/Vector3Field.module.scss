@@ -30,7 +30,6 @@
   & :global(.mantine-NumberInput-wrapper) {
     --input-height-xs: rem(23px);
     --mantine-font-size-xs: rem(11px);
-    --mantine-radius-xs: rem(2px);
 
     input {
       text-align: center;
@@ -38,7 +37,7 @@
     }
 
     & [data-position=right] {
-      --_section-size: rem(23px)
+      --section-size: rem(23px)
     }
   }
 }

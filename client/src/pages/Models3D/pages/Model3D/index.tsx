@@ -24,7 +24,20 @@ export function Model3DPage() {
       <Model3DPageHeader />
       <Paper withBorder p={0} className={classes.content}>
         <Box className={classes['viewer-wrapper']}>
-          <Model3DViewer model={model3d} onReady={() => setIsViewerLoading(false)} />
+          <Model3DViewer
+            model={model3d}
+            onReady={(viewer) => {
+              if (!viewer?.model?.sceneBoundingBox) return;
+
+              const boundingBoxLength = viewer.model.sceneBoundingBox.min.manhattanDistanceTo(
+                viewer.model.sceneBoundingBox.max,
+              );
+
+              viewer.world.spawnGroundHelper(boundingBoxLength * 10, boundingBoxLength * 10, 0);
+
+              setIsViewerLoading(false);
+            }}
+          />
           <LoadingOverlay
             zIndex={10}
             className={classes['viewer-loader']}

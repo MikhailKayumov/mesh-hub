@@ -1,8 +1,8 @@
 .root {
   gap: 0;
   background-color: var(--mantine-color-white);
-  border: 1px solid var(--_app-shell-border-color);
-  border-radius: var(--mantine-radius-xs);
+  border: 1px solid var(--app-shell-border-color);
+  border-radius: var(--mantine-radius-sm);
 
   .row {
     overflow: hidden;
@@ -13,7 +13,7 @@
     height: rem(20px);
     padding: rem(2px) rem(10px) rem(2px) rem(8px);
     gap: rem(8px);
-    border-bottom: 1px solid var(--_app-shell-border-color);
+    border-bottom: 1px solid var(--app-shell-border-color);
 
     transition-property: background-color, color;
     transition: 0.123s ease-out;
@@ -41,7 +41,7 @@
     }
 
     &:not(:last-child) {
-      border-right: 1px solid var(--_app-shell-border-color);
+      border-right: 1px solid var(--app-shell-border-color);
       padding-right: rem(8px);
     }
   }

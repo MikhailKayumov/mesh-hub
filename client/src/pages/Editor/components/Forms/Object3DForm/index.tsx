@@ -1,6 +1,5 @@
-import { ColorInput, rem, Stack } from '@mantine/core';
+import { Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconFocus2 } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';
 import { Vector3Field } from '@/pages/Editor/components/Fields';
@@ -59,20 +58,21 @@ export function Object3DForm({ selected, className }: Object3DFormProps) {
         <CollapseSection title="Transfrom" defaultOpened={true}>
           <Stack gap={8}>
             <Vector3Field title="Position" {...form.getInputProps('position')} />
-            <Vector3Field title="Rotation" {...form.getInputProps('rotation')} />
-            <Vector3Field title="Scale" {...form.getInputProps('scale')} />
+            <Vector3Field step={0.1} title="Rotation" {...form.getInputProps('rotation')} />
+            <Vector3Field withLock defaultLocked step={0.1} title="Scale" {...form.getInputProps('scale')} />
           </Stack>
         </CollapseSection>
 
-        <ColorInput
+        {/*<ColorInput
           eyeDropperIcon={<IconFocus2 style={{ width: rem(18), height: rem(18) }} stroke={1.5} />}
           label="Clear color"
           placeholder="Pick color"
           size="xs"
           radius="xs"
+          mb={8}
           fixOnBlur
           {...form.getInputProps('clearColor')}
-        />
+        />*/}
       </div>
     </>
   );

@@ -21,8 +21,8 @@
     border-radius: var(--mantine-radius-sm);
 
     &:global(.active) {
-      --_nav-link-bg: var(--mantine-color-primary-light);
-      --_nav-link-color: var(--mantine-color-primary-light-color);
+      background-color: var(--mantine-color-primary-light);
+      color: var(--mantine-color-primary-light-color);
     }
 
     & :global(.mantine-NavLink-label) {
@@ -33,10 +33,10 @@
 
 @media (hover: hover) {
   [data-mantine-color-scheme=light] .navlink:not(:global(.active)):hover {
-    --_nav-link-bg: var(--mantine-color-gray-2);
+    background-color: var(--mantine-color-gray-2);
   }
 
   [data-mantine-color-scheme=dark] .navlink:not(:global(.active)):hover {
-    --_nav-link-bg: var(--mantine-color-dark-6);
+    background-color: var(--mantine-color-dark-6);
   }
 }

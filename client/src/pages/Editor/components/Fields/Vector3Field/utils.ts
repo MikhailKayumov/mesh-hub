@@ -1,11 +1,11 @@
 export const getFieldLabel = (index: number) => {
   switch (index) {
     case 0:
-      return 'x:';
+      return 'x';
     case 1:
-      return 'y:';
+      return 'y';
     case 2:
-      return 'z:';
+      return 'z';
     default:
       return '';
   }

@@ -44,14 +44,12 @@ export function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps)
       await viewer.world.prepare(viewer.model?.sceneBoundingBox);
       await viewer.run();
 
-      if (viewer.model?.sceneBoundingBox) {
-        await viewer.camera.moveToInitPosition(viewer.model?.sceneBoundingBox);
-      }
+      viewer.model?.sceneBoundingBox && (await viewer.camera.moveToInitPosition(viewer.model.sceneBoundingBox));
 
       await onReady?.(viewer);
       await sleep(0.1);
 
-      viewer.model?.sceneBoundingBox && (await viewer.camera.fitToBox(viewer.model?.sceneBoundingBox));
+      viewer.model?.sceneBoundingBox && (await viewer.camera.fitToBox(viewer.model.sceneBoundingBox));
     };
 
     run();

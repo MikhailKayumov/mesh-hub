@@ -15,9 +15,9 @@ import {
 } from 'three';
 import { Destroyer } from '../Destroyer';
 import { buildAmbientLight, buildDirectionalLight } from '../Lights';
-import { WorldObject3D, WorldObjects3D, WorldSpawnOptions } from '../types';
+import { WorldEventListener, WorldObject3D, WorldObjects3D, WorldSpawnOptions } from '../types';
 import { isLight, isObject3D } from '../utils';
-import { DEFAULT_LAYER, WorldEventNames } from './constants.ts';
+import { DEFAULT_LAYER, WorldEvent, WorldEventNames } from './constants.ts';
 import { WorldHelpers } from './WorldHelpers.ts';
 
 // setting up axis
@@ -65,6 +65,19 @@ export class World extends EventTarget {
 
     const event = new CustomEvent<Scene>(WorldEventNames.WorldSceneChange, { detail: this.scene });
     !options?.silent && this.dispatchEvent(event);
+  }
+
+  // events
+  public on(name: WorldEvent, listener: WorldEventListener): () => void {
+    this.addEventListener(name, listener as EventListenerOrEventListenerObject);
+
+    return () => {
+      this.removeEventListener(name, listener as EventListenerOrEventListenerObject);
+    };
+  }
+
+  public off(name: WorldEvent, listener: WorldEventListener): void {
+    this.removeEventListener(name, listener as EventListenerOrEventListenerObject);
   }
 
   // helpers

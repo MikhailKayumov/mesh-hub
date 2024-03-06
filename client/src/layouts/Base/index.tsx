@@ -12,12 +12,11 @@ export function BaseLayout({ children }: PropsWithChildren) {
       h="100%" //
       padding="md"
       header={{ height: 60 }}
-      footer={{ height: 'auto' }}
     >
       <AppShell.Header withBorder className="main-page-header">
         <Header />
       </AppShell.Header>
-      <AppShell.Main px={0} className="main-page-content" bg={isLight ? 'gray.0' : undefined}>
+      <AppShell.Main className="main-page-content" bg={isLight ? 'gray.0' : undefined}>
         {children}
       </AppShell.Main>
       <AppShell.Footer className="main-page-footer" py="xl">

@@ -27,41 +27,6 @@
     }
   }
 
-  .file-info {
-    height: 100%;
-    flex-wrap: nowrap;
-    overflow: hidden;
-
-    &-row {
-      flex-wrap: nowrap;
-      overflow: hidden;
-    }
-
-    &-size {
-      flex-grow: 0;
-      flex-shrink: 0;
-      width: 70px;
-    }
-    &-name {
-      flex: 1;
-      max-width: 220px;
-    }
-    &-created {
-      flex-grow: 0;
-      flex-shrink: 0;
-      width: 122px;
-    }
-    &-updated {
-      flex-shrink: 0;
-      width: 134px;
-    }
-
-    &-text {
-      font-size: 10px;
-      white-space: nowrap;
-    }
-  }
-
   .left {
     height: 100%;
     margin-left: auto;

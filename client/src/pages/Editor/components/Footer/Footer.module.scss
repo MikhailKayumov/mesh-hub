@@ -1,5 +1,44 @@
 .root {
   * {
-    font-size: rem(10px);
+    font-size: rem(11px);
+  }
+
+  .file-info {
+    flex: 1;
+    flex-wrap: nowrap;
+    overflow: hidden;
+
+    &-row {
+      width: fit-content;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+
+    &-size {
+      flex-grow: 0;
+      flex-shrink: 0;
+    }
+    &-name {
+      max-width: 220px;
+    }
+    &-created {
+      flex-grow: 0;
+      flex-shrink: 0;
+    }
+    &-updated {
+      flex-shrink: 0;
+      flex-grow: 0;
+    }
+
+    &-text {
+      white-space: nowrap;
+    }
+  }
+
+  .render-info {}
+
+  .color-theme-switcher {
+    flex-shrink: 0;
+    flex-grow: 0;
   }
 }

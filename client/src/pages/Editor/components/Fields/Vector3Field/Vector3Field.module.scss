@@ -40,4 +40,24 @@
       --section-size: rem(23px)
     }
   }
+
+  .input-axis-x,
+  .input-axis-y,
+  .input-axis-z {
+    position: relative;
+    top: 1px;
+    font-size: 11px;
+  }
+
+  .input-axis-x {
+    color: rgb(221, 53, 78);
+  }
+
+  .input-axis-y {
+    color: rgb(125, 193, 12);
+  }
+
+  .input-axis-z {
+    color: rgb(43, 131, 222);
+  }
 }

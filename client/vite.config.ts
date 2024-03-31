@@ -49,6 +49,9 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    preview: {
+      port,
+    },
     css: {
       preprocessorOptions: {
         scss: {

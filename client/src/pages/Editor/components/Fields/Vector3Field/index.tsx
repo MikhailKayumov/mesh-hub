@@ -2,7 +2,7 @@ import { ActionIcon, Group, Input, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconLock, IconLockOpen } from '@tabler/icons-react';
 import { useId, useState } from 'react';
-import { ScalarField } from '@/components/ScalarField';
+import { ScalarField } from '../ScalarField';
 import { getFieldLabel } from './utils.ts';
 import classes from './Vector3Field.module.scss';
 
@@ -10,17 +10,24 @@ export interface Vector3FieldProps {
   value?: [number, number, number];
   title?: string;
   step?: number;
-
+  decimalScale?: number;
   withLock?: boolean;
   defaultLocked?: boolean;
-
   onChange?: (value: [number, number, number]) => void;
 }
 
-export function Vector3Field({ value, step, title, onChange, withLock, defaultLocked }: Vector3FieldProps) {
+export function Vector3Field({
+  value,
+  step,
+  title,
+  decimalScale = 2,
+  onChange,
+  withLock,
+  defaultLocked,
+}: Vector3FieldProps) {
   const htmlFor = useId();
   const [localValue, setLocalValue] = useState<[number, number, number]>([0, 0, 0]);
-  const [isLocked, { toggle }] = useDisclosure(defaultLocked);
+  const [isLocked, { toggle: toggleLocked }] = useDisclosure(defaultLocked);
 
   const onLocalChange = (newValue: number, index: number) => {
     const result = isLocked
@@ -37,7 +44,7 @@ export function Vector3Field({ value, step, title, onChange, withLock, defaultLo
         <Group justify="space-between" align="center">
           <Input.Label htmlFor={htmlFor}>{title}</Input.Label>
           {withLock && (
-            <ActionIcon size="xs" variant="transparent" color="text" className={classes.lock} onClick={toggle}>
+            <ActionIcon size="xs" variant="transparent" color="text" className={classes.lock} onClick={toggleLocked}>
               {isLocked ? (
                 <IconLock className={classes['lock-icon']} />
               ) : (
@@ -49,25 +56,23 @@ export function Vector3Field({ value, step, title, onChange, withLock, defaultLo
       )}
 
       <Group className={classes.inputs} wrap="nowrap" gap={8}>
-        {(value ?? localValue).map((val, index) => {
-          return (
-            <ScalarField
-              key={index}
-              id={index === 0 ? htmlFor : undefined}
-              step={step}
-              decimalScale={2}
-              className={classes.input}
-              value={val}
-              onChange={(v) => onLocalChange(v, index)}
-              fixedDecimalScale
-              leftSection={
-                <Text size="xs" ff="mono" inline>
-                  {getFieldLabel(index).toLocaleUpperCase()}
-                </Text>
-              }
-            />
-          );
-        })}
+        {(value ?? localValue).map((val, index) => (
+          <ScalarField
+            key={index}
+            id={index === 0 ? htmlFor : undefined}
+            step={step}
+            decimalScale={decimalScale}
+            className={classes.input}
+            value={val}
+            onChange={(v) => onLocalChange(v, index)}
+            fixedDecimalScale
+            leftSection={
+              <Text size="xs" ff="mono" inline className={classes[`input-axis-${getFieldLabel(index)}`]}>
+                {getFieldLabel(index).toUpperCase()}
+              </Text>
+            }
+          />
+        ))}
       </Group>
     </Input.Wrapper>
   );

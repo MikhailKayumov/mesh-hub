@@ -28,12 +28,13 @@ CameraControls.install({
   },
 });
 
-export class CameraController {
+export class CameraController extends EventTarget {
   public camera: PerspectiveCamera;
   public control: CameraControls | null = null;
   private canvas: HTMLCanvasElement | null = null;
 
   public constructor() {
+    super();
     this.camera = new PerspectiveCamera(45, 1, 0.05, 5000);
     this.camera.position.set(0, 0, 1);
   }

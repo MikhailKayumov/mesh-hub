@@ -16,13 +16,13 @@ export function Model3DPageInfo() {
         <Text>{model.ownerName}</Text>
       </Group>
       {!!model.categories?.length && (
-        <Group mt={16} gap={12}>
-          <Tooltip label="Категории" openDelay={500}>
+        <Group mt={12} gap={12}>
+          <Tooltip label="Категории" openDelay={300} position="bottom-start">
             <IconCategory className={classes['category-icon']} />
           </Tooltip>
           <Group className={classes.categories}>
             {model.categories.map(({ name, id }) => (
-              <Text c="dimmed" key={id} size="xs" className={classes.category}>
+              <Text c="dimmed" key={id} size="xs" lh="1.5" className={classes.category}>
                 {name}
               </Text>
             ))}

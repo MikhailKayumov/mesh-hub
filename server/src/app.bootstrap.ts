@@ -30,7 +30,7 @@ export default class AppBootstrap {
     this.application.use(cookieParser());
     this.application.enableCors(this.configService.cors);
 
-    // todo: delete, mode to guard/interceptor
+    // todo: delete, move to guard/interceptor
     this.application.use(json({ limit: '5mb' }));
     this.application.use(urlencoded({ extended: true, limit: '5mb' }));
 

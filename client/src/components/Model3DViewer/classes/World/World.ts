@@ -153,14 +153,15 @@ export class World extends EventTarget {
 
     const [dl1, dlh1] = buildDirectionalLight({
       color: 'rgb(152,214,255)',
-      at: new Vector3(min.x - 0.3 * min.x, center.y - 0.7 * center.y, min.z * 3),
+      at: new Vector3(min.x - 0.3 * min.x, center.y - 0.7 * center.y, min.z * 13),
+      to: new Vector3(0, center.y, 0),
       intensity: 2.4,
       name: 'Directional light 1',
     });
 
     const [dl2, dlh2] = buildDirectionalLight({
       color: 'rgb(255,236,204)',
-      at: new Vector3(Math.min(min.x - 0.3 * min.x, -3), max.y + 0.46 * max.y, Math.max(max.z * 2, 3)),
+      at: new Vector3(Math.min(min.x - 0.3 * min.x, -3), max.y + 0.46 * max.y, Math.min(Math.max(max.z * 2, 3), 5)),
       intensity: 28,
       name: 'Directional light 2',
       shadow: {
@@ -177,7 +178,7 @@ export class World extends EventTarget {
 
     const [dl3, dlh3] = buildDirectionalLight({
       color: 'rgb(255, 204, 51)',
-      at: new Vector3(min.x + 0.1 * min.x, center.y - 1.2 * center.y, center.z),
+      at: new Vector3(min.x + 0.1 * min.x, center.y - 3.5 * center.y, center.z),
       intensity: 1.6,
       name: 'Directional light 3',
     });

@@ -6,10 +6,6 @@ export interface ScalarFieldProps extends Omit<NumberInputProps, 'onChange'> {
 }
 
 export interface UseScalarFieldWheelProps {
-  value: number;
-  min: number;
-  max: number;
   step: number;
-  allowNegative: boolean;
-  onChange: (value: number) => void;
+  onChange: (delta: number) => void;
 }

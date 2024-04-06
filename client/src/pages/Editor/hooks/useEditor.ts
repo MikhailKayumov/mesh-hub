@@ -34,6 +34,7 @@ export function useEditor() {
 
     addHelpers(viewer, isLight, theme);
     // console.log('# ===== Viewer world ===== #', viewer.world);
+    viewer.camera.enableLayer([10]);
     setIsViewerLoading(false);
   }, [viewer, key, isLight]);
 
@@ -41,6 +42,7 @@ export function useEditor() {
     viewer,
     isViewerLoading,
     onViewerReady: useCallback((newViewer: Viewer) => {
+      console.log(newViewer);
       setKey((prev) => ++prev);
       setViewer(() => newViewer);
     }, []),

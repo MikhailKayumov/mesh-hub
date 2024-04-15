@@ -1,4 +1,4 @@
-import { Flex, Grid } from '@mantine/core';
+import { Flex, Grid, GridColProps } from '@mantine/core';
 import { Model3DResponseDto } from '@/api/dto.ts';
 import { EmptyData } from '@/components/EmptyData';
 import { Model3DCard } from './components/Model3DCard';
@@ -8,9 +8,10 @@ export interface Models3DList {
   mode?: 'user' | 'all';
   models: Model3DResponseDto[];
   emptyLabel: string;
+  span?: GridColProps['span'];
 }
 
-export function Models3DList({ models, emptyLabel }: Models3DList) {
+export function Models3DList({ models, emptyLabel, span = { xs: 12, sm: 6, md: 4 } }: Models3DList) {
   if (!models.length) {
     return (
       <Flex align="center" justify="center" style={{ flex: 1 }}>
@@ -22,7 +23,7 @@ export function Models3DList({ models, emptyLabel }: Models3DList) {
   return (
     <Grid align="stretch" className={classes.root}>
       {models.map((model) => (
-        <Grid.Col key={model.id} span={{ base: 12, md: 6, lg: 4 }} className={classes.root}>
+        <Grid.Col key={model.id} span={span} className={classes.root}>
           <Model3DCard model={model} />
         </Grid.Col>
       ))}

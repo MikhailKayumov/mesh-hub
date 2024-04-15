@@ -27,7 +27,7 @@ export function Header({ className }: HeaderProps) {
       <Group wrap="nowrap" className={classes.root}>
         <Group wrap="nowrap" px={8} align="center" className={classes.right}>
           <Text miw={180} size="xs" truncate="end">
-            MeshHub Editor (α) v1.0.0-alpha
+            MeshHub Editor (α) v1.0.0-draft
           </Text>
           {model3D && (
             <Text ml="xl" size="md" c="primary" truncate="end">

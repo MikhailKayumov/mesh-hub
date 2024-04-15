@@ -1,0 +1,9 @@
+*/node_modules/
+*/dist/
+*/files/
+*/.log/
+*/docker/
+
+*/.env
+*/.env.example
+*/.env.test

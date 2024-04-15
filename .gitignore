@@ -20,3 +20,5 @@ yarn-error.log*
 
 /test-models
 /sketches
+
+/deploy/data

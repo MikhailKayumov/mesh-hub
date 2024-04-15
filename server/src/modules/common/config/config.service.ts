@@ -84,7 +84,6 @@ export class ConfigService {
       username: this.get('POSTGRES_USER'),
       password: this.get('POSTGRES_PASSWORD'),
       database: this.get('POSTGRES_DB'),
-      ssl: this.isProduction,
       entities: ['dist/**/*.entity.js'],
       migrations: ['dist/database/migrations/**/*.js'],
       namingStrategy: new TypeOrmNamingStrategy(),
@@ -122,22 +121,24 @@ export class ConfigService {
 
   public get mailerConfig(): MailerOptions {
     const enabled = this.getBoolean('SMTP_YANDEX_ENABLED', false);
-
     const name = this.get('SMTP_YANDEX_SENDER_NAME', !enabled ? '' : undefined);
-    const user = this.get('SMTP_YANDEX_AUTH_USER', !enabled ? '' : undefined);
-    const pass = this.get('SMTP_YANDEX_AUTH_PASS', !enabled ? '' : undefined);
+    const user = this.get('SMTP_YANDEX_AUTH_USER', !enabled ? 'user' : undefined);
+    const pass = this.get('SMTP_YANDEX_AUTH_PASS', !enabled ? 'pass' : undefined);
+    const host = enabled ? this.get('SMTP_YANDEX_HOST', 'localhost') : 'localhost';
+    const port = enabled ? this.getNumber('SMTP_YANDEX_PORT', 25) : 25;
 
     return {
       transport: {
-        host: this.get('SMTP_YANDEX_HOST', 'smtp.yandex.ru'),
-        secure: true,
-        port: this.getNumber('SMTP_YANDEX_PORT', 465),
+        host,
+        secure: enabled,
+        port,
         auth: { user, pass },
-        jsonTransport: !enabled || undefined,
+        ignoreTLS: !enabled,
       },
       defaults: {
         from: `"${name}" <${user}>`,
       },
+      preview: !enabled,
     };
   }
 

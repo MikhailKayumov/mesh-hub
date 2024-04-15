@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react({
-        include: '**/Model3DViewer/classes/**/*.(ts|js)x?',
+        // include: '**/Model3DViewer/classes/**/*.(ts|js)x?',
       }),
     ],
     resolve: {

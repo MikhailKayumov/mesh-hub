@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.9"
 
 name: mesh-hub-prod
 
@@ -7,7 +7,7 @@ networks:
   mesh-hub-net-prod-client: {}
 
 services:
-  database:
+  mesh-hub-prod-db:
     image: postgres:14-alpine
     container_name: mesh-hub-prod-db
     environment:
@@ -22,11 +22,14 @@ services:
       - "8432:5432"
     restart: unless-stopped
 
-  server:
+  mesh-hub-prod-server:
     container_name: mesh-hub-prod-server
-    image: mesh-hub-prod-server:v1
+#    image: mesh-hub-prod-server:v1
+    build:
+      context: ..
+      dockerfile: ./deploy/server.Dockerfile
     depends_on:
-      - database
+      - mesh-hub-prod-db
     ports:
       - '8080:8080'
     restart: unless-stopped
@@ -39,14 +42,17 @@ services:
     env_file:
       - ./.env.server
 
-  client:
+  mesh-hub-prod-client:
     container_name: mesh-hub-prod-client
-    image: mesh-hub-prod-client:v1
+#    image: mesh-hub-prod-client:v1
+    build:
+      context: ..
+      dockerfile: ./deploy/client.Dockerfile
     depends_on:
-      - server
+      - mesh-hub-prod-server
     ports:
       - '80:80'
-      - '443:443'
+#      - '443:443'
     restart: unless-stopped
     networks:
       - mesh-hub-net-prod-client

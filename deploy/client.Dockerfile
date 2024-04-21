@@ -1,5 +1,5 @@
-# prepare
-FROM node:20-alpine3.19 as prepare
+# copy
+FROM node:20-alpine3.19 as copy
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ COPY ./client .
 COPY ./deploy/.env.client ./.env
 
 # build
-FROM prepare as build
+FROM copy as build
 
 WORKDIR /app
 
@@ -19,12 +19,12 @@ FROM ghcr.io/nginxinc/nginx-unprivileged:1.25.4-alpine3.18
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY ./deploy/default.conf /etc/nginx/conf.d/default.conf
-COPY ./deploy/certificate.crt /etc/nginx/ssl/certificate.crt
-COPY ./deploy/private-key.key /etc/nginx/ssl/private-key.key
+#COPY ./deploy/certificate.crt /etc/nginx/ssl/certificate.crt
+#COPY ./deploy/private-key.key /etc/nginx/ssl/private-key.key
 
 USER 101:101
 
 EXPOSE 80
-EXPOSE 443
+#EXPOSE 443
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

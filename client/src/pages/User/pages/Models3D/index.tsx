@@ -21,7 +21,12 @@ export function ModelsPage() {
         </Flex>
       ) : (
         <Stack gap={24} style={{ flex: 1 }}>
-          <Models3DList models={models} emptyLabel="Ваш список 3D моделей пуст" mode="user" />
+          <Models3DList
+            models={models}
+            emptyLabel="Ваш список 3D моделей пуст"
+            mode="user"
+            span={{ xs: 12, sm: 12, md: 6, lg: 4 }}
+          />
           {totalPages > 1 && (
             <Center>
               <Pagination withEdges total={totalPages} value={page} onChange={setPage} size="sm" radius="sm" />

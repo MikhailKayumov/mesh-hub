@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
+import { getBoolean } from '@/utils/env.ts';
 import { getModel3DFileSrc } from '@/utils/model3d.ts';
 import { Model3DEditPropertiesDrawer } from '../EditPropertiesDrawer';
 import classes from './Model3DControls.module.scss';
@@ -37,13 +38,15 @@ export function Model3DControls() {
             >
               Скачать
             </Menu.Item>
-            <Menu.Item
-              component={Link}
-              to={buildAbsolutePath([RouterPaths.Editor, RouterPaths.Id], { params: { id: model?.id } })}
-              leftSection={<IconSettings style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
-            >
-              3D Настройки
-            </Menu.Item>
+            {getBoolean('VITE_APP_ENABLE_EDITOR') && (
+              <Menu.Item
+                component={Link}
+                to={buildAbsolutePath([RouterPaths.Editor, RouterPaths.Id], { params: { id: model?.id } })}
+                leftSection={<IconSettings style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
+              >
+                3D Настройки
+              </Menu.Item>
+            )}
             <Menu.Item
               c="red"
               onClick={onDelete}

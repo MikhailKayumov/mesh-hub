@@ -3,6 +3,7 @@
 .row {}
 
 .card {
+  position: relative;
   cursor: pointer;
   height: 100%;
   will-change: transform, border-color;
@@ -41,7 +42,17 @@
   }
 
   .menu-button {
-    min-width: rem(16px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: rem(22px);
+    width: rem(22px);
+    border-radius: var(--mantine-radius-sm);
+    transition: background-color 0.15s ease-out;
+
+    &:hover {
+      background-color: var(--mantine-color-primary-7);
+    }
   }
 
   &:hover {
@@ -64,9 +75,19 @@
   }
 }
 
+.card-deleting {
+  pointer-events: none;
+}
+
 [data-mantine-color-scheme=light] {
   .card {
     box-shadow: var(--mantine-shadow-sm);
+
+    .menu-button {
+      &:hover {
+        background-color: var(--mantine-color-primary-1);
+      }
+    }
 
     .thumbnail {
       background-color: var(--mantine-color-gray-2);

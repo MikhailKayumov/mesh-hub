@@ -53,19 +53,19 @@
   --container-size-responsive: 100%;
 
   @media (min-width: $mantine-breakpoint-xs) {
-    --container-size-responsive: rem(576px);
+    //--container-size-responsive: rem(576px);
   }
 
   @media (min-width: $mantine-breakpoint-sm) {
-    --container-size-responsive: rem(768px);
+    //--container-size-responsive: rem(768px);
   }
 
   @media (min-width: $mantine-breakpoint-md) {
-    --container-size-responsive: rem(992px);
+    //--container-size-responsive: rem(992px);
   }
 
   @media (min-width: $mantine-breakpoint-lg) {
-    --container-size-responsive: rem(1200px);
+    //--container-size-responsive: rem(1200px);
   }
 
   @media (min-width: $mantine-breakpoint-xl) {

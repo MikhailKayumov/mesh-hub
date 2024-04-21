@@ -13,7 +13,7 @@ export class EmailGatewayService {
 
       const result = await this.mailService.sendMail({ to, subject, text });
 
-      this.logger.log({ message: 'Email sending result', result: JSON.stringify(result) });
+      this.logger.log({ message: 'Email sending result', result });
 
       return result;
     } catch (e) {

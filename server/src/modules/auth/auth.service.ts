@@ -9,6 +9,7 @@ import { PaginationDto, PaginationResponseDto, PaginationSortOrder } from '@/dec
 import { SignupRequestDto } from '@/modules/auth/dto/signup.request.dto';
 import { JwtPayload } from '@/modules/auth/types';
 import { ConfigService } from '@/modules/common/config/config.service';
+import { NotificationsService } from '@/modules/common/notifications/notifications.service';
 import { UserRepository } from '@/modules/user/repositories/user.repository';
 import { UserService } from '@/modules/user/services/user.service';
 import { AuthMapper } from './auth.mapper';
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly authRepository: AuthRepository,
     private readonly userRepository: UserRepository,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   public async getCurrentUserSessions(
@@ -72,6 +74,8 @@ export class AuthService {
     }
 
     request.session = await this.createSession(request, user);
+
+    // this.notificationsService.sendEmail(email, 'Авторизация', 'Пользователь успешно авторизирован');
 
     return AuthMapper.toSessionResponse(request.session);
   }

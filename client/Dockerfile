@@ -3,8 +3,8 @@ FROM node:20-alpine3.19 as copy
 
 WORKDIR /app
 
-COPY ./client .
-COPY ./deploy/.env.client ./.env
+COPY . .
+COPY ./.env.deploy ./.env
 
 # build
 FROM copy as build
@@ -18,7 +18,7 @@ RUN npm run build
 FROM ghcr.io/nginxinc/nginx-unprivileged:1.25.4-alpine3.18
 
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY ./deploy/default.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
 #COPY ./deploy/certificate.crt /etc/nginx/ssl/certificate.crt
 #COPY ./deploy/private-key.key /etc/nginx/ssl/private-key.key
 

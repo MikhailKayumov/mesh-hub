@@ -1,60 +1,68 @@
-version: '3.8'
+version: "3.9"
+
+name: mesh-hub-prod
 
 networks:
-  mesh-hub-net:
-    driver: bridge
-
-name: mesh-hub
+  mesh-hub-net-prod-db: {}
+  mesh-hub-net-prod-api: {}
 
 services:
-  postgres:
+  db:
     image: postgres:14-alpine
-    container_name: db
-    env_file: ./server/.env
+    # container_name: mesh-hub-prod-db
+    environment:
+      - POSTGRES_DB=meshhub
+      - POSTGRES_USER=SuperMesh
+      - POSTGRES_PASSWORD=407ef57e67e04690636550a34ed05fb1e135b7ff6e4d941be236eadb6b359b6981954f8cbcdb927086c3bfa22061ebf8017db9ad3419debc03f2abb67821f1f5
     networks:
-      - mesh-hub-net
+      - mesh-hub-net-prod-db
     volumes:
       - db:/var/lib/postgresql/data
     ports:
-      - "8888:5432"
+      - "8432:5432"
     restart: unless-stopped
 
-#  s3:
-#    image: quay.io/minio/minio
-#    container_name: s3
-#    volumes:
-#      - s3:/data
-#    command: server --console-address ":8881" /data/
-#    restart: unless-stopped
-#    ports:
-#      - "8881:9000"
-#      - "8882:8881"
-#    environment:
-#      - MINIO_ROOT_USER=ROOTNAME
-#      - MINIO_ROOT_PASSWORD=ROOTPASSWORD
-#      - MINIO_PROMETHEUS_AUTH_TYPE=public
-#      - MINIO_PROMETHEUS_URL=http://prometheus:9090
-#      - MINIO_PROMETHEUS_JOB_ID=PBFA97CFB590B2093
-#    networks:
-#      - mesh-hub-net
-#    healthcheck:
-#      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-#      interval: 30s
-#      timeout: 20s
-#      retries: 3
+  api:
+    # container_name: mesh-hub-prod-server
+    # image: mesh-hub-prod-server:v1
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+    networks:
+      - mesh-hub-net-prod-db
+      - mesh-hub-net-prod-api
+    volumes:
+      - ./data/files:/app/files
+      - ./data/.log:/app/.log
+    env_file:
+      - ./server/.env.deploy
+
+  client:
+    # container_name: mesh-hub-prod-client
+    # image: mesh-hub-prod-client:v1
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    ports:
+      - '80:80'
+      # - '443:443'
+    restart: unless-stopped
+    networks:
+      - mesh-hub-net-prod-api
+
 
 volumes:
   db:
-    name: mesh-hub-db-volume
+    name: mesh-hub-db-volume-prod
     driver: local
     driver_opts:
       type: "none"
       o: "bind"
       device: "./data/db"
-#  s3:
-#    name: mesh-hub-s3-volume
-#    driver: local
-#    driver_opts:
-#      type: "none"
-#      o: "bind"
-#      device: "./data/s3"

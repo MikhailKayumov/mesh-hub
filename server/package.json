@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "prod": "npm run db:init && npm run db:seeds && npm run start:prod",
+    "prod": "npm run db:init && npm run db:seeds && npm run start",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",

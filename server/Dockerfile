@@ -3,7 +3,7 @@ FROM node:20-alpine3.19 as prepare
 
 WORKDIR /app
 
-COPY ./server .
+COPY . .
 
 # build
 FROM prepare as build

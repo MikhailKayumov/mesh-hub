@@ -17,8 +17,9 @@ RUN npm run build
 # run
 FROM ghcr.io/nginxinc/nginx-unprivileged:1.25.4-alpine3.18
 
+RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx/nginx.conf /etc/nginx/conf.d/
 #COPY ./deploy/certificate.crt /etc/nginx/ssl/certificate.crt
 #COPY ./deploy/private-key.key /etc/nginx/ssl/private-key.key
 

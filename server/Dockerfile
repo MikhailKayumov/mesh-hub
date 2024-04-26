@@ -20,10 +20,10 @@ WORKDIR /app
 
 COPY --from=build /app/ ./
 
-ENV npm_config_cache /home/node/app/.npm
-RUN mkdir -p /home/node/app
-RUN chown 1001:1001 /home/node/app
+# ENV npm_config_cache /home/node/app/.npm
+# RUN mkdir -p /home/node/app
+# RUN chown 1001:1001 /home/node/app
 
-EXPOSE 8080
+# EXPOSE 8080
 
-CMD ["npm", "run", "prod"]
+ENTRYPOINT ["npm", "run", "prod"]

@@ -1,10 +1,8 @@
-version: "3.9"
-
-name: mesh-hub-prod
+name: mh
 
 networks:
-  mesh-hub-net-prod-db: {}
-  mesh-hub-net-prod-api: {}
+  mh-net-db: {}
+  mh-net-api: {}
 
 services:
   db:
@@ -15,11 +13,11 @@ services:
       - POSTGRES_USER=SuperMesh
       - POSTGRES_PASSWORD=407ef57e67e04690636550a34ed05fb1e135b7ff6e4d941be236eadb6b359b6981954f8cbcdb927086c3bfa22061ebf8017db9ad3419debc03f2abb67821f1f5
     networks:
-      - mesh-hub-net-prod-db
+      - mh-net-db
     volumes:
-      - db:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data
     ports:
-      - "8432:5432"
+      - "127.0.0.1:5432:5432"
     restart: unless-stopped
 
   api:
@@ -31,11 +29,11 @@ services:
     depends_on:
       - db
     ports:
-      - '8080:8080'
+      - '127.0.0.1:8080:8080'
     restart: unless-stopped
     networks:
-      - mesh-hub-net-prod-db
-      - mesh-hub-net-prod-api
+      - mh-net-db
+      - mh-net-api
     volumes:
       - ./data/files:/app/files
       - ./data/.log:/app/.log
@@ -51,18 +49,8 @@ services:
     depends_on:
       - api
     ports:
-      - '80:80'
+      - '127.0.0.1:80:80'
       # - '443:443'
     restart: unless-stopped
     networks:
-      - mesh-hub-net-prod-api
-
-
-volumes:
-  db:
-    name: mesh-hub-db-volume-prod
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "./data/db"
+      - mh-net-api

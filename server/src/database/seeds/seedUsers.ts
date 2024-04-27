@@ -1,5 +1,6 @@
 import { INestApplication, Logger } from '@nestjs/common';
 import { UserRoles } from '@/constants';
+import { ConfigService } from '@/modules/common/config/config.service';
 import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { UserService } from '@/modules/user/services/user.service';
 
@@ -13,7 +14,7 @@ const data: UserCreateRequestDto[] = [
     middleName: 'Линарович',
     lastName: 'Каюмов',
     password: '!pass4First!',
-    roles: [UserRoles.SuperUser, UserRoles.Admin, UserRoles.User],
+    roles: [UserRoles.SuperUser],
   },
   {
     email: 'mkayumov@softmedialab.com',
@@ -30,7 +31,9 @@ export default async function seedUsers(app: INestApplication) {
   logger.log('Seed users');
 
   const userService = app.get(UserService);
+  const config = app.get(ConfigService);
 
+  let count = 0;
   for (const user of data) {
     try {
       logger.log(`Create user "${user.firstName} ${user.lastName}" (${user.email})`);
@@ -39,5 +42,8 @@ export default async function seedUsers(app: INestApplication) {
     } catch (e) {
       logger.log(e);
     }
+
+    count++;
+    if (config.isProduction && count) break;
   }
 }

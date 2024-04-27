@@ -1,39 +1,36 @@
 name: mh
 
 networks:
-  mh-net-db: {}
-  mh-net-api: {}
+  net-db: {}
+  net-api: {}
 
 services:
   db:
     image: postgres:14-alpine
-    # container_name: mesh-hub-prod-db
     environment:
       - POSTGRES_DB=meshhub
       - POSTGRES_USER=SuperMesh
       - POSTGRES_PASSWORD=407ef57e67e04690636550a34ed05fb1e135b7ff6e4d941be236eadb6b359b6981954f8cbcdb927086c3bfa22061ebf8017db9ad3419debc03f2abb67821f1f5
     networks:
-      - mh-net-db
+      - net-db
     volumes:
       - ./data/db:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
     restart: unless-stopped
 
   api:
-    # container_name: mesh-hub-prod-server
-    # image: mesh-hub-prod-server:v1
     build:
       context: ./server
       dockerfile: Dockerfile
     depends_on:
       - db
     ports:
-      - '127.0.0.1:8080:8080'
+      - '8080:8080'
     restart: unless-stopped
     networks:
-      - mh-net-db
-      - mh-net-api
+      - net-db
+      - net-api
     volumes:
       - ./data/files:/app/files
       - ./data/.log:/app/.log
@@ -41,16 +38,14 @@ services:
       - ./server/.env.deploy
 
   client:
-    # container_name: mesh-hub-prod-client
-    # image: mesh-hub-prod-client:v1
     build:
       context: ./client
       dockerfile: Dockerfile
     depends_on:
       - api
     ports:
-      - '127.0.0.1:80:80'
+      - '80:80'
       # - '443:443'
     restart: unless-stopped
     networks:
-      - mh-net-api
+      - net-api

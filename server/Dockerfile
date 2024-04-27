@@ -24,6 +24,6 @@ COPY --from=build /app/ ./
 # RUN mkdir -p /home/node/app
 # RUN chown 1001:1001 /home/node/app
 
-# EXPOSE 8080
+EXPOSE 8080
 
 ENTRYPOINT ["npm", "run", "prod"]

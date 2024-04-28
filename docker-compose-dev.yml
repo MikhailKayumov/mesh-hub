@@ -1,29 +1,25 @@
-version: '3.8'
-
 networks:
-  mesh-hub-net:
-    driver: bridge
+  mesh-hub-dev: {}
 
 name: mesh-hub
 
 services:
-  postgres:
-    image: postgres:14-alpine
-    container_name: db
+  db:
+    image: postgres:alpine
     env_file: ./server/.env
     networks:
-      - mesh-hub-net
+      - mesh-hub-dev
     volumes:
-      - db:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data
     ports:
-      - "8888:5432"
+      - "8432:5432"
     restart: unless-stopped
 
 #  s3:
 #    image: quay.io/minio/minio
 #    container_name: s3
 #    volumes:
-#      - s3:/data
+#      - ./data/s3:/data
 #    command: server --console-address ":8881" /data/
 #    restart: unless-stopped
 #    ports:
@@ -42,19 +38,3 @@ services:
 #      interval: 30s
 #      timeout: 20s
 #      retries: 3
-
-volumes:
-  db:
-    name: mesh-hub-db-volume
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "./data/db"
-#  s3:
-#    name: mesh-hub-s3-volume
-#    driver: local
-#    driver_opts:
-#      type: "none"
-#      o: "bind"
-#      device: "./data/s3"

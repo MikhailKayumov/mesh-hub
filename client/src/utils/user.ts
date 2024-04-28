@@ -1,5 +1,7 @@
 import { UserCurrentResponseDto } from '@/api/dto.ts';
 
+export const AVATAR_PATH_PREFIX = '/api/user/current/avatar';
+
 export function getAvatarInitials(user: UserCurrentResponseDto): string {
   return `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase();
 }
@@ -13,9 +15,9 @@ export function getUserFullName(user: UserCurrentResponseDto, withMiddleName = f
 }
 
 export function getAvatarSrc(user: UserCurrentResponseDto | null): string | null {
-  return user && user.meta.avatar ? `/files/avatars/${user.meta.avatar}` : null;
+  return getAvatarSrcByString(user?.meta?.avatar);
 }
 
 export function getAvatarSrcByString(src?: string): string | null {
-  return src ? `/files/avatars/${src}` : null;
+  return src ? `${AVATAR_PATH_PREFIX}/${src}` : null;
 }

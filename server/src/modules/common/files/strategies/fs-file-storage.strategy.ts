@@ -62,7 +62,7 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
   }
 
   public async delete3DModel(id: string, silent = true): Promise<void> {
-    this.deleteFile(this.get3DModelFilePath(id), silent);
+    return this.deleteFile(this.get3DModelFilePath(id), silent);
   }
 
   private getAvatarFilePath(path: string): string {

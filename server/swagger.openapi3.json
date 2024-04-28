@@ -147,6 +147,37 @@
         ]
       }
     },
+    "/api/user/current/avatar/{fileName}": {
+      "get": {
+        "operationId": "UserController_getUserAvatar",
+        "parameters": [
+          {
+            "name": "fileName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "user"
+        ]
+      }
+    },
     "/api/user/reset-password": {
       "patch": {
         "operationId": "UserController_resetPassword",
@@ -788,6 +819,76 @@
           },
           "400": {
             "description": ""
+          }
+        },
+        "tags": [
+          "models-3d"
+        ]
+      }
+    },
+    "/api/models-3d/files/{fileId}/thumbnail": {
+      "get": {
+        "operationId": "Model3dController_getModels3DThumbnailFile",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "models-3d"
+        ]
+      }
+    },
+    "/api/models-3d/files/{fileId}/{fileName}": {
+      "get": {
+        "operationId": "Model3dController_getModels3DFile",
+        "parameters": [
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
           }
         },
         "tags": [

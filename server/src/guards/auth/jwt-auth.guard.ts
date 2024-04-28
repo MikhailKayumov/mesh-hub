@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { UserRole } from '@/constants';
+import { UserRole, UserRoles } from '@/constants';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { ALLOWED_ROLES_KEY, IS_PUBLIC_KEY, IS_REFRESH_KEY } from '@/decorators/auth/auth.decorator';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -54,9 +54,12 @@ export class JwtAuthGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (!allowedRoles || !allowedRoles.length) return true;
+    if (!allowedRoles?.length) return true;
     if (!session.user?.roles?.length) return false;
 
-    return UserRoleHelper.hasSomeRoles(session.user, allowedRoles);
+    return (
+      UserRoleHelper.hasSomeRoles(session.user, allowedRoles) ||
+      UserRoleHelper.hasRole(session.user, UserRoles.SuperUser)
+    );
   }
 }

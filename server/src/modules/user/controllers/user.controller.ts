@@ -1,12 +1,17 @@
+import { createReadStream } from 'fs';
+import { join } from 'path';
 import {
   Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseFilePipe,
   Patch,
   Post,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -21,6 +26,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { UserRoles, ALLOWED_AVATAR_FILE_TYPES, MAX_AVATAR_FILE_SIZE } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
@@ -78,6 +84,19 @@ export class UserController {
     file?: Express.Multer.File,
   ): Promise<void> {
     return this.userService.updateCurrentUserAvatar(user, file);
+  }
+
+  @Get('current/avatar/:fileName')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
+  public async getUserAvatar(
+    @Param('fileName') fileName: string,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<StreamableFile> {
+    const file = createReadStream(join(process.cwd(), 'files', 'avatars', fileName));
+    response.set({ 'Content-Disposition': `attachment; filename="${fileName}"` });
+    return new StreamableFile(file);
   }
 
   @Patch('reset-password')

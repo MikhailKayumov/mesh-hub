@@ -16,7 +16,7 @@ export class FileStorageService implements OnApplicationBootstrap {
   }
 
   public async deleteFile(path: string, silent = true): Promise<void> {
-    this.strategy.deleteFile(path, silent);
+    return this.strategy.deleteFile(path, silent);
   }
 
   public async saveAvatar(name: string, file: Express.Multer.File): Promise<string> {
@@ -36,6 +36,6 @@ export class FileStorageService implements OnApplicationBootstrap {
   }
 
   public async delete3DModel(id: string, silent = true): Promise<void> {
-    this.strategy.delete3DModel(id, silent);
+    return this.strategy.delete3DModel(id, silent);
   }
 }

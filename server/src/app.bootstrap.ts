@@ -29,8 +29,6 @@ export default class AppBootstrap {
 
     this.application.use(cookieParser());
     this.application.enableCors(this.configService.cors);
-
-    // todo: delete, move to guard/interceptor
     this.application.use(json({ limit: '5mb' }));
     this.application.use(urlencoded({ extended: true, limit: '5mb' }));
 
@@ -55,10 +53,8 @@ export default class AppBootstrap {
       }),
     );
 
-    this.application.useStaticAssets(join(process.cwd(), 'files'), {
-      maxAge: '1000',
-      index: false,
-    });
+    // todo: delete
+    // this.application.useStaticAssets(join(process.cwd(), 'files'), { maxAge: '1000', index: false });
 
     this.application.useGlobalInterceptors(new LoggingInterceptor());
     this.application.useLogger(this.application.get(LoggerService));

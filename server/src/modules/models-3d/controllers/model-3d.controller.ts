@@ -1,3 +1,5 @@
+import { createReadStream } from 'fs';
+import { join } from 'path';
 import {
   Body,
   Controller,
@@ -11,6 +13,7 @@ import {
   Patch,
   Post,
   Query,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -133,5 +136,26 @@ export class Model3dController {
     file: Express.Multer.File,
   ): Promise<{ modelId: string }> {
     return this.model3dService.upload3DModel(user, file);
+  }
+
+  @Get('files/:fileId/thumbnail')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
+  public async getModels3DThumbnailFile(@Param('fileId') fileId: string): Promise<StreamableFile> {
+    const file = createReadStream(join(process.cwd(), 'files', 'models-3d', fileId, 'thumbnail.png'));
+    return new StreamableFile(file);
+  }
+
+  @Get('files/:fileId/:fileName')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
+  public async getModels3DFile(
+    @Param('fileId') fileId: string,
+    @Param('fileName') fileName: string,
+  ): Promise<StreamableFile> {
+    const file = createReadStream(join(process.cwd(), 'files', 'models-3d', fileId, fileName));
+    return new StreamableFile(file);
   }
 }

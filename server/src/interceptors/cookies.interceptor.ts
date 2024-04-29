@@ -26,16 +26,17 @@ export class CookiesInterceptor implements NestInterceptor {
   }
 
   private setAuthCookie(context: ExecutionContext) {
-    const { session, cookies } = context.switchToHttp().getRequest<Request>();
+    const { session, cookies, signedCookies } = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
+    const cookie = signedCookies[this.configService.jwt.cookieName] || cookies[this.configService.jwt.cookieName];
 
-    if (session && cookies[this.configService.jwt.cookieName] !== session.accessToken) {
+    if (session && cookie !== session.accessToken) {
       response.cookie(this.configService.jwt.cookieName, session.accessToken, {
         httpOnly: true,
+        expires: session.expiredAt,
         maxAge: subMilliseconds(session.expiredAt, Date.now()).getTime(),
         secure: true,
-        sameSite: this.configService.isProduction ? 'lax' : 'none',
-        expires: session.expiredAt,
+        sameSite: 'lax',
       });
     }
   }

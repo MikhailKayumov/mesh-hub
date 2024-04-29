@@ -1,6 +1,6 @@
 import { UserCurrentResponseDto } from '@/api/dto.ts';
 
-export const AVATAR_PATH_PREFIX = '/api/user/current/avatar';
+export const AVATAR_PATH_PREFIX = '/api/user/avatar';
 
 export function getAvatarInitials(user: UserCurrentResponseDto): string {
   return `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase();

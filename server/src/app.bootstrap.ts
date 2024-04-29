@@ -53,10 +53,8 @@ export default class AppBootstrap {
       }),
     );
 
-    this.application.useStaticAssets(join(process.cwd(), 'files'), {
-      maxAge: '1000',
-      index: false,
-    });
+    // todo: delete
+    // this.application.useStaticAssets(join(process.cwd(), 'files'), { maxAge: '1000', index: false });
 
     this.application.useGlobalInterceptors(new LoggingInterceptor());
     this.application.useLogger(this.application.get(LoggerService));

@@ -86,7 +86,7 @@ export class UserController {
     return this.userService.updateCurrentUserAvatar(user, file);
   }
 
-  @Get('current/avatar/:fileName')
+  @Get('avatar/:fileName')
   @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })

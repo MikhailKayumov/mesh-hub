@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtAuthGuard } from '@/guards/auth/jwt-auth.guard';
+import { ThrottlerBehindProxyGuard } from '@/guards/throttler-behind-proxy.guard';
 import { CookiesInterceptor } from '@/interceptors/cookies.interceptor';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { ConfigModule } from '@/modules/common/config/config.module';
@@ -38,7 +39,7 @@ import { UserModule } from '@/modules/user/user.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ThrottlerBehindProxyGuard,
     },
     {
       provide: APP_GUARD,

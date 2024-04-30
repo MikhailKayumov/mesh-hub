@@ -8,6 +8,7 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -15,7 +16,7 @@ import { tap } from 'rxjs/operators';
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger('LoggingInterceptor');
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     if (context.getType() === 'http') {
       return this.loggingHttpCall(context, next);
     } else {
@@ -24,7 +25,7 @@ export class LoggingInterceptor implements NestInterceptor {
   }
 
   private loggingHttpCall(context: ExecutionContext, next: CallHandler) {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
     const userAgent = request.get('user-agent') ?? 'Unknown user agent';
     const { method, path: url, ip } = request;
 

@@ -4,6 +4,6 @@ import { SwaggerService } from './swagger.service';
 
 (async () => {
   const app = await AppBootstrap.initApp();
-  await new SwaggerService(app, app.get(ConfigService)).createDocument(true);
+  await new SwaggerService(app, app.get(ConfigService)).createDocument();
   process.exit();
 })();

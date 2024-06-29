@@ -2,7 +2,7 @@ import { resolve } from 'path';
 import { Injectable, Logger } from '@nestjs/common';
 import { type CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService as NestConfigService } from '@nestjs/config';
-import { ThrottlerModuleOptions } from '@nestjs/throttler';
+import { seconds, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { MailerOptions } from '@nestjs-modules/mailer';
 import { Algorithm } from 'jsonwebtoken';
 import { DataSourceOptions } from 'typeorm';
@@ -96,8 +96,8 @@ export class ConfigService {
     return {
       throttlers: [
         {
-          ttl: +this.getNumber('THROTTLE_GLOBAL_TTL', 60),
-          limit: +this.getNumber('THROTTLE_GLOBAL_LIMIT', 10),
+          ttl: seconds(this.getNumber('THROTTLE_GLOBAL_TTL', 60)),
+          limit: this.getNumber('THROTTLE_GLOBAL_LIMIT', 10),
         },
       ],
     };

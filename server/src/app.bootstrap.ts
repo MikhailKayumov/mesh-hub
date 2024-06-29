@@ -1,6 +1,6 @@
-import { join } from 'path';
 import { ValidationPipe, ValidationError, HttpStatus } from '@nestjs/common';
-import { NestApplication, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
@@ -12,28 +12,53 @@ import { SwaggerService } from '@/swagger/swagger.service';
 import { AppModule } from './app.module';
 
 export default class AppBootstrap {
-  private static application: NestApplication;
+  private static application: NestExpressApplication;
   private static configService: ConfigService;
 
-  public static get app(): NestApplication {
+  public static get app(): NestExpressApplication {
     return this.application;
   }
 
-  public static async initApp(): Promise<NestApplication> {
+  public static async initApp(): Promise<NestExpressApplication> {
     if (this.application) {
       return this.application;
     }
 
-    this.application = await NestFactory.create(AppModule, { bufferLogs: true });
+    this.application = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
     this.configService = this.application.get(ConfigService);
 
+    this.application.setGlobalPrefix(this.configService.app.prefix);
+    this.application.set('trust proxy', 1);
+
     this.application.use(cookieParser());
-    this.application.enableCors(this.configService.cors);
     this.application.use(json({ limit: '5mb' }));
     this.application.use(urlencoded({ extended: true, limit: '5mb' }));
 
-    this.application.setGlobalPrefix(this.configService.app.prefix);
-    this.application.useGlobalPipes(
+    this.application.enableCors(this.configService.cors);
+
+    this.application.useGlobalInterceptors(new LoggingInterceptor());
+    this.application.useLogger(this.application.get(LoggerService));
+
+    this.addValidationPipe();
+
+    return this.application;
+  }
+
+  public static async runApp(): Promise<NestExpressApplication> {
+    if (!this.application) {
+      throw new Error('Application is not defined');
+    }
+
+    const swaggerService = new SwaggerService(this.application, this.configService);
+    SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument());
+
+    this.application.listen(this.configService.app.port, this.configService.app.host);
+
+    return this.application;
+  }
+
+  private static addValidationPipe(): void {
+    this.application?.useGlobalPipes(
       new ValidationPipe({
         transform: true,
         whitelist: true,
@@ -49,27 +74,8 @@ export default class AppBootstrap {
             })),
           });
         },
-        enableDebugMessages: !this.configService.isProduction,
+        enableDebugMessages: !this.configService?.isProduction,
       }),
     );
-
-    // todo: delete
-    // this.application.useStaticAssets(join(process.cwd(), 'files'), { maxAge: '1000', index: false });
-
-    this.application.useGlobalInterceptors(new LoggingInterceptor());
-    this.application.useLogger(this.application.get(LoggerService));
-
-    return this.application;
-  }
-
-  public static async runApp(): Promise<NestApplication> {
-    await this.initApp();
-
-    const swaggerService = new SwaggerService(this.application, this.configService);
-    SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument(true));
-
-    this.application.listen(this.configService.app.port, this.configService.app.host);
-
-    return this.application;
   }
 }

@@ -147,7 +147,7 @@
         ]
       }
     },
-    "/api/user/current/avatar/{fileName}": {
+    "/api/user/avatar/{fileName}": {
       "get": {
         "operationId": "UserController_getUserAvatar",
         "parameters": [

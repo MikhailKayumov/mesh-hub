@@ -12,13 +12,11 @@ export class SwaggerService {
     private readonly configService: ConfigService,
   ) {}
 
-  public async createDocument(write = false): Promise<OpenAPIObject> {
+  public async createDocument(): Promise<OpenAPIObject> {
     const config = this.buildConfig();
     const document = SwaggerModule.createDocument(this.application, config);
 
-    if (write) {
-      await writeFile(this.path, JSON.stringify(document, null, 2));
-    }
+    await writeFile(this.path, JSON.stringify(document, null, 2));
 
     return document;
   }

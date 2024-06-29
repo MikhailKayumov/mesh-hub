@@ -18,6 +18,6 @@ export class FileExtensionValidatorPipe extends FileValidator {
     }
 
     const types = this.extensions.map((i) => i.substring(1).toUpperCase()).join(', ');
-    return `Недопустимый формат файла модели. Допустимые форматы ${types}`;
+    return `Не верный тип файла модели, допустимые типы файлов: ${types}`;
   }
 }

@@ -3,7 +3,8 @@ import { ConfigService } from '@/modules/common/config/config.service';
 import { SwaggerService } from './swagger.service';
 
 (async () => {
-  const app = await AppBootstrap.initApp();
+  const bootstrap = new AppBootstrap();
+  const app = await bootstrap.init();
   await new SwaggerService(app, app.get(ConfigService)).createDocument();
   process.exit();
 })();

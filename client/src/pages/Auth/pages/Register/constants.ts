@@ -1,6 +1,6 @@
 import zod from 'zod';
-import { SignupRequestDto } from '@/api/dto.ts';
-import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { SignupRequestDto } from '@/app/api/dto.ts';
+import { AppRegexp, ValidationErrorMessages } from '../../../../shared/constants';
 
 export const initialValues: SignupRequestDto = {
   firstName: '',

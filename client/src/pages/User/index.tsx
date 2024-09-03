@@ -1,8 +1,8 @@
 import { useWindowScroll } from '@mantine/hooks';
 import { useEffect, useLayoutEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useSession } from '@/hooks/useSession.ts';
-import { UserLayout } from '@/layouts/User';
+import { useSession } from '@/entities/user/hooks/useSession';
+import { UserLayout } from '@/widget/layouts';
 import { RouterPaths } from '@/router/paths.ts';
 
 export function UserPage() {

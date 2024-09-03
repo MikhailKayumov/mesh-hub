@@ -1,6 +1,6 @@
 import zod from 'zod';
-import { LoginRequestDto } from '@/api/dto.ts';
-import { ValidationErrorMessages } from '@/constants';
+import { LoginRequestDto } from '@/app/api/dto.ts';
+import { ValidationErrorMessages } from '../../../../shared/constants';
 
 export const initialValues: LoginRequestDto = {
   email: import.meta.env.VITE_APP_TEST_USER_EMAIL ?? '',

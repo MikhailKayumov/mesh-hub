@@ -4,7 +4,7 @@
   }
 }
 
-[data-mantine-color-scheme=dark] {
+[data-mantine-color-scheme='dark'] {
   .root {
     .dropzone :global(.mantine-Overlay-root) {
       --overlay-bg: var(--mantine-color-dark-7) !important;

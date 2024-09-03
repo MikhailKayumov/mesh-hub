@@ -1,5 +1,5 @@
 import { Text, Tooltip } from '@mantine/core';
-import { parseUserAgent } from '@/utils/parseUserAgent.ts';
+import { parseUserAgent } from '@/shared/utils/parseUserAgent.ts';
 
 export interface UserAgentColumnProps {
   userAgent: string | undefined;

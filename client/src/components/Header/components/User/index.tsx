@@ -1,13 +1,15 @@
 import { Menu } from '@mantine/core';
-import { IconCube, IconLogout, IconSettings, IconUser } from '@tabler/icons-react';
+import { IconCube, IconLogout, IconSettings, IconSandbox, IconUser } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import { useLogout } from '@/hooks/useLogout.ts';
+import { useCurrentUser } from '@/entities/user/hooks/useCurrentUser';
+import { useLogout } from '@/entities/user/hooks/useLogout';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
 import { UserButton } from '../UserButton';
 
 export function User() {
   const onLogout = useLogout();
+  const { user } = useCurrentUser();
 
   return (
     <Menu position="bottom-end" width={200}>
@@ -36,6 +38,16 @@ export function User() {
         >
           Настройки
         </Menu.Item>
+        {/* todo: delete the mess */}
+        {user?.lastName === 'Каюмов' && (
+          <Menu.Item
+            component={Link}
+            to={buildAbsolutePath([RouterPaths.User, RouterPaths.DevSandbox])}
+            leftSection={<IconSandbox size={16} />}
+          >
+            Sandbox
+          </Menu.Item>
+        )}
         <Menu.Divider />
         <Menu.Item c="red" leftSection={<IconLogout size={16} />} onClick={onLogout}>
           Выйти

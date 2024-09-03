@@ -8,12 +8,13 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react-hooks/recommended",
-    "prettier"
+    "plugin:prettier/recommended"
   ],
-  "ignorePatterns": ["dist", "postcss.config.js"],
+  "ignorePatterns": ["dist/", "node_modules/", "postcss.config.cjs"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["react-refresh", "import"],
   "rules": {
+    "prettier/prettier": ["error", { "endOfLine": "auto" }],
     "no-explicit-any": 0,
     "@typescript-eslint/no-explicit-any": 0,
     "import/order": [

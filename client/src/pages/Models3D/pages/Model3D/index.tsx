@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { NotFoundError } from '@/components/Errors';
 import { Model3DViewer } from '@/components/Model3DViewer';
 import { Model3DContextProvider } from '@/contexts/Model3DContext';
-import { useModel3D } from '@/hooks/useModel3D.ts';
+import { useModel3D } from '@/entities/model-3d';
 import { Model3DPageHeader } from './components/Header';
 import { Model3DPageInfo } from './components/Info';
 import classes from './Model3DPage.module.scss';

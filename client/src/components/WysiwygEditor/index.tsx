@@ -9,7 +9,7 @@ import { Editor, useEditor, EditorEvents, JSONContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';
-import { useDebouncedCallback } from '@/hooks/useDebounced.ts';
+import { useDebouncedCallback } from '@/shared/hooks';
 import classes from './WysiwygEditor.module.scss';
 
 export interface WysiwygEditorProps {

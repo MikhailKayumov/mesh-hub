@@ -1,9 +1,8 @@
 import { ColorSwatch, Group } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';
-import { userActions } from '@/store/user/reducer.ts';
-import { themeSelector } from '@/store/user/selectors.ts';
-import { themes } from '@/theme/themes.ts';
+import { userActions, themeSelector } from '@/entities/user/store';
+import { themes } from '@/shared/theme/themes.ts';
 import classes from './ColorThemeSwitcher.module.scss';
 
 export interface ColorThemeSwitcherProps {

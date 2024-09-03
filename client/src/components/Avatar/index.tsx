@@ -3,10 +3,10 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconBucket, IconEdit, IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
-import { UserCurrentResponseDto } from '@/api/dto.ts';
-import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
+import { UserCurrentResponseDto } from '@/app/api/dto.ts';
+import { useUpdateCurrentUserAvatarMutation } from '@/app/api/user.ts';
 import { ChangeAvatarModal } from '@/components/ChangeAvatarModal';
-import { getAvatarSrc } from '@/utils/user.ts';
+import { getAvatarSrc } from '@/shared/utils/user.ts';
 import classes from './Avatar.module.scss';
 
 export interface AvatarProps {

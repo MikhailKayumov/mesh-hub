@@ -1,7 +1,7 @@
 import { Paper, Title, TextInput, Button, Textarea, Group, Tooltip, TagsInput, Loader, Center } from '@mantine/core';
 import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 import { PhoneInput } from '@/components/PhoneInput';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle.ts';
+import { useDocumentTitle } from '@/shared/hooks';
 import classes from './ProfilePage.module.scss';
 import { useProfileForm } from './useProfileForm.ts';
 

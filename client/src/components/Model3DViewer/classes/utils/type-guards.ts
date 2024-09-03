@@ -18,7 +18,7 @@ import {
   Bone,
   Group,
 } from 'three';
-import { isObject } from '@/utils/type-guards.ts';
+import { isObject } from '@/shared/utils/type-guards.ts';
 
 export const isObject3D = (object: unknown): object is Object3D => {
   return isObject(object) && (object as Object3D).isObject3D;

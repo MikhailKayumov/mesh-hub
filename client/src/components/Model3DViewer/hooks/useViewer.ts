@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Model3DResponseDto } from '@/api/dto.ts';
-import { sleep } from '@/utils/sleep.ts';
+import { Model3DResponseDto } from '@/app/api/dto.ts';
+import { sleep } from '@/shared/utils/sleep.ts';
 import { Viewer } from '../classes/Viewer';
 
 export interface UseViewerProps {

@@ -58,7 +58,7 @@ export function useAnimations({ blends, autorun = false }: UseAnimationsProps): 
     action.reset().fadeIn(blends?.fadeInDuration ?? 0.25);
     action.play();
 
-    setState(prevActionRef.current?.paused ?? !autorun ? 'pause' : 'play');
+    setState((prevActionRef.current?.paused ?? !autorun) ? 'pause' : 'play');
 
     return () => {
       prevActionRef.current?.fadeOut(blends?.fadeOutDuration ?? 0.25);

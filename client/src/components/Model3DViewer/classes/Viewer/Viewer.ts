@@ -1,7 +1,7 @@
 import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
-import { Model3DResponseDto } from '@/api/dto.ts';
-import { getModel3DFileSrc } from '@/utils/model3d.ts';
+import { Model3DResponseDto } from '@/app/api/dto.ts';
+import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
 import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';

@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 import { useRouteError } from 'react-router-dom';
 import { NotFoundError } from '@/components/Errors';
-import { BaseLayout } from '@/layouts/Base';
-import { isRouteNotFoundErrorResponse } from '@/utils/type-guards.ts';
+import { isRouteNotFoundErrorResponse } from '@/shared/utils/type-guards.ts';
+import { BaseLayout } from '@/widget/layouts';
 
 export function BaseErrorBoundary() {
   const error = useRouteError();

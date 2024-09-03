@@ -52,7 +52,7 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Models,
-            lazy: async () => ({ Component: (await import('../pages/User/pages/Models3D')).ModelsPage }),
+            lazy: async () => ({ Component: (await import('@/pages/UserModels3D')).ModelsPage }),
           },
           {
             path: RouterPaths.Profile,
@@ -61,6 +61,10 @@ const routes: RouteObject[] = [
           {
             path: RouterPaths.Settings,
             lazy: async () => ({ Component: (await import('@/pages/User/pages/Settings')).SettingsPage }),
+          },
+          {
+            path: RouterPaths.DevSandbox,
+            lazy: async () => ({ Component: (await import('@/pages/User/pages/DevSandbox')).DevSandbox }),
           },
         ],
       },

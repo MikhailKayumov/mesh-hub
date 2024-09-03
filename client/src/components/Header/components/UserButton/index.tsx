@@ -2,9 +2,9 @@ import { Avatar, Group, UnstyledButton, Text, rem, Stack, Skeleton } from '@mant
 import { IconChevronDown } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { ComponentPropsWithoutRef, forwardRef, useState } from 'react';
-import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
-import { useCurrentUser } from '@/hooks/useCurrentUser.ts';
-import { getAvatarInitials, getAvatarSrc, getUserFullName } from '@/utils/user.ts';
+import { useCurrentUser } from '@/entities/user/hooks/useCurrentUser';
+import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
+import { getAvatarInitials, getAvatarSrc, getUserFullName } from '@/shared/utils/user.ts';
 import classes from './UserButton.module.scss';
 
 export const UserButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<'button'>>((props, ref) => {

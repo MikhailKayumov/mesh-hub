@@ -6,7 +6,7 @@ import { ColorSchemeSelect } from '@/components/ColorSchemeSelect';
 import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
 import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
 import { RouterPaths } from '@/router/paths.ts';
-import { canNavigateBack } from '@/utils/canNavigateBack.ts';
+import { canNavigateBack } from '@/shared/utils/canNavigateBack.ts';
 import classes from './Header.module.scss';
 
 export interface HeaderProps {

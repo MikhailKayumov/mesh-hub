@@ -2,7 +2,7 @@ import { AppShell, Box, LoadingOverlay, rem } from '@mantine/core';
 import { useParams } from 'react-router-dom';
 import { NotFoundError } from '@/components/Errors';
 import { Model3DContextProvider } from '@/contexts/Model3DContext';
-import { useModel3D } from '@/hooks/useModel3D.ts';
+import { useModel3D } from '@/entities/model-3d';
 import { Footer } from './components/Footer';
 import { Header } from './components/Header';
 import { Main } from './components/Main';

@@ -12,17 +12,15 @@ import { SwaggerService } from '@/swagger/swagger.service';
 import { AppModule } from './app.module';
 
 export default class AppBootstrap {
-  private static application: NestExpressApplication;
-  private static configService: ConfigService;
+  private application: NestExpressApplication;
+  private configService: ConfigService;
 
-  public static get app(): NestExpressApplication {
+  public get app(): NestExpressApplication {
     return this.application;
   }
 
-  public static async initApp(): Promise<NestExpressApplication> {
-    if (this.application) {
-      return this.application;
-    }
+  public async init(): Promise<AppBootstrap> {
+    if (this.application) return this;
 
     this.application = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
     this.configService = this.application.get(ConfigService);
@@ -31,8 +29,8 @@ export default class AppBootstrap {
     this.application.set('trust proxy', 1);
 
     this.application.use(cookieParser());
-    this.application.use(json({ limit: '5mb' }));
-    this.application.use(urlencoded({ extended: true, limit: '5mb' }));
+    this.application.use(json({ limit: '100kb' }));
+    this.application.use(urlencoded({ extended: true, limit: '100kb' }));
 
     this.application.enableCors(this.configService.cors);
 
@@ -41,10 +39,10 @@ export default class AppBootstrap {
 
     this.addValidationPipe();
 
-    return this.application;
+    return this;
   }
 
-  public static async runApp(): Promise<NestExpressApplication> {
+  public async run(): Promise<NestExpressApplication> {
     if (!this.application) {
       throw new Error('Application is not defined');
     }
@@ -52,12 +50,12 @@ export default class AppBootstrap {
     const swaggerService = new SwaggerService(this.application, this.configService);
     SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument());
 
-    this.application.listen(this.configService.app.port, this.configService.app.host);
+    await this.application.listen(this.configService.app.port, this.configService.app.host);
 
     return this.application;
   }
 
-  private static addValidationPipe(): void {
+  private addValidationPipe(): void {
     this.application?.useGlobalPipes(
       new ValidationPipe({
         transform: true,

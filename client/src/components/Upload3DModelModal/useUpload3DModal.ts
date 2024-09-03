@@ -3,7 +3,7 @@ import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
 import { FileWithPath } from 'react-dropzone-esm';
 import { useNavigate } from 'react-router-dom';
-import { useUpload3DModelMutation } from '@/api/models-3d.ts';
+import { useUpload3DModelMutation } from '@/app/api/models-3d.ts';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
 

@@ -2,12 +2,12 @@ import { Avatar, Box, Card, Group, Menu, rem, Text, Tooltip } from '@mantine/cor
 import { IconDotsVertical, IconSettings, IconTrash } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { Link } from 'react-router-dom';
-import { Model3DResponseDto } from '@/api/dto.ts';
+import { Model3DResponseDto } from '@/app/api/dto.ts';
 import { useDeleteModel3D } from '@/pages/Models3D/pages/Model3D/components/Header/components/Controls/useDeleteModel3D.ts';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import { getBoolean } from '@/utils/env.ts';
-import { getAvatarSrcByString } from '@/utils/user.ts';
+import { getBoolean } from '@/shared/utils/env.ts';
+import { getAvatarSrcByString } from '@/shared/utils/user.ts';
 import classes from '../../Models3DList.module.scss';
 import { Model3DCardThumbnail } from '../Model3DCardThumbnail';
 

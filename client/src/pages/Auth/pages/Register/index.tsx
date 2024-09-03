@@ -1,8 +1,8 @@
 import { Anchor, Title, Text, Center, Button, PasswordInput, TextInput } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle.ts';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
+import { useDocumentTitle } from '@/shared/hooks';
 import { useRegisterForm } from './useRegisterForm.ts';
 
 export function RegisterPage() {

@@ -1,7 +1,7 @@
 import zod from 'zod';
-import { CgSoftRequest, CgSoftResponse, UserCurrentResponseDto, UserCurrentUpdateRequestDto } from '@/api/dto.ts';
-import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { CgSoftRequest, CgSoftResponse, UserCurrentResponseDto, UserCurrentUpdateRequestDto } from '@/app/api/dto.ts';
 import { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
+import { AppRegexp, ValidationErrorMessages } from '../../../../shared/constants';
 
 export const initialValues: ProfileFormData = {
   lastName: '',

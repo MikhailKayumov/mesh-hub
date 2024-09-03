@@ -48,7 +48,7 @@ export class UserService {
   }
 
   public async updateCurrentUser(user: UserEntity, dto: UserCurrentUpdateRequestDto): Promise<UserCurrentResponseDto> {
-    if (dto.phone && (await this.userRepository.exist({ where: { phone: dto.phone } }))) {
+    if (dto.phone && (await this.userRepository.existsBy({ phone: dto.phone }))) {
       throw new ConflictException('Номер телефона уже занят другим пользователем');
     }
 
@@ -93,7 +93,7 @@ export class UserService {
   }
 
   public async createUserEntity(dto: UserCreateRequestDto): Promise<UserEntity> {
-    if (await this.userRepository.exist({ where: { email: dto.email } })) {
+    if (await this.userRepository.existsBy({ email: dto.email })) {
       throw new ConflictException('Пользователь уже зарегистрирован');
     }
 
@@ -126,11 +126,22 @@ export class UserService {
       await this.userResetPasswordRepository.deleteExpiredByUser(user);
       const request = await this.userResetPasswordRepository.createRequest(user);
 
-      this.notificationsService.sendEmail(
-        user.email,
-        'Сброс пароля',
-        `Для создания нового пароля перейдите по ссылке:\n${this.configService.app.frontendUrl}/auth/new-password?request=${request.id}`,
-      );
+      this.notificationsService
+        .sendEmail(
+          user.email,
+          'Сброс пароля',
+          `Для создания нового пароля перейдите по ссылке:\n${this.configService.app.frontendUrl}/auth/new-password?request=${request.id}`,
+        )
+        .then(() => {
+          this.logger.debug(
+            `Reset email was sent to ${user.lastName} ${user.firstName} ${user.middleName} (${user.email})`,
+          );
+        })
+        .catch(() => {
+          this.logger.error(
+            `Failed to send reset email to ${user.lastName} ${user.firstName} ${user.middleName} (${user.email})`,
+          );
+        });
     } catch (e) {
       if (e instanceof QueryFailedError) {
         throw new BadRequestException('Запрос на сброс пароля можно создать только один раз в 30 минут');

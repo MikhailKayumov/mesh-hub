@@ -1,6 +1,6 @@
 import { ActionIcon } from '@mantine/core';
 import { IconLogout } from '@tabler/icons-react';
-import { useCloseCurrentUserSessionMutation } from '@/api/auth.ts';
+import { useCloseCurrentUserSessionMutation } from '@/app/api/auth.ts';
 
 export interface CloseSessionColumnProps {
   id: string;

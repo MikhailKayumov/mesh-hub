@@ -6,7 +6,7 @@ import { WebGLRenderer } from 'three';
 import { ColorThemeSwitcher } from '@/components/ColorThemeSwitcher';
 import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
 import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
-import { formatBytes } from '@/utils/format-bytes.ts';
+import { formatBytes } from '@/shared/utils/format-bytes.ts';
 import classes from './Footer.module.scss';
 
 export interface FooterProps {

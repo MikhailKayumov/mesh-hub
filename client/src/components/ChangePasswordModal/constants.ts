@@ -1,6 +1,6 @@
 import zod from 'zod';
-import { UserChangePasswordRequestDto } from '@/api/dto.ts';
-import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { UserChangePasswordRequestDto } from '@/app/api/dto.ts';
+import { AppRegexp, ValidationErrorMessages } from '../../shared/constants';
 
 export const initialValues: UserChangePasswordRequestDto = {
   oldPassword: '',

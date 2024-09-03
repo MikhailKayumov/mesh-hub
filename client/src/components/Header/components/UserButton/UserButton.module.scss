@@ -23,12 +23,12 @@
 
 .avatar {
   background-image: radial-gradient(
-      circle at 28% 78%,
-      var(--mantine-color-primary-4) 6%,
-      var(--mantine-color-primary-5) 36%,
-      var(--mantine-color-primary-6) 57%,
-      var(--mantine-color-primary-4) 68%,
-      var(--mantine-color-primary-1) 88%
+    circle at 28% 78%,
+    var(--mantine-color-primary-4) 6%,
+    var(--mantine-color-primary-5) 36%,
+    var(--mantine-color-primary-6) 57%,
+    var(--mantine-color-primary-4) 68%,
+    var(--mantine-color-primary-1) 88%
   );
 
   & :global(.mantine-Avatar-placeholder) {

@@ -3,12 +3,11 @@
   padding: rem(8px);
   display: flex;
   flex-direction: column;
-  gap: rem(8px)
+  gap: rem(8px);
 }
 
 .slider-row {
   flex-wrap: nowrap;
-
 
   &-slider {
     flex: 1;

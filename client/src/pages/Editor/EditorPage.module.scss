@@ -1,6 +1,8 @@
-.header {}
+.header {
+}
 
-.navbar {}
+.navbar {
+}
 
 .main {
   height: 100%;
@@ -30,7 +32,8 @@
   }
 }
 
-.footer {}
+.footer {
+}
 
 .not-found {
   height: 100dvh;
@@ -39,7 +42,7 @@
   align-items: center;
 }
 
-[data-mantine-color-scheme=dark] {
+[data-mantine-color-scheme='dark'] {
   .loader {
     :global(.mantine-Overlay-root) {
       background-color: var(--mantine-color-dark-7);

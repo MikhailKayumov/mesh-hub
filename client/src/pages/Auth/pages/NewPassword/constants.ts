@@ -1,6 +1,6 @@
 import zod from 'zod';
-import { UserNewPasswordRequestDto } from '@/api/dto.ts';
-import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { UserNewPasswordRequestDto } from '@/app/api/dto.ts';
+import { AppRegexp, ValidationErrorMessages } from '../../../../shared/constants';
 
 export type UserNewPasswordFormData = Omit<UserNewPasswordRequestDto, 'requestId'>;
 

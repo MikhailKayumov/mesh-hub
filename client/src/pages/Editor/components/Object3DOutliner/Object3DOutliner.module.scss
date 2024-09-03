@@ -46,7 +46,8 @@
     }
   }
 
-  .group {}
+  .group {
+  }
 
   .leaf {
     outline: none;
@@ -59,9 +60,10 @@
       background-color: var(--mantine-color-gray-1);
     }
 
-    &:active, &.active {
+    &:active,
+    &.active {
       background-color: var(--mantine-color-primary-6) !important;
-      color: var(--mantine-color-white) !important;;
+      color: var(--mantine-color-white) !important;
 
       .type-column {
         color: var(--mantine-color-gray-2) !important;
@@ -69,13 +71,14 @@
 
       .name-column {
         .folder-button {
-          color: var(--mantine-color-white) !important;;
+          color: var(--mantine-color-white) !important;
         }
       }
     }
   }
 
-  .column {}
+  .column {
+  }
 
   .name-column {
     .folder-button {
@@ -102,7 +105,7 @@
   }
 }
 
-[data-mantine-color-scheme=dark] {
+[data-mantine-color-scheme='dark'] {
   .root {
     background-color: var(--mantine-color-dark-7);
 

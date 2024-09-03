@@ -2,7 +2,7 @@ import { Avatar, Box, Group, Text, Tooltip } from '@mantine/core';
 import { IconCategory } from '@tabler/icons-react';
 import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
 import { Model3DDescription } from '@/pages/Models3D/pages/Model3D/components/Info/components/Description';
-import { getAvatarSrcByString } from '@/utils/user.ts';
+import { getAvatarSrcByString } from '@/shared/utils/user.ts';
 import classes from './Model3DPageInfo.module.scss';
 
 export function Model3DPageInfo() {

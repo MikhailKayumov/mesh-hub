@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import { getThumbnailSrc } from '@/utils/model3d.ts';
+import { getThumbnailSrc } from '@/shared/utils/model3d.ts';
 import classes from '../../Models3DList.module.scss';
 import { Fallback } from './fallback.tsx';
 

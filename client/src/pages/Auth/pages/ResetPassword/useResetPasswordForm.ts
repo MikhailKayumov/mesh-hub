@@ -2,12 +2,12 @@ import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import zod from 'zod';
-import { UserResetPasswordRequestDto } from '@/api/dto.ts';
-import { useResetPasswordMutation } from '@/api/user.ts';
-import { ValidationErrorMessages } from '@/constants';
+import { UserResetPasswordRequestDto } from '@/app/api/dto.ts';
+import { useResetPasswordMutation } from '@/app/api/user.ts';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
-import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
+import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
+import { ValidationErrorMessages } from '../../../../shared/constants';
 
 export function useResetPasswordForm() {
   const navigate = useNavigate();

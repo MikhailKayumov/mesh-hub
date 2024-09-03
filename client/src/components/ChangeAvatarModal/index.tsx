@@ -4,10 +4,10 @@ import { notifications } from '@mantine/notifications';
 import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { FileWithPath } from 'react-dropzone-esm';
-import { useUpdateCurrentUserAvatarMutation } from '@/api/user.ts';
-import { MAX_AVATAR_FILE_SIZE } from '@/constants';
-import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
-import { formatBytes } from '@/utils/format-bytes.ts';
+import { useUpdateCurrentUserAvatarMutation } from '@/app/api/user.ts';
+import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
+import { formatBytes } from '@/shared/utils/format-bytes.ts';
+import { MAX_AVATAR_FILE_SIZE } from '../../shared/constants';
 import classes from './ChangeAvatarModal.module.scss';
 
 export interface ChangeAvatarModalProps {

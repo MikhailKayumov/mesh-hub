@@ -15,7 +15,7 @@ export class RoleRepository extends Repository<RoleEntity> {
 
   public async getByNames(names: UserRole[]): Promise<RoleEntity[]> {
     if (!names?.length) return [];
-    return this.find({ where: { name: In(names) } });
+    return this.findBy({ name: In(names) });
   }
 
   public async getById(id: number): Promise<RoleEntity | null> {

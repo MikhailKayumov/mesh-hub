@@ -1,5 +1,5 @@
 import { Flex, Grid, GridColProps } from '@mantine/core';
-import { Model3DResponseDto } from '@/api/dto.ts';
+import { Model3DResponseDto } from '@/app/api/dto.ts';
 import { EmptyData } from '@/components/EmptyData';
 import { Model3DCard } from './components/Model3DCard';
 import classes from './Models3DList.module.scss';
@@ -11,7 +11,7 @@ export interface Models3DList {
   span?: GridColProps['span'];
 }
 
-export function Models3DList({ models, emptyLabel, span = { xs: 12, sm: 6, md: 4 } }: Models3DList) {
+export function Models3DList({ models, emptyLabel, span = { xxs: 12, xs: 6, md: 4, lg: 4, xl: 3 } }: Models3DList) {
   if (!models.length) {
     return (
       <Flex align="center" justify="center" style={{ flex: 1 }}>

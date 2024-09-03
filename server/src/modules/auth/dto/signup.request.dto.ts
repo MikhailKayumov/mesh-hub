@@ -15,6 +15,11 @@ export class SignupRequestDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  public middleName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   public lastName?: string;
 
   @ApiProperty()

@@ -32,11 +32,11 @@
 }
 
 @media (hover: hover) {
-  [data-mantine-color-scheme=light] .navlink:not(:global(.active)):hover {
+  [data-mantine-color-scheme='light'] .navlink:not(:global(.active)):hover {
     background-color: var(--mantine-color-gray-2);
   }
 
-  [data-mantine-color-scheme=dark] .navlink:not(:global(.active)):hover {
+  [data-mantine-color-scheme='dark'] .navlink:not(:global(.active)):hover {
     background-color: var(--mantine-color-dark-6);
   }
 }

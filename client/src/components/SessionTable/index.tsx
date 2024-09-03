@@ -1,12 +1,10 @@
 import { ActionIcon, Button, Group, Title } from '@mantine/core';
 import { IconRefresh } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
-import { useCloseCurrentUserSessionsMutation, useCurrentUserSessionsQuery } from '@/api/auth.ts';
-import { SessionResponseDto } from '@/api/dto.ts';
-import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
-import { useSearchParamsPagination } from '@/hooks/useSearchParamsPagination.ts';
-import { useSearchParamsTableSorting } from '@/hooks/useSearchParamsTableSorting.ts';
-import { useSession } from '@/hooks/useSession.ts';
+import { useCloseCurrentUserSessionsMutation, useCurrentUserSessionsQuery } from '@/app/api/auth.ts';
+import { SessionResponseDto } from '@/app/api/dto.ts';
+import { useSession } from '@/entities/user/hooks/useSession.ts';
+import { useCurrentColorScheme, useSearchParamsPagination, useSearchParamsTableSorting } from '@/shared/hooks';
 import { columns } from './columns.tsx';
 
 const PAGE_SIZE = 10;

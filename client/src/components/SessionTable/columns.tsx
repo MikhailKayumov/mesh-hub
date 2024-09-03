@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { DataTableColumn } from 'mantine-datatable';
-import { SessionResponseDto } from '@/api/dto.ts';
+import { SessionResponseDto } from '@/app/api/dto.ts';
 import { UserAgentColumn } from '@/components/SessionTable/UserAgentColumn.tsx';
 import { CloseSessionColumn } from './CloseSessionColumn.tsx';
 

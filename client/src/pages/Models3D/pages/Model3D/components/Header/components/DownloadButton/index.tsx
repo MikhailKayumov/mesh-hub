@@ -1,7 +1,7 @@
 import { Button } from '@mantine/core';
 import { IconDownload } from '@tabler/icons-react';
 import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext';
-import { getModel3DFileSrc } from '@/utils/model3d.ts';
+import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
 
 export function Model3DDownloadButton() {
   const model = useModel3DContext();

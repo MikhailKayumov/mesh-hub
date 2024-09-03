@@ -159,7 +159,7 @@ export class Model3dService {
   }
 
   private async find3DModels(
-    { size, skip }: PaginationDto,
+    { size, skip, sort }: PaginationDto,
     { search, categories }: Models3dRequestDto,
     user: UserEntity | undefined,
     asCurrent = false,
@@ -171,12 +171,15 @@ export class Model3dService {
       .innerJoinAndSelect('user.userMeta', 'userMeta')
       .leftJoinAndSelect('model.categories', 'category')
       .where('1=1')
-      .orderBy('model.createdAt', 'DESC');
+      .orderBy('model.createdAt', 'ASC');
 
     if (asCurrent && user) qb.andWhere({ user: { id: user.id } });
     else qb.andWhere({ isVisible: true });
 
     if (categories?.length) qb.andWhere({ categories: In(categories) });
+    if (search?.length) {
+      const qb = this.model3dRepository.findOne({});
+    }
 
     if (skip) qb.skip(skip);
     if (size) qb.take(size);

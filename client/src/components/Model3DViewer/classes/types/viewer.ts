@@ -1,6 +1,6 @@
 import { AnimationClip, AnimationObjectGroup, Box3, Group } from 'three';
 import { GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Model3DResponseDto } from '@/api/dto.ts';
+import { Model3DResponseDto } from '@/app/api/dto.ts';
 
 export interface ViewerAnimations {
   clips: AnimationClip[];

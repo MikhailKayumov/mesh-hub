@@ -1,9 +1,9 @@
 import { PasswordInput, Button, Title, Group, Anchor, rem, Box, Center } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle.ts';
 import { RouterPaths } from '@/router/paths.ts';
 import { buildAbsolutePath } from '@/router/utils';
+import { useDocumentTitle } from '@/shared/hooks';
 import { useNewPasswordForm } from './useNewPasswordForm.ts';
 
 export function NewPasswordPage() {

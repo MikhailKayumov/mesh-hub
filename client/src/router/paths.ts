@@ -15,6 +15,7 @@ export const RouterPaths = {
   User: 'user',
   Profile: 'profile',
   Settings: 'settings',
+  DevSandbox: 'dev-sandbox',
 
   // editor
   Editor: 'editor',

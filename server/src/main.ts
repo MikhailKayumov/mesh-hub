@@ -1,25 +1,24 @@
-import { SwaggerService } from '@/swagger/swagger.service';
-
 require('module-alias/register');
 import AppBootstrap from './app.bootstrap';
-import { ConfigService } from '@/modules/common/config/config.service';
 
-(async () => {
+const main = async () => {
+  let bootstrap: AppBootstrap | null = null;
+
   try {
-    const bootstrap = new AppBootstrap();
-    await bootstrap.init();
+    bootstrap = await new AppBootstrap().init();
     await bootstrap.run();
-  } catch (error) {}
+  } catch (error) {
+    if (bootstrap?.app) {
+      bootstrap.logger.error(error, error?.stack, 'Main.AppBootstrap');
+      await bootstrap.app.close();
+    }
 
-  process.exit();
-})();
-
-const bootstrap = new AppBootstrap();
-
-bootstrap
-  .init()
-  .then((app) => app.runApp())
-  .catch((error) => {
-    console.error(error);
     process.exit(1);
-  });
+  }
+};
+
+process.on('exit', (code: number) => {
+  console.log(`\nExited with the code ${code}...`);
+});
+
+main();

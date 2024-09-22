@@ -55,7 +55,7 @@ export default defineConfig(({ mode }) => {
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "./src/theme/_mantine";`,
+          additionalData: `@import "./src/shared/theme/_mantine";`,
         },
       },
     },

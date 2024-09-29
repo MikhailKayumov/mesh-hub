@@ -7,12 +7,12 @@ import { json, urlencoded } from 'express';
 import { AppHttpException } from '@/exceptions/app-http.exception';
 import { LoggingInterceptor } from '@/interceptors/logging.interceptor';
 import { ConfigService } from '@/modules/common/config/config.service';
-import { LoggerService } from '@/modules/common/logger/logger.service';
+import { AppLogger } from '@/modules/common/logger/logger.service';
 import { SwaggerService } from '@/swagger/swagger.service';
 import { AppModule } from './app.module';
 
 export default class AppBootstrap {
-  public logger: LoggerService;
+  public logger: AppLogger;
 
   private application: NestExpressApplication;
   private configService: ConfigService;
@@ -26,7 +26,7 @@ export default class AppBootstrap {
 
     this.application = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
     this.configService = this.application.get(ConfigService);
-    this.logger = this.application.get(LoggerService);
+    this.logger = new AppLogger(this.configService);
 
     this.application.setGlobalPrefix(this.configService.app.prefix);
     this.application.set('trust proxy', 1);
@@ -38,7 +38,7 @@ export default class AppBootstrap {
     this.application.enableCors(this.configService.cors);
 
     this.application.useGlobalInterceptors(new LoggingInterceptor());
-    this.application.useLogger(this.application.get(LoggerService));
+    this.application.useLogger(this.logger);
     this.application.enableShutdownHooks();
 
     this.addValidationPipe();
@@ -47,14 +47,14 @@ export default class AppBootstrap {
   }
 
   public async run(): Promise<NestExpressApplication> {
-    if (!this.application) {
-      throw new Error(`It's immposible to run undefined Application.`);
+    if (this.application) {
+      throw new Error(`It's immposible to run undefined application.`);
     }
 
     const swaggerService = new SwaggerService(this.application, this.configService);
     SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument());
 
-    await this.application.listen(this.configService.app.port, this.configService.app.host);
+    // await this.application.listen(this.configService.app.port, this.configService.app.host);
     this.logger.log(`Server is running on ${this.configService.app.host}:${this.configService.app.port}`);
 
     return this.application;

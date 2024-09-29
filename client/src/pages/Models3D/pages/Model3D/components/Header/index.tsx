@@ -1,10 +1,10 @@
 import { ActionIcon, Group, Skeleton, Title, Tooltip } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
-import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
-import { RouterPaths } from '@/router/paths.ts';
+import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DContext.ts';
 import { useDocumentTitle } from '@/shared/hooks';
-import { canNavigateBack } from '@/shared/utils/canNavigateBack.ts';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { canNavigateBack } from '@/shared/utils/router.ts';
 import { Model3DControls } from './components/Controls';
 import { Model3DDownloadButton } from './components/DownloadButton';
 import classes from './Model3DPageHeader.module.scss';

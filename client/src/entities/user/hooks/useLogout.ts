@@ -2,7 +2,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '@/app/api/auth.ts';
 import { userActions } from '@/entities/user/store';
-import { RouterPaths } from '@/router/paths.ts';
+import { RouterPaths } from '@/shared/router/paths.ts';
 
 export function useLogout() {
   const navigate = useNavigate();

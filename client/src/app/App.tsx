@@ -12,8 +12,8 @@ import { Notifications } from '@mantine/notifications';
 import { Provider } from 'react-redux';
 import { RouterProvider } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
-import { router } from '@/router';
-import { Theme } from '../shared/theme';
+import { Theme } from '@/shared/theme';
+import { router } from './router';
 import { persist, store } from './store';
 import '@/shared/utils/date.ts';
 

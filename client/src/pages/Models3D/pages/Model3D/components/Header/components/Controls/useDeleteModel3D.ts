@@ -1,7 +1,7 @@
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import { useDelete3DModelMutation } from '@/app/api/models-3d.ts';
-import { RouterPaths } from '@/router/paths.ts';
+import { RouterPaths } from '@/shared/router/paths.ts';
 
 export function useDeleteModel3D(id?: string | null) {
   const navigate = useNavigate();

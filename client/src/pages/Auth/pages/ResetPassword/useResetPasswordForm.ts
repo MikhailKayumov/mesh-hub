@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import zod from 'zod';
 import { UserResetPasswordRequestDto } from '@/app/api/dto.ts';
 import { useResetPasswordMutation } from '@/app/api/user.ts';
-import { RouterPaths } from '@/router/paths.ts';
-import { buildAbsolutePath } from '@/router/utils';
+import { RouterPaths } from '@/shared/router/paths.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
+import { buildAbsolutePath } from '@/shared/utils/router';
 import { ValidationErrorMessages } from '../../../../shared/constants';
 
 export function useResetPasswordForm() {

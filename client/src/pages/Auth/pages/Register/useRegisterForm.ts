@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '@/app/api/auth.ts';
 import { SignupRequestDto } from '@/app/api/dto.ts';
 import { userActions } from '@/entities/user/store';
-import { RouterPaths } from '@/router/paths.ts';
+import { RouterPaths } from '@/shared/router/paths.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 import { validationSchema, initialValues, transformValues } from './constants.ts';
 

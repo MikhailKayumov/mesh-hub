@@ -1,7 +1,7 @@
 import { Badge, Button, Drawer, Group, Input, MultiSelect, ScrollArea, Switch, TextInput } from '@mantine/core';
 import { IconEye, IconEyeOff } from '@tabler/icons-react';
-import { WysiwygEditor } from '@/components/WysiwygEditor';
 import { MAX_MODEL_3D_CATEGORIES_LENGTH, MAX_MODEL_3D_NAME_LENGTH } from '../../../../../../../../shared/constants';
+import { WysiwygEditor } from '../../../../../../../../widgets/WysiwygEditor';
 import { Model3DEditPropertiesDrawerProps } from './model.ts';
 import classes from './Model3DEditPropertiesDrawer.module.scss';
 import { useModel3DEditPropertiesForm } from './useModel3DEditPropertiesForm.ts';

@@ -1,8 +1,8 @@
 import { useLayoutEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useSession } from '@/entities/user/hooks/useSession';
-import { RouterPaths } from '@/router/paths.ts';
-import { AuthLayout } from '@/widget/layouts';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { AuthLayout } from '@/widgets/layouts';
 
 export function AuthPage() {
   const navigate = useNavigate();

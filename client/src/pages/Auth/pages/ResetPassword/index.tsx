@@ -1,9 +1,9 @@
 import { TextInput, Button, Title, Group, Anchor, rem, Box, Center, Text } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import { RouterPaths } from '@/router/paths.ts';
-import { buildAbsolutePath } from '@/router/utils';
 import { useDocumentTitle } from '@/shared/hooks';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { buildAbsolutePath } from '@/shared/utils/router';
 import { useResetPasswordForm } from './useResetPasswordForm.ts';
 
 export function ResetPasswordPage() {

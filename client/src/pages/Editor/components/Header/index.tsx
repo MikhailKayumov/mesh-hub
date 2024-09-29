@@ -2,11 +2,11 @@ import { ActionIcon, AppShell, Group, Text } from '@mantine/core';
 import { IconDeviceFloppy, IconX } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { useNavigate } from 'react-router-dom';
-import { ColorSchemeSelect } from '@/components/ColorSchemeSelect';
-import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
-import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
-import { RouterPaths } from '@/router/paths.ts';
-import { canNavigateBack } from '@/shared/utils/canNavigateBack.ts';
+import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DContext.ts';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { canNavigateBack } from '@/shared/utils/router.ts';
+import { ColorSchemeSelect } from '@/widgets/ColorSchemeSelect';
+import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import classes from './Header.module.scss';
 
 export interface HeaderProps {

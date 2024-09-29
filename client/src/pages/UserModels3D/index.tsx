@@ -1,7 +1,7 @@
 import { Center, Flex, Group, Loader, Pagination, Stack, Title } from '@mantine/core';
-import { Models3DList } from '@/components/Models3DList';
-import { Upload3DModelModal } from '@/components/Upload3DModelModal';
 import { useDocumentTitle } from '@/shared/hooks';
+import { Models3DList } from '@/widgets/Models3DList';
+import { Upload3DModelModal } from '../../widgets/Upload3DModelModal';
 import { useModels3D } from './useModels3D.ts';
 
 export function ModelsPage() {

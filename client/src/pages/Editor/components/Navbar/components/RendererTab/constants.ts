@@ -19,7 +19,7 @@ import {
   ToneMapping,
   VSMShadowMap,
 } from 'three';
-import { RendererSettings } from '@/components/Model3DViewer/classes/types';
+import { RendererSettings } from '@/widgets/Model3DViewer/classes/types';
 import { RendererTabFormValues } from './model.ts';
 
 export const toneMappingOptions: ComboboxItem[] = [

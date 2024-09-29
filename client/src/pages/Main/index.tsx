@@ -1,6 +1,6 @@
 import { Center, Container, Flex, Loader, Pagination, Stack } from '@mantine/core';
-import { Models3DList } from '@/components/Models3DList';
 import { useDocumentTitle } from '@/shared/hooks';
+import { Models3DList } from '@/widgets/Models3DList';
 import classes from './MainPage.module.scss';
 import { useModels3D } from './useModels3D.ts';
 

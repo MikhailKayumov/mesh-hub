@@ -4,9 +4,9 @@ import { notifications } from '@mantine/notifications';
 import { useLayoutEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useNewPasswordMutation } from '@/app/api/user.ts';
-import { RouterPaths } from '@/router/paths.ts';
-import { buildAbsolutePath } from '@/router/utils';
+import { RouterPaths } from '@/shared/router/paths.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
+import { buildAbsolutePath } from '@/shared/utils/router';
 import { initialValues, transformValues, UserNewPasswordFormData, validationSchema } from './constants.ts';
 
 export function useNewPasswordForm() {

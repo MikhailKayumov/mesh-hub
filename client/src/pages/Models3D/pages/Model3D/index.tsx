@@ -1,10 +1,10 @@
 import { Box, LoadingOverlay, Paper } from '@mantine/core';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { NotFoundError } from '@/components/Errors';
-import { Model3DViewer } from '@/components/Model3DViewer';
-import { Model3DContextProvider } from '@/contexts/Model3DContext';
 import { useModel3D } from '@/entities/model-3d';
+import { Model3DContextProvider } from '@/shared/contexts/Model3DContext';
+import { NotFoundError } from '@/widgets/Errors';
+import { Model3DViewer } from '@/widgets/Model3DViewer';
 import { Model3DPageHeader } from './components/Header';
 import { Model3DPageInfo } from './components/Info';
 import classes from './Model3DPage.module.scss';

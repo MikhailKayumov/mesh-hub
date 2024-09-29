@@ -8,6 +8,8 @@ const main = async () => {
     bootstrap = await new AppBootstrap().init();
     await bootstrap.run();
   } catch (error) {
+    console.log('App bootstrap');
+
     if (bootstrap?.app) {
       bootstrap.logger.error(error, error?.stack, 'Main.AppBootstrap');
       await bootstrap.app.close();
@@ -18,7 +20,8 @@ const main = async () => {
 };
 
 process.on('exit', (code: number) => {
-  console.log(`\nExited with the code ${code}...`);
+  console.log(`\nExited with the code ${code}`);
+  main();
 });
 
 main();

@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModel3DQuery } from '@/app/api/models-3d.ts';
-import { RouterPaths } from '@/router/paths.ts';
+import { RouterPaths } from '@/shared/router/paths.ts';
 import { sleep } from '@/shared/utils/sleep.ts';
 
 export interface UseModel3DProps {

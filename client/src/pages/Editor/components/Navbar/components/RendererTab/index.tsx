@@ -4,9 +4,9 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconFocus2 } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';
-import { isMesh } from '@/components/Model3DViewer/classes/utils';
-import { NumberInputSlider } from '@/components/NumberInputSlider';
 import { sleep } from '@/shared/utils/sleep.ts';
+import { isMesh } from '@/widgets/Model3DViewer/classes/utils';
+import { NumberInputSlider } from '../../../../../../widgets/NumberInputSlider';
 import {
   colorSpaceOptions,
   shadowMapTypeOptions,

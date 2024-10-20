@@ -4,8 +4,8 @@ import { IconHome, IconPhotoSensor } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { Vector3 } from 'three';
 import { useSaveThumbnailFromBase64Mutation } from '@/app/api/models-3d.ts';
+import { AppRegexp } from '@/shared/constants';
 import { sleep } from '@/shared/utils/sleep.ts';
-import { AppRegexp } from '../../../../shared/constants';
 import { useViewerContext } from '../../hooks/useViewerContext.ts';
 import classes from './TopBar.module.scss';
 

@@ -6,8 +6,8 @@ import * as cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
 import { AppHttpException } from '@/exceptions/app-http.exception';
 import { LoggingInterceptor } from '@/interceptors/logging.interceptor';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { AppLogger } from '@/modules/common/logger/logger.service';
+import { ConfigService } from '@/modules/config/config.service';
+import { AppLogger } from '@/modules/logger/logger.service';
 import { SwaggerService } from '@/swagger/swagger.service';
 import { AppModule } from './app.module';
 

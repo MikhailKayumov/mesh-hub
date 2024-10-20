@@ -46,7 +46,7 @@ export function buildDirectionalLight({
   }
 
   const helper = new DirectionalLightHelper(dl, 2);
-  helper.name = `${name} (helper)` ?? 'Directional light (helper)';
+  helper.name = name ? `${name} (helper)` : 'Directional light (helper)';
 
   return [dl, helper];
 }

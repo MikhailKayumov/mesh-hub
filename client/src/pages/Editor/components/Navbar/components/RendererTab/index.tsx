@@ -6,7 +6,7 @@ import { clsx } from 'clsx';
 import { useEffect } from 'react';
 import { sleep } from '@/shared/utils/sleep.ts';
 import { isMesh } from '@/widgets/Model3DViewer/classes/utils';
-import { NumberInputSlider } from '../../../../../../widgets/NumberInputSlider';
+import { NumberInputSlider } from '@/widgets/NumberInputSlider';
 import {
   colorSpaceOptions,
   shadowMapTypeOptions,

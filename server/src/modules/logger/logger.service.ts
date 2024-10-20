@@ -3,9 +3,9 @@ import * as path from 'path';
 import { format as dateFormat } from 'date-fns';
 import { createLogger, format, transports, Logger } from 'winston';
 import { FileTransportInstance } from 'winston/lib/winston/transports';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { LoggerMessage } from '@/modules/common/logger/types';
-import getConsoleRowFormat from '@/modules/common/logger/utils';
+import { ConfigService } from '@/modules/config/config.service';
+import { LoggerMessage } from '@/modules/logger/types';
+import getConsoleRowFormat from '@/modules/logger/utils';
 
 export class AppLogger {
   private logger: Logger;

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryEntity } from '@/database/entities/resources/category.entity';
-import { CgSoftRequest } from '@/modules/common/resources/dto/cg-soft.request';
+import { CgSoftRequest } from '@/modules/resources/dto/cg-soft.request';
 
 @Injectable()
 export class CategoryRepository extends Repository<CategoryEntity> {

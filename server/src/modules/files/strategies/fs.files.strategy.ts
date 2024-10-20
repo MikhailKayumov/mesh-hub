@@ -1,8 +1,8 @@
 import { mkdir, writeFile, unlink, rename, rm } from 'fs/promises';
 import { resolve, extname, dirname } from 'path';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { IFileStorageStrategy } from '@/modules/common/files/types';
+import { ConfigService } from '@/modules/config/config.service';
+import { IFileStorageStrategy } from '@/modules/files/types';
 
 export class FsFileStorageStrategy implements IFileStorageStrategy {
   private readonly logger = new Logger('FsFileStorageStrategy');

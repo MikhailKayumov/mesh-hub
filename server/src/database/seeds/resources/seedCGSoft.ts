@@ -1,5 +1,5 @@
 import { INestApplication, Logger } from '@nestjs/common';
-import { CgSoftRepository } from '@/modules/common/resources/repositories/cg-soft.repository';
+import { CgSoftRepository } from '@/modules/resources/repositories/cg-soft.repository';
 
 const logger = new Logger('DatabaseSeedingCGSoft');
 const cgSoftware = [

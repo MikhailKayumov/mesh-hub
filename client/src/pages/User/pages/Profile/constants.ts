@@ -1,7 +1,7 @@
-import zod from 'zod';
+import { object, string } from 'zod';
 import { CgSoftRequest, CgSoftResponse, UserCurrentResponseDto, UserCurrentUpdateRequestDto } from '@/app/api/dto.ts';
 import { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
-import { AppRegexp, ValidationErrorMessages } from '../../../../shared/constants';
+import { AppRegexp, ValidationErrorMessages } from '@/shared/constants';
 
 export const initialValues: ProfileFormData = {
   lastName: '',
@@ -13,15 +13,16 @@ export const initialValues: ProfileFormData = {
   favoriteSoft: [],
 };
 
-export const validationSchema = zod.object({
-  firstName: zod.string().trim().min(1, ValidationErrorMessages.RequiredField),
-  middleName: zod.string().trim(),
-  lastName: zod.string().trim(),
-  phone: zod
-    .string()
-    .refine((value) => !value || AppRegexp.RussianPhone.test(`+7${value}`), 'Некорректный формат номера телефона'),
-  aboutYourself: zod.string().trim(),
-  favoriteSoft: zod.string().array().optional(),
+export const validationSchema = object({
+  firstName: string().trim().min(1, ValidationErrorMessages.RequiredField),
+  middleName: string().trim(),
+  lastName: string().trim(),
+  phone: string().refine(
+    (value) => !value || AppRegexp.RussianPhone.test(`+7${value}`),
+    'Некорректный формат номера телефона',
+  ),
+  aboutYourself: string().trim(),
+  favoriteSoft: string().array().optional(),
 });
 
 export const transformValuesFromFormToRequest = (

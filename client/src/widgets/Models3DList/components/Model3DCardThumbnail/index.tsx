@@ -1,5 +1,5 @@
 import { Card, Image, Skeleton } from '@mantine/core';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { getThumbnailSrc } from '@/shared/utils/model3d.ts';
@@ -16,34 +16,30 @@ export interface Model3DCardThumbnail {
 
 export function Model3DCardThumbnail({ id, name, fileId, thumbnail }: Model3DCardThumbnail) {
   const to = buildAbsolutePath([RouterPaths.Models, id]);
+  const src = useMemo(() => getThumbnailSrc(fileId, thumbnail), [fileId, thumbnail]);
 
-  const [showFallback, setShowFallback] = useState(false);
-  const [thumbnailLoading, setThumbnailLoading] = useState(true);
-
-  const onLoad = () => {
-    setThumbnailLoading(false);
-  };
-  const onError = () => {
-    setThumbnailLoading(false);
-    setShowFallback(true);
-  };
+  const [showFallback, setShowFallback] = useState(!src);
+  const [isLoading, setLoading] = useState(!!src);
 
   return (
     <Card.Section m={0} p={0}>
-      <Skeleton visible={thumbnailLoading}>
+      <Skeleton visible={isLoading}>
         <Link to={to} className={classes.thumbnail}>
           {showFallback ? (
             <Fallback />
           ) : (
             <Image
-              crossOrigin="use-credentials"
+              key={src}
               alt={name}
               decoding="sync"
               loading="eager"
-              src={getThumbnailSrc(fileId, thumbnail) ?? ''}
+              src={src}
               className={classes.image}
-              onLoad={onLoad}
-              onError={onError}
+              onLoad={() => setLoading(false)}
+              onError={() => {
+                setLoading(false);
+                setShowFallback(true);
+              }}
             />
           )}
         </Link>

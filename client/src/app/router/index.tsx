@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
 import { BasePage } from '@/pages/Base';
+import { ErrorPage } from '@/pages/Error';
 import { MainPage } from '@/pages/Main';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { BaseErrorBoundary } from '@/widgets/BaseErrorBoundary';
@@ -79,7 +80,7 @@ const routes: RouteObject[] = [
           },
           {
             path: RouterPaths.Id,
-            lazy: async () => ({ Component: (await import('../../pages/Models3D/pages/Model3D')).Model3DPage }),
+            lazy: async () => ({ Component: (await import('@/pages/Models3D/pages/Model3D')).Model3DPage }),
           },
         ],
       },
@@ -97,6 +98,10 @@ const routes: RouteObject[] = [
         lazy: async () => ({ Component: (await import('@/pages/Editor')).EditorPage }),
       },
     ],
+  },
+  {
+    path: ':code?/*',
+    element: <ErrorPage />,
   },
 ];
 

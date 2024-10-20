@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CategoryResponse } from '@/modules/common/resources/dto/category.response';
-import { CgSoftResponse } from '@/modules/common/resources/dto/cg-soft.response';
-import { CategoryMapper } from '@/modules/common/resources/mappers/category.mapper';
-import { CgSoftMapper } from '@/modules/common/resources/mappers/cg-soft.mapper';
-import { CategoryRepository } from '@/modules/common/resources/repositories/category.repository';
-import { CgSoftRepository } from '@/modules/common/resources/repositories/cg-soft.repository';
+import { CategoryResponse } from '@/modules/resources/dto/category.response';
+import { CgSoftResponse } from '@/modules/resources/dto/cg-soft.response';
+import { CategoryMapper } from '@/modules/resources/mappers/category.mapper';
+import { CgSoftMapper } from '@/modules/resources/mappers/cg-soft.mapper';
+import { CategoryRepository } from '@/modules/resources/repositories/category.repository';
+import { CgSoftRepository } from '@/modules/resources/repositories/cg-soft.repository';
 
 @Injectable()
 export class ResourcesService {

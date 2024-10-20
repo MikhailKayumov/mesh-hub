@@ -22,7 +22,7 @@ export interface BuildBaseLightOptions {
     );
 }
 
-export interface BuildDirectionLightOptions extends BuildBaseLightOptions {}
+export type BuildDirectionLightOptions = BuildBaseLightOptions;
 
 export interface BuildSpotLightOptions extends BuildBaseLightOptions {
   power?: number;

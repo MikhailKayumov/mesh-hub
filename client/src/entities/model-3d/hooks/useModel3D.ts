@@ -11,7 +11,7 @@ export interface UseModel3DProps {
 export function useModel3D({ id }: UseModel3DProps) {
   const navigate = useNavigate();
 
-  const { data, isLoading, isError } = useModel3DQuery(id ?? '', { skip: !id });
+  const { data, isLoading, isError, error } = useModel3DQuery(id ?? '', { skip: !id });
 
   useEffect(() => {
     if (!id) {
@@ -26,6 +26,7 @@ export function useModel3D({ id }: UseModel3DProps) {
       model3d: data ?? null,
       isModelLoading: isLoading,
       isModelError: isError,
+      model3dError: error,
     }),
     [data, isLoading, isError],
   );

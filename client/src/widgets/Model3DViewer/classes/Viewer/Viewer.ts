@@ -64,7 +64,7 @@ export class Viewer {
     };
     this.model.scene.name = modelData.name;
 
-    // Loader.cache.set(modelData.id, this.model);
+    Loader.cache.set(modelData.id, this.model);
   }
 
   public async run() {

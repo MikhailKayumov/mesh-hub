@@ -4,6 +4,12 @@ export const RouterPaths = {
   Models: 'models-3d',
   Id: ':id',
 
+  // errors
+  BadRequest: 'bad-request',
+  NotFound: 'not-found',
+  Forbidden: 'forbidden',
+  ServiceUnavailable: 'service-unavailable',
+
   // auth
   Auth: 'auth',
   Login: 'login',

@@ -1,7 +1,7 @@
 import { Button, Text } from '@mantine/core';
 import { ErrorContainer } from '@/widgets/Errors/ErrorContainer';
 
-export function PageError() {
+export function BadRequestError() {
   return (
     <ErrorContainer status={400} text="Ошибка на странице">
       <Text mt={24} mb={36} size="lg">

@@ -12,10 +12,10 @@ import { In, QueryFailedError } from 'typeorm';
 import { UserRoles } from '@/constants';
 import { UserMetaEntity } from '@/database/entities/user/user-meta.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { FileStorageService } from '@/modules/common/files/file-storage.service';
-import { NotificationsService } from '@/modules/common/notifications/notifications.service';
-import { CgSoftRepository } from '@/modules/common/resources/repositories/cg-soft.repository';
+import { ConfigService } from '@/modules/config/config.service';
+import { FilesService } from '@/modules/files/files.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { CgSoftRepository } from '@/modules/resources/repositories/cg-soft.repository';
 import { UserChangePasswordRequestDto } from '@/modules/user/dto/user.change.password.request.dto';
 import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { UserCurrentResponseDto } from '@/modules/user/dto/user.current.response.dto';
@@ -39,7 +39,7 @@ export class UserService {
     private readonly cgSoftRepository: CgSoftRepository,
     private readonly notificationsService: NotificationsService,
     private readonly configService: ConfigService,
-    private readonly fileStorageService: FileStorageService,
+    private readonly filesService: FilesService,
   ) {}
 
   public async getCurrentUser(id: string): Promise<UserCurrentResponseDto> {
@@ -69,7 +69,7 @@ export class UserService {
 
   public async updateCurrentUserAvatar(user: UserEntity, file?: Express.Multer.File): Promise<void> {
     try {
-      user.userMeta.avatar && (await this.fileStorageService.removeAvatar(user.userMeta.avatar));
+      user.userMeta.avatar && (await this.filesService.removeAvatar(user.userMeta.avatar));
     } catch (e: any) {
       if (e?.code === 'ENOENT') {
         this.logger.debug(`There is no avatar at "${user.userMeta.avatar}"`);
@@ -81,7 +81,7 @@ export class UserService {
     try {
       if (file) {
         const avatar = `${user.id}_${Date.now()}`;
-        user.userMeta.avatar = await this.fileStorageService.saveAvatar(avatar, file);
+        user.userMeta.avatar = await this.filesService.saveAvatar(avatar, file);
       } else {
         user.userMeta.avatar = null!;
       }

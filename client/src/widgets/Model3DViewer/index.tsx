@@ -7,7 +7,7 @@ import { usePreventMiddleClick } from './hooks/usePreventMiddleClick.ts';
 import { useViewer, UseViewerProps } from './hooks/useViewer.ts';
 import classes from './Viewer.module.scss';
 
-export interface Model3DPageViewerProps extends UseViewerProps {}
+export type Model3DPageViewerProps = UseViewerProps;
 
 export function Model3DViewer(props: Model3DPageViewerProps) {
   const { onMouseEnter, onMouseLeave } = usePreventMiddleClick();

@@ -1,10 +1,6 @@
-import zod from 'zod';
+import { object, string } from 'zod';
 import { CategoryRequest, CategoryResponse, Model3DResponseDto, Model3DUpdateRequestDto } from '@/app/api/dto.ts';
-import {
-  MAX_MODEL_3D_CATEGORIES_LENGTH,
-  MAX_MODEL_3D_NAME_LENGTH,
-  ValidationErrorMessages,
-} from '../../../../../../../../shared/constants';
+import { MAX_MODEL_3D_CATEGORIES_LENGTH, MAX_MODEL_3D_NAME_LENGTH, ValidationErrorMessages } from '@/shared/constants';
 import { Model3DPropertiesForm } from './model.ts';
 
 export const initialValues: Model3DPropertiesForm = {
@@ -14,14 +10,12 @@ export const initialValues: Model3DPropertiesForm = {
   categories: [],
 };
 
-export const validationSchema = zod.object({
-  name: zod
-    .string()
+export const validationSchema = object({
+  name: string()
     .trim()
     .min(1, ValidationErrorMessages.RequiredField)
     .max(MAX_MODEL_3D_NAME_LENGTH, ValidationErrorMessages.MaxModel3DNameLength),
-  categories: zod
-    .string()
+  categories: string()
     .array()
     .max(MAX_MODEL_3D_CATEGORIES_LENGTH, ValidationErrorMessages.MaxModel3DCategoriesLength)
     .optional(),

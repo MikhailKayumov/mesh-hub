@@ -1,10 +1,10 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { FsFileStorageStrategy } from './strategies/fs-file-storage.strategy';
+import { ConfigService } from '@/modules/config/config.service';
+import { FsFileStorageStrategy } from './strategies/fs.files.strategy';
 import { IFileStorageStrategy } from './types';
 
 @Injectable()
-export class FileStorageService implements OnApplicationBootstrap {
+export class FilesService implements OnApplicationBootstrap {
   private readonly strategy: IFileStorageStrategy;
 
   public constructor(private readonly configService: ConfigService) {

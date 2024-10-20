@@ -1,5 +1,5 @@
 import { Box, NavLink, Skeleton, Text, Tooltip } from '@mantine/core';
-import { IconCube, IconSettings, IconUser } from '@tabler/icons-react';
+import { IconCube, IconSandbox, IconSettings, IconUser } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { NavLink as RRDNavLink } from 'react-router-dom';
 import { useCurrentUser } from '@/entities/user/hooks/useCurrentUser.ts';
@@ -50,6 +50,13 @@ export function UserSidebar({ className }: UserSidebarProps) {
           component={RRDNavLink}
           to={buildAbsolutePath([RouterPaths.User, RouterPaths.Settings])}
           leftSection={<IconSettings size={20} />}
+        />
+        <NavLink
+          label="Sandbox"
+          className={classes.navlink}
+          component={RRDNavLink}
+          to={buildAbsolutePath([RouterPaths.User, RouterPaths.DevSandbox])}
+          leftSection={<IconSandbox size={20} />}
         />
       </Box>
     </Box>

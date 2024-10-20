@@ -5,7 +5,7 @@ import { UserRole, UserRoles } from '@/constants';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { ALLOWED_ROLES_KEY, IS_PUBLIC_KEY, IS_REFRESH_KEY } from '@/decorators/auth/auth.decorator';
 import { AuthService } from '@/modules/auth/auth.service';
-import { ConfigService } from '@/modules/common/config/config.service';
+import { ConfigService } from '@/modules/config/config.service';
 import { UserRoleHelper } from '@/utils/user-role.helper';
 
 @Injectable()

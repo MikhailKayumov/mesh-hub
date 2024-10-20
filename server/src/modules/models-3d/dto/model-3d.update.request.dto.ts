@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ValidationErrorMessages } from '@/constants';
-import { CategoryRequest } from '@/modules/common/resources/dto/category.request';
+import { CategoryRequest } from '@/modules/resources/dto/category.request';
 
 export class Model3dUpdateRequestDto {
   @ApiPropertyOptional()

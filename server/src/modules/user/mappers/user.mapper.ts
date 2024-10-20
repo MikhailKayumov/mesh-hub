@@ -1,8 +1,8 @@
 import { CgSoftEntity } from '@/database/entities/resources/cg-soft.entity';
 import { UserMetaEntity } from '@/database/entities/user/user-meta.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { CgSoftRequest } from '@/modules/common/resources/dto/cg-soft.request';
-import { CgSoftMapper } from '@/modules/common/resources/mappers/cg-soft.mapper';
+import { CgSoftRequest } from '@/modules/resources/dto/cg-soft.request';
+import { CgSoftMapper } from '@/modules/resources/mappers/cg-soft.mapper';
 import { UserCurrentResponseDto } from '@/modules/user/dto/user.current.response.dto';
 import { UserCurrentUpdateRequestDto } from '@/modules/user/dto/user.current.update.request.dto';
 import { UserMetaResponseDto } from '@/modules/user/dto/user.meta.response.dto';

@@ -25,13 +25,4 @@ export class RoleRepository extends Repository<RoleEntity> {
   public async getByName(name: UserRole): Promise<RoleEntity | null> {
     return this.findOne({ where: { name } });
   }
-
-  public async createRole(name: UserRole, description: string): Promise<RoleEntity> {
-    const role = new RoleEntity();
-
-    role.name = name;
-    role.description = description;
-
-    return this.save(role);
-  }
 }

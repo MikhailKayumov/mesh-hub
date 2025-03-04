@@ -62,7 +62,7 @@ export class AuthService {
       throw new BadRequestException('Пароли не совпадают');
     }
 
-    request.session = await this.createSession(request, await this.userService.createUserEntity(dto));
+    request.session = await this.createSession(request, await this.userService.createUser(dto));
 
     return AuthMapper.toSessionResponse(request.session);
   }

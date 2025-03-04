@@ -31,14 +31,14 @@ export const initSchemas = async (database: string): Promise<void> => {
         logger.log(`Initializing schema "${schema}"`);
 
         if (DROP_SCHEMAS) {
-          logger.log('Drop old schema if exists ...');
+          logger.log(`Drop old schema "${schema}" if exists ...`);
           await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
-          logger.log('Schema "${schema}" successfully dropped');
+          logger.log(`Schema "${schema}" successfully dropped`);
         }
 
         logger.log(`Create schema if not exists "${schema}"`);
         await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
-        logger.log(`Schema "${schema}" successfully created`);
+        logger.log(`Schema "${schema}" was successfully created`);
       } catch (e) {
         logger.log(`Error on create schema "${schema}": ${e?.message ? ` (${e.message})` : ''}`, e.stack);
       }

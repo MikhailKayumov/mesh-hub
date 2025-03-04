@@ -1,4 +1,4 @@
-export const Databases = [process.env['POSTGRES_DB'] ?? 'meshhub' /*, 'meshhub_test'*/];
+export const Databases = [process.env['POSTGRES_DB'] ?? 'mesh_hub'];
 
 export const DatabaseSchemas = {
   Public: 'public',

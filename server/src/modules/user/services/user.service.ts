@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { In, QueryFailedError } from 'typeorm';
 import { UserRoles } from '@/constants';
+import { RoleEntity } from '@/database/entities/user/role.entity';
 import { UserMetaEntity } from '@/database/entities/user/user-meta.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { ConfigService } from '@/modules/config/config.service';
@@ -92,7 +93,7 @@ export class UserService {
     }
   }
 
-  public async createUserEntity(dto: UserCreateRequestDto): Promise<UserEntity> {
+  public async createUserEntity(dto: UserCreateRequestDto & { roleEntities?: RoleEntity[] }): Promise<UserEntity> {
     if (await this.userRepository.existsBy({ email: dto.email })) {
       throw new ConflictException('Пользователь уже зарегистрирован');
     }
@@ -108,12 +109,17 @@ export class UserService {
     user.lastName = dto.lastName;
     user.isConfirmed = true;
     user.isActive = true;
-    user.roles = await this.roleRepository.getByNames(roles);
+    user.roles = dto?.roleEntities ?? (await this.roleRepository.getByNames(roles));
     user.password = hash;
     user.salt = salt;
     user.userMeta = new UserMetaEntity();
 
-    return this.userRepository.save(user);
+    return user;
+  }
+
+  public async createUser(dto: UserCreateRequestDto): Promise<UserEntity> {
+    const entity = await this.createUserEntity(dto);
+    return this.userRepository.save(entity);
   }
 
   public async resetPassword(email: string): Promise<void> {

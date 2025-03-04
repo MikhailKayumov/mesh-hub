@@ -4,7 +4,7 @@ import { addSeconds } from 'date-fns';
 import { LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import { UserResetPasswordEntity } from '@/database/entities/user/user-reset-password.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { ConfigService } from '@/modules/common/config/config.service';
+import { ConfigService } from '@/modules/config/config.service';
 
 @Injectable()
 export class UserResetPasswordRepository extends Repository<UserResetPasswordEntity> {

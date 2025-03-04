@@ -1,6 +1,6 @@
-import zod from 'zod';
-import { LoginRequestDto } from '@/api/dto.ts';
-import { ValidationErrorMessages } from '@/constants';
+import { object, string } from 'zod';
+import { LoginRequestDto } from '@/app/api/dto.ts';
+import { ValidationErrorMessages } from '@/shared/constants';
 
 export const initialValues: LoginRequestDto = {
   email: import.meta.env.VITE_APP_TEST_USER_EMAIL ?? '',
@@ -12,10 +12,9 @@ export const transformValues = (values: LoginRequestDto) => ({
   password: values.password.trim(),
 });
 
-export const validationSchema = zod.object({
-  email: zod.string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
-  password: zod
-    .string()
+export const validationSchema = object({
+  email: string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
+  password: string()
     .trim()
     .min(6, ValidationErrorMessages.PasswordLength)
     .min(1, ValidationErrorMessages.RequiredField),

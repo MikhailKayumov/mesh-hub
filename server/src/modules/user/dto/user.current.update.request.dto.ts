@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsOptional, IsString, Matches, ValidateNested } from 'class-validator';
 import { AppRegexp, ValidationErrorMessages } from '@/constants';
-import { CgSoftRequest } from '@/modules/common/resources/dto/cg-soft.request';
+import { CgSoftRequest } from '@/modules/resources/dto/cg-soft.request';
 
 export class UserCurrentUpdateRequestDto {
   @ApiPropertyOptional()

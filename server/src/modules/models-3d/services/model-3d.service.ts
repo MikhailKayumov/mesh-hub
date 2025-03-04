@@ -5,21 +5,21 @@ import { Model3dFileEntity } from '@/database/entities/models-3d/model-3d-file.e
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
-import { FileStorageService } from '@/modules/common/files/file-storage.service';
-import { CategoryRepository } from '@/modules/common/resources/repositories/category.repository';
+import { FilesService } from '@/modules/files/files.service';
 import { Model3dResponseDto } from '@/modules/models-3d/dto/model-3d.response.dto';
 import { Model3dUpdateRequestDto } from '@/modules/models-3d/dto/model-3d.update.request.dto';
 import { Models3dRequestDto } from '@/modules/models-3d/dto/models-3d.request.dto';
 import { Model3dMapper } from '@/modules/models-3d/mappers/model-3d.mapper';
 import { Model3dFileRepository } from '@/modules/models-3d/repositories/model-3d-file.repository';
 import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.repository';
+import { CategoryRepository } from '@/modules/resources/repositories/category.repository';
 
 @Injectable()
 export class Model3dService {
   private readonly logger = new Logger(Model3dService.name);
 
   public constructor(
-    private readonly fileStorageService: FileStorageService,
+    private readonly filesService: FilesService,
     private readonly model3dRepository: Model3dRepository,
     private readonly model3dFileRepository: Model3dFileRepository,
     private readonly categoryRepository: CategoryRepository,
@@ -79,7 +79,7 @@ export class Model3dService {
         fileEntity.extension = extname(file.originalname);
 
         const createdFileEntity = await em.save(fileEntity);
-        await this.fileStorageService.save3DModel(createdFileEntity.id, file);
+        await this.filesService.save3DModel(createdFileEntity.id, file);
         savedFileId = createdFileEntity.id;
 
         const modelEntity = new Model3dEntity();
@@ -97,9 +97,9 @@ export class Model3dService {
       this.logger.error(e);
 
       if (savedFileId) {
-        this.fileStorageService.delete3DModel(savedFileId);
+        this.filesService.delete3DModel(savedFileId);
       } else {
-        this.fileStorageService.deleteFile(file.path);
+        this.filesService.deleteFile(file.path);
       }
 
       throw new BadRequestException('Не удалось сохранить 3D модель');
@@ -119,7 +119,7 @@ export class Model3dService {
     try {
       await this.model3dRepository.delete({ id });
       await this.model3dFileRepository.delete({ id: model.file.id });
-      await this.fileStorageService.delete3DModel(model.file.id, false);
+      await this.filesService.delete3DModel(model.file.id, false);
     } catch (e) {
       this.logger.error(e);
       throw new BadRequestException('Не удалось удалить файл');
@@ -154,12 +154,12 @@ export class Model3dService {
       throw new NotFoundException('Модель не найдена');
     }
 
-    model.thumbnail = await this.fileStorageService.save3DModelThumbnailFromBase64(model.file.id, thumbnail);
+    model.thumbnail = await this.filesService.save3DModelThumbnailFromBase64(model.file.id, thumbnail);
     model.save();
   }
 
   private async find3DModels(
-    { size, skip }: PaginationDto,
+    { size, skip, sort }: PaginationDto,
     { search, categories }: Models3dRequestDto,
     user: UserEntity | undefined,
     asCurrent = false,
@@ -171,12 +171,15 @@ export class Model3dService {
       .innerJoinAndSelect('user.userMeta', 'userMeta')
       .leftJoinAndSelect('model.categories', 'category')
       .where('1=1')
-      .orderBy('model.createdAt', 'DESC');
+      .orderBy('model.createdAt', 'ASC');
 
     if (asCurrent && user) qb.andWhere({ user: { id: user.id } });
     else qb.andWhere({ isVisible: true });
 
     if (categories?.length) qb.andWhere({ categories: In(categories) });
+    if (search?.length) {
+      const qb = this.model3dRepository.findOne({});
+    }
 
     if (skip) qb.skip(skip);
     if (size) qb.take(size);

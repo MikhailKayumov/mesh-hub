@@ -3,11 +3,11 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useRegisterMutation } from '@/api/auth.ts';
-import { SignupRequestDto } from '@/api/dto.ts';
-import { RouterPaths } from '@/router/paths.ts';
-import { userActions } from '@/store/user/reducer.ts';
-import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
+import { useRegisterMutation } from '@/app/api/auth.ts';
+import { SignupRequestDto } from '@/app/api/dto.ts';
+import { userActions } from '@/entities/user/store';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 import { validationSchema, initialValues, transformValues } from './constants.ts';
 
 export function useRegisterForm() {

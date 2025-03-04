@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { BaseLayout } from '@/layouts/Base';
+import { BaseLayout } from '@/widgets/layouts';
 
 export function BasePage() {
   return (

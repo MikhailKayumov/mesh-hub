@@ -2,11 +2,11 @@ import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useLoginMutation } from '@/api/auth.ts';
-import { LoginRequestDto } from '@/api/dto.ts';
-import { RouterPaths } from '@/router/paths.ts';
-import { userActions } from '@/store/user/reducer.ts';
-import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
+import { useLoginMutation } from '@/app/api/auth.ts';
+import { LoginRequestDto } from '@/app/api/dto.ts';
+import { userActions } from '@/entities/user/store';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 import { initialValues, transformValues, validationSchema } from './constants.ts';
 
 export function useLoginForm() {

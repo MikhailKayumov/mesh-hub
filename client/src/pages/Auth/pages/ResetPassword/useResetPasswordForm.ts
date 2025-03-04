@@ -1,13 +1,13 @@
 import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
-import zod from 'zod';
-import { UserResetPasswordRequestDto } from '@/api/dto.ts';
-import { useResetPasswordMutation } from '@/api/user.ts';
-import { ValidationErrorMessages } from '@/constants';
-import { RouterPaths } from '@/router/paths.ts';
-import { buildAbsolutePath } from '@/router/utils';
-import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
+import { object, string } from 'zod';
+import { UserResetPasswordRequestDto } from '@/app/api/dto.ts';
+import { useResetPasswordMutation } from '@/app/api/user.ts';
+import { ValidationErrorMessages } from '@/shared/constants';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
+import { buildAbsolutePath } from '@/shared/utils/router';
 
 export function useResetPasswordForm() {
   const navigate = useNavigate();
@@ -17,8 +17,8 @@ export function useResetPasswordForm() {
   const form = useForm<UserResetPasswordRequestDto>({
     initialValues: { email: '' },
     validate: zodResolver(
-      zod.object({
-        email: zod.string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
+      object({
+        email: string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
       }),
     ),
     transformValues: (values) => ({ email: values.email.trim() }),

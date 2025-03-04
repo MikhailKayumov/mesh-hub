@@ -1,9 +1,9 @@
 import { Text } from '@mantine/core';
 import { IconBulb, IconCube, IconPhotoEdit } from '@tabler/icons-react';
-import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
 import { RendererTab } from '@/pages/Editor/components/Navbar/components/RendererTab';
 import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
+import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import { TabsConfig } from './model.ts';
 import classes from './Navbar.module.scss';
 

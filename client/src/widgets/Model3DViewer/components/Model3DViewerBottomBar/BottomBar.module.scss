@@ -1,0 +1,21 @@
+.root {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  padding: rem(12px);
+
+  .animations {
+    flex: 1;
+  }
+
+  .toggle-fullscreen-button {
+    margin-left: auto;
+  }
+}
+
+[data-mantine-color-scheme='dark'] {
+  .root {
+  }
+}

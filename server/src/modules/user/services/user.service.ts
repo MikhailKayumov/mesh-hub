@@ -12,10 +12,10 @@ import { In, QueryFailedError } from 'typeorm';
 import { UserRoles } from '@/constants';
 import { UserMetaEntity } from '@/database/entities/user/user-meta.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { FileStorageService } from '@/modules/common/files/file-storage.service';
-import { NotificationsService } from '@/modules/common/notifications/notifications.service';
-import { CgSoftRepository } from '@/modules/common/resources/repositories/cg-soft.repository';
+import { ConfigService } from '@/modules/config/config.service';
+import { FilesService } from '@/modules/files/files.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { CgSoftRepository } from '@/modules/resources/repositories/cg-soft.repository';
 import { UserChangePasswordRequestDto } from '@/modules/user/dto/user.change.password.request.dto';
 import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { UserCurrentResponseDto } from '@/modules/user/dto/user.current.response.dto';
@@ -39,7 +39,7 @@ export class UserService {
     private readonly cgSoftRepository: CgSoftRepository,
     private readonly notificationsService: NotificationsService,
     private readonly configService: ConfigService,
-    private readonly fileStorageService: FileStorageService,
+    private readonly filesService: FilesService,
   ) {}
 
   public async getCurrentUser(id: string): Promise<UserCurrentResponseDto> {
@@ -48,7 +48,7 @@ export class UserService {
   }
 
   public async updateCurrentUser(user: UserEntity, dto: UserCurrentUpdateRequestDto): Promise<UserCurrentResponseDto> {
-    if (dto.phone && (await this.userRepository.exist({ where: { phone: dto.phone } }))) {
+    if (dto.phone && (await this.userRepository.existsBy({ phone: dto.phone }))) {
       throw new ConflictException('Номер телефона уже занят другим пользователем');
     }
 
@@ -69,7 +69,7 @@ export class UserService {
 
   public async updateCurrentUserAvatar(user: UserEntity, file?: Express.Multer.File): Promise<void> {
     try {
-      user.userMeta.avatar && (await this.fileStorageService.removeAvatar(user.userMeta.avatar));
+      user.userMeta.avatar && (await this.filesService.removeAvatar(user.userMeta.avatar));
     } catch (e: any) {
       if (e?.code === 'ENOENT') {
         this.logger.debug(`There is no avatar at "${user.userMeta.avatar}"`);
@@ -81,7 +81,7 @@ export class UserService {
     try {
       if (file) {
         const avatar = `${user.id}_${Date.now()}`;
-        user.userMeta.avatar = await this.fileStorageService.saveAvatar(avatar, file);
+        user.userMeta.avatar = await this.filesService.saveAvatar(avatar, file);
       } else {
         user.userMeta.avatar = null!;
       }
@@ -93,7 +93,7 @@ export class UserService {
   }
 
   public async createUserEntity(dto: UserCreateRequestDto): Promise<UserEntity> {
-    if (await this.userRepository.exist({ where: { email: dto.email } })) {
+    if (await this.userRepository.existsBy({ email: dto.email })) {
       throw new ConflictException('Пользователь уже зарегистрирован');
     }
 
@@ -126,11 +126,22 @@ export class UserService {
       await this.userResetPasswordRepository.deleteExpiredByUser(user);
       const request = await this.userResetPasswordRepository.createRequest(user);
 
-      this.notificationsService.sendEmail(
-        user.email,
-        'Сброс пароля',
-        `Для создания нового пароля перейдите по ссылке:\n${this.configService.app.frontendUrl}/auth/new-password?request=${request.id}`,
-      );
+      this.notificationsService
+        .sendEmail(
+          user.email,
+          'Сброс пароля',
+          `Для создания нового пароля перейдите по ссылке:\n${this.configService.app.frontendUrl}/auth/new-password?request=${request.id}`,
+        )
+        .then(() => {
+          this.logger.debug(
+            `Reset email was sent to ${user.lastName} ${user.firstName} ${user.middleName} (${user.email})`,
+          );
+        })
+        .catch(() => {
+          this.logger.error(
+            `Failed to send reset email to ${user.lastName} ${user.firstName} ${user.middleName} (${user.email})`,
+          );
+        });
     } catch (e) {
       if (e instanceof QueryFailedError) {
         throw new BadRequestException('Запрос на сброс пароля можно создать только один раз в 30 минут');

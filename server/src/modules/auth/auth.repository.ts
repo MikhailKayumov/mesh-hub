@@ -4,7 +4,7 @@ import { addSeconds } from 'date-fns';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { ConfigService } from '@/modules/common/config/config.service';
+import { ConfigService } from '@/modules/config/config.service';
 
 @Injectable()
 export class AuthRepository extends Repository<SessionEntity> {

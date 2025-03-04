@@ -1,6 +1,6 @@
-import zod from 'zod';
-import { SignupRequestDto } from '@/api/dto.ts';
-import { AppRegexp, ValidationErrorMessages } from '@/constants';
+import { object, string } from 'zod';
+import { SignupRequestDto } from '@/app/api/dto.ts';
+import { AppRegexp, ValidationErrorMessages } from '@/shared/constants';
 
 export const initialValues: SignupRequestDto = {
   firstName: '',
@@ -18,25 +18,21 @@ export const transformValues = (values: SignupRequestDto) => ({
   confirmPassword: values.confirmPassword.trim(),
 });
 
-export const validationSchema = zod
-  .object({
-    firstName: zod.string().trim().min(1, ValidationErrorMessages.RequiredField),
-    lastName: zod.string().trim(),
-    email: zod.string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
-    password: zod
-      .string()
-      .trim()
-      .regex(AppRegexp.Password, ValidationErrorMessages.PasswordContent)
-      .min(6, ValidationErrorMessages.PasswordLength)
-      .min(1, ValidationErrorMessages.RequiredField),
-    confirmPassword: zod
-      .string()
-      .trim()
-      .regex(AppRegexp.Password, ValidationErrorMessages.PasswordContent)
-      .min(6, ValidationErrorMessages.PasswordLength)
-      .min(1, ValidationErrorMessages.RequiredField),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Пароли не совпадают',
-    path: ['confirmPassword'],
-  });
+export const validationSchema = object({
+  firstName: string().trim().min(1, ValidationErrorMessages.RequiredField),
+  lastName: string().trim(),
+  email: string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
+  password: string()
+    .trim()
+    .regex(AppRegexp.Password, ValidationErrorMessages.PasswordContent)
+    .min(6, ValidationErrorMessages.PasswordLength)
+    .min(1, ValidationErrorMessages.RequiredField),
+  confirmPassword: string()
+    .trim()
+    .regex(AppRegexp.Password, ValidationErrorMessages.PasswordContent)
+    .min(6, ValidationErrorMessages.PasswordLength)
+    .min(1, ValidationErrorMessages.RequiredField),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Пароли не совпадают',
+  path: ['confirmPassword'],
+});

@@ -1,0 +1,15 @@
+.root {
+  flex-wrap: nowrap;
+
+  .slider {
+    flex: 1;
+  }
+
+  .input {
+    width: 80px;
+
+    :global(.mantine-Input-input) {
+      text-align: center;
+    }
+  }
+}

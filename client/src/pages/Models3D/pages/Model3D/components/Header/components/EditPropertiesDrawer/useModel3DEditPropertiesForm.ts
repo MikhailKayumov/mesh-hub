@@ -2,11 +2,11 @@ import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useMemo } from 'react';
-import { useUpdateModel3DMutation } from '@/api/models-3d.ts';
-import { useCategoriesQuery } from '@/api/resources.ts';
-import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
-import { getFormDirtyFields } from '@/utils/getFormDirtyFields.ts';
-import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
+import { useUpdateModel3DMutation } from '@/app/api/models-3d.ts';
+import { useCategoriesQuery } from '@/app/api/resources.ts';
+import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DContext.ts';
+import { getFormDirtyFields } from '@/shared/utils/getFormDirtyFields.ts';
+import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 import {
   initialValues,
   transformValuesFromFormToRequest,

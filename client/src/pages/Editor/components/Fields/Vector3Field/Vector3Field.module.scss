@@ -4,7 +4,8 @@
   gap: rem(4px);
 }
 
-.inputs {}
+.inputs {
+}
 
 .lock {
   padding: 0;
@@ -36,8 +37,8 @@
       padding: 0 rem(23px);
     }
 
-    & [data-position=right] {
-      --section-size: rem(23px)
+    & [data-position='right'] {
+      --section-size: rem(23px);
     }
   }
 

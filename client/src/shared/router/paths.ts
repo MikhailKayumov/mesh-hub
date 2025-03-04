@@ -1,0 +1,32 @@
+export const RouterPaths = {
+  // common
+  Base: '/',
+  Models: 'models-3d',
+  Id: ':id',
+
+  // errors
+  BadRequest: 'bad-request',
+  NotFound: 'not-found',
+  Forbidden: 'forbidden',
+  ServiceUnavailable: 'service-unavailable',
+
+  // auth
+  Auth: 'auth',
+  Login: 'login',
+  Register: 'register',
+  ResetPassword: 'reset-password',
+  NewPassword: 'new-password',
+
+  // user
+  User: 'user',
+  Profile: 'profile',
+  Settings: 'settings',
+  DevSandbox: 'dev-sandbox',
+
+  // editor
+  Editor: 'editor',
+} as const;
+
+export type RouterPathName = keyof typeof RouterPaths;
+
+export type RouterPath = (typeof RouterPaths)[RouterPathName];

@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -141,6 +142,7 @@ export class Model3dController {
   @Get('files/:fileId/thumbnail')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'max-age=3600')
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
   public async getModels3DThumbnailFile(@Param('fileId') fileId: string): Promise<StreamableFile> {
     const file = createReadStream(join(process.cwd(), 'files', 'models-3d', fileId, 'thumbnail.png'));

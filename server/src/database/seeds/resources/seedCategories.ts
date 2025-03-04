@@ -1,5 +1,5 @@
 import { INestApplication, Logger } from '@nestjs/common';
-import { CategoryRepository } from '@/modules/common/resources/repositories/category.repository';
+import { CategoryRepository } from '@/modules/resources/repositories/category.repository';
 
 const logger = new Logger('DatabaseSeedingCategories');
 const categories = [

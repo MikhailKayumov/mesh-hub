@@ -1,0 +1,26 @@
+.root {
+  padding: rem(8px);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+
+  .action {
+    width: 24px;
+    height: 24px;
+
+    min-width: 24px;
+    min-height: 24px;
+
+    .action-icon {
+      width: rem(18px);
+      height: rem(18px);
+    }
+  }
+}
+
+[data-mantine-color-scheme='dark'] {
+  .root {
+  }
+}

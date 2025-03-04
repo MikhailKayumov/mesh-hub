@@ -1,10 +1,11 @@
 import { Box, LoadingOverlay, Paper } from '@mantine/core';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { NotFoundError } from '@/components/Errors';
-import { Model3DViewer } from '@/components/Model3DViewer';
-import { Model3DContextProvider } from '@/contexts/Model3DContext';
-import { useModel3D } from '@/hooks/useModel3D.ts';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useModel3D } from '@/entities/model-3d';
+import { Model3DContextProvider } from '@/shared/contexts/Model3DContext';
+import { RouterPaths } from '@/shared/router/paths.ts';
+import { buildAbsolutePath } from '@/shared/utils/router.ts';
+import { Model3DViewer } from '@/widgets/Model3DViewer';
 import { Model3DPageHeader } from './components/Header';
 import { Model3DPageInfo } from './components/Info';
 import classes from './Model3DPage.module.scss';
@@ -12,11 +13,17 @@ import classes from './Model3DPage.module.scss';
 // @refresh reset
 export function Model3DPage() {
   const { id } = useParams<{ id: string }>();
-  const { model3d, isModelLoading } = useModel3D({ id });
+  const { model3d, isModelLoading, model3dError } = useModel3D({ id });
   const [isViewerLoading, setIsViewerLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!model3dError) return;
+    navigate(buildAbsolutePath(RouterPaths.NotFound));
+  }, [model3dError]);
 
   if (!isModelLoading && !model3d) {
-    return <NotFoundError />;
+    return null;
   }
 
   return (

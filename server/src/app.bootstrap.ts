@@ -6,58 +6,61 @@ import * as cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
 import { AppHttpException } from '@/exceptions/app-http.exception';
 import { LoggingInterceptor } from '@/interceptors/logging.interceptor';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { LoggerService } from '@/modules/common/logger/logger.service';
+import { ConfigService } from '@/modules/config/config.service';
+import { AppLogger } from '@/modules/logger/logger.service';
 import { SwaggerService } from '@/swagger/swagger.service';
 import { AppModule } from './app.module';
 
 export default class AppBootstrap {
-  private static application: NestExpressApplication;
-  private static configService: ConfigService;
+  public logger: AppLogger;
 
-  public static get app(): NestExpressApplication {
+  private application: NestExpressApplication;
+  private configService: ConfigService;
+
+  public get app(): NestExpressApplication {
     return this.application;
   }
 
-  public static async initApp(): Promise<NestExpressApplication> {
-    if (this.application) {
-      return this.application;
-    }
+  public async init(): Promise<AppBootstrap> {
+    if (this.application) return this;
 
     this.application = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
     this.configService = this.application.get(ConfigService);
+    this.logger = new AppLogger(this.configService);
 
     this.application.setGlobalPrefix(this.configService.app.prefix);
     this.application.set('trust proxy', 1);
 
     this.application.use(cookieParser());
-    this.application.use(json({ limit: '5mb' }));
-    this.application.use(urlencoded({ extended: true, limit: '5mb' }));
+    this.application.use(json({ limit: '100kb' }));
+    this.application.use(urlencoded({ extended: true, limit: '100kb' }));
 
     this.application.enableCors(this.configService.cors);
 
     this.application.useGlobalInterceptors(new LoggingInterceptor());
-    this.application.useLogger(this.application.get(LoggerService));
+    this.application.useLogger(this.logger);
+    this.application.enableShutdownHooks();
 
     this.addValidationPipe();
 
-    return this.application;
+    return this;
   }
 
-  public static async runApp(): Promise<NestExpressApplication> {
+  public async run(): Promise<NestExpressApplication> {
     if (!this.application) {
-      throw new Error('Application is not defined');
+      throw new Error(`It's immposible to run undefined application.`);
     }
 
     const swaggerService = new SwaggerService(this.application, this.configService);
     SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument());
 
-    this.application.listen(this.configService.app.port, this.configService.app.host);
+    await this.application.listen(this.configService.app.port, this.configService.app.host);
+    this.logger.log(`Server is running on ${this.configService.app.host}:${this.configService.app.port}`);
 
     return this.application;
   }
 
-  private static addValidationPipe(): void {
+  private addValidationPipe(): void {
     this.application?.useGlobalPipes(
       new ValidationPipe({
         transform: true,

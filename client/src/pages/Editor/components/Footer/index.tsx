@@ -3,10 +3,10 @@ import { clsx } from 'clsx';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { WebGLRenderer } from 'three';
-import { ColorThemeSwitcher } from '@/components/ColorThemeSwitcher';
-import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
-import { useModel3DContext } from '@/contexts/Model3DContext/useModel3DContext.ts';
-import { formatBytes } from '@/utils/format-bytes.ts';
+import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DContext.ts';
+import { formatBytes } from '@/shared/utils/format-bytes.ts';
+import { ColorThemeSwitcher } from '@/widgets/ColorThemeSwitcher';
+import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import classes from './Footer.module.scss';
 
 export interface FooterProps {

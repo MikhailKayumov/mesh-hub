@@ -1,4 +1,4 @@
-import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
+import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 
 export interface SceneTabProps {
   className?: string;

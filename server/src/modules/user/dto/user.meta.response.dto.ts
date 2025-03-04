@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { CgSoftResponse } from '@/modules/common/resources/dto/cg-soft.response';
+import { CgSoftResponse } from '@/modules/resources/dto/cg-soft.response';
 
 export class UserMetaResponseDto {
   @ApiProperty()

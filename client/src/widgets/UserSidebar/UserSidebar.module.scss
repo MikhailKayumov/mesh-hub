@@ -1,0 +1,42 @@
+.root {
+  flex: 0 0 calc(rem(180px) * var(--mantine-scale));
+  width: calc(rem(180px) * var(--mantine-scale));
+
+  display: flex;
+  flex-direction: column;
+
+  position: sticky;
+  top: calc(var(--app-shell-header-offset) + var(--app-shell-padding));
+  //height: calc(100dvh - (var(--app-shell-header-offset) + var(--app-shell-padding) * 2));
+
+  .navlinks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: rem(4px);
+  }
+
+  .navlink {
+    transition: background-color 0.127s ease-out;
+    border-radius: var(--mantine-radius-sm);
+
+    &:global(.active) {
+      background-color: var(--mantine-color-primary-light);
+      color: var(--mantine-color-primary-light-color);
+    }
+
+    & :global(.mantine-NavLink-label) {
+      font-size: var(--mantine-font-size-md);
+    }
+  }
+}
+
+@media (hover: hover) {
+  [data-mantine-color-scheme='light'] .navlink:not(:global(.active)):hover {
+    background-color: var(--mantine-color-gray-2);
+  }
+
+  [data-mantine-color-scheme='dark'] .navlink:not(:global(.active)):hover {
+    background-color: var(--mantine-color-dark-6);
+  }
+}

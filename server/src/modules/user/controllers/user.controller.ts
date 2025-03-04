@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -89,6 +90,7 @@ export class UserController {
   @Get('avatar/:fileName')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'max-age=3600')
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
   public async getUserAvatar(
     @Param('fileName') fileName: string,

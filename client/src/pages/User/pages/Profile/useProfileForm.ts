@@ -2,9 +2,9 @@ import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useMemo } from 'react';
-import { useCgSoftQuery } from '@/api/resources.ts';
-import { useUpdateCurrentUserMutation } from '@/api/user.ts';
-import { useCurrentUser } from '@/hooks/useCurrentUser.ts';
+import { useCgSoftQuery } from '@/app/api/resources.ts';
+import { useUpdateCurrentUserMutation } from '@/app/api/user.ts';
+import { useCurrentUser } from '@/entities/user/hooks/useCurrentUser';
 import {
   initialValues,
   transformValuesFromFormToRequest,
@@ -12,8 +12,8 @@ import {
   validationSchema,
 } from '@/pages/User/pages/Profile/constants.ts';
 import { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
-import { getFormDirtyFields } from '@/utils/getFormDirtyFields.ts';
-import { processFormSubmitError } from '@/utils/processFormSubmitError.ts';
+import { getFormDirtyFields } from '@/shared/utils/getFormDirtyFields.ts';
+import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 
 export function useProfileForm() {
   const [isSubmitting, { open: submitStart, close: submitEnd }] = useDisclosure(false);

@@ -1,8 +1,8 @@
 import { MantineTheme, useSafeMantineTheme } from '@mantine/core';
 import { useCallback, useEffect, useState } from 'react';
 import { Box3, Vector3 } from 'three';
-import { Viewer } from '@/components/Model3DViewer/classes/Viewer';
-import { useCurrentColorScheme } from '@/hooks/useCurrentColorScheme.ts';
+import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
+import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 
 export const addHelpers = (viewer: Viewer | null, isLight: boolean, { colors }: MantineTheme) => {
   if (!viewer) return;

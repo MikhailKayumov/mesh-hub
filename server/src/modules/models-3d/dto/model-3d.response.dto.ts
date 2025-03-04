@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { CategoryResponse } from '@/modules/common/resources/dto/category.response';
 import { Model3dFileResponseDto } from '@/modules/models-3d/dto/model-3d-file.response.dto';
+import { CategoryResponse } from '@/modules/resources/dto/category.response';
 
 export class Model3dResponseDto {
   @ApiProperty()

@@ -1,6 +1,6 @@
 import { INestApplication, Logger } from '@nestjs/common';
 import { UserRoles } from '@/constants';
-import { ConfigService } from '@/modules/common/config/config.service';
+import { ConfigService } from '@/modules/config/config.service';
 import { UserCreateRequestDto } from '@/modules/user/dto/user.create.request.dto';
 import { UserService } from '@/modules/user/services/user.service';
 

@@ -1,5 +1,5 @@
 .root {
-  border-top: calc(.0625rem*var(--mantine-scale)) solid var(--mantine-color-gray-3);
+  border-top: calc(0.0625rem * var(--mantine-scale)) solid var(--mantine-color-gray-3);
 
   & :global(.mantine-RichTextEditor-root) {
     border: none;
@@ -13,7 +13,7 @@
     flex: 0 0 rem(24px);
     width: rem(24px);
     height: rem(24px);
-    color: var(--mantine-color-dimmed)
+    color: var(--mantine-color-dimmed);
   }
 
   .categories {
@@ -31,8 +31,8 @@
   }
 }
 
-[data-mantine-color-scheme=dark] {
+[data-mantine-color-scheme='dark'] {
   .root {
-    border-top: calc(.0625rem*var(--mantine-scale)) solid var(--mantine-color-dark-4);
+    border-top: calc(0.0625rem * var(--mantine-scale)) solid var(--mantine-color-dark-4);
   }
 }

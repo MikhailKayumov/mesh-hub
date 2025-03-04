@@ -7,19 +7,17 @@ import { JwtAuthGuard } from '@/guards/auth/jwt-auth.guard';
 import { ThrottlerBehindProxyGuard } from '@/guards/throttler-behind-proxy.guard';
 import { CookiesInterceptor } from '@/interceptors/cookies.interceptor';
 import { AuthModule } from '@/modules/auth/auth.module';
-import { ConfigModule } from '@/modules/common/config/config.module';
-import { ConfigService } from '@/modules/common/config/config.service';
-import { FileStorageModule } from '@/modules/common/files/file-storage.module';
-import { LoggerModule } from '@/modules/common/logger/logger.module';
-import { NotificationsModule } from '@/modules/common/notifications/notifications.module';
-import { ResourcesModule } from '@/modules/common/resources/resources.module';
+import { ConfigModule } from '@/modules/config/config.module';
+import { ConfigService } from '@/modules/config/config.service';
+import { FileStorageModule } from '@/modules/files/files.module';
 import { Models3dModule } from '@/modules/models-3d/models-3d.module';
+import { NotificationsModule } from '@/modules/notifications/notifications.module';
+import { ResourcesModule } from '@/modules/resources/resources.module';
 import { UserModule } from '@/modules/user/user.module';
 
 @Module({
   imports: [
     ConfigModule,
-    LoggerModule,
     NotificationsModule,
     FileStorageModule,
     TypeOrmModule.forRootAsync({

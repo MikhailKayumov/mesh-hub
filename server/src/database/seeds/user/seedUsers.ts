@@ -37,25 +37,28 @@ export default async function seedUsers(app: INestApplication) {
   const roleRepository = app.get(RoleRepository);
   const roles = await roleRepository.find({ where: { name: Not(UserRoles.SuperUser) } });
 
-  const logUsersList = (users: UserData | Partial<UserEntity & { error?: string }>[]) => {
+  const logUsersList = (users: UserData | (Partial<UserEntity> & { error?: string })[]) => {
     return users
-      .map(
-        (user, index) =>
-          `\t${index + 1}. "${user.firstName} ${user.lastName}" (${user.email}) - ${(user as any)?.error ?? 'Created'}`,
-      )
+      .map((user, index) => {
+        const { firstName, lastName, email, error } = user;
+        return `\t${index + 1}. "${firstName} ${lastName}" (${email}) - ${error ?? 'Created'}`;
+      })
       .join('\n');
   };
 
-  const createUserEntity = async (user: UserData[number]): Promise<Partial<UserEntity & { error?: string }>> => {
+  const createUserEntity = async (
+    user: UserData[number],
+  ): Promise<UserEntity | Partial<UserEntity & { error?: string }>> => {
     try {
       return await userService.createUserEntity(user);
     } catch (e) {
       let error = 'Unknown error';
       switch (true) {
-        case e instanceof ConflictException:
+        case e instanceof ConflictException: {
           const response = e.getResponse() as string | { error: string; message: string };
           error = typeof response === 'string' ? response : `${response.error}: ${response.message}`;
           break;
+        }
       }
 
       return {
@@ -71,7 +74,7 @@ export default async function seedUsers(app: INestApplication) {
     (item) => !item.isTest || (config.isDevelopment && item.isTest),
   );
   const predefinedUserEntities = await Promise.all(predefinedUserDataFiltered.map(createUserEntity));
-  const predefinedUsers = await userRepository.save(predefinedUserEntities.filter((item) => !item?.error));
+  const predefinedUsers = await userRepository.save(predefinedUserEntities.filter((item) => !('error' in item)));
 
   const list = predefinedUserEntities.map(
     (entity) => predefinedUsers?.find((user) => user.email === entity.email) ?? entity,

@@ -27,7 +27,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { UserRoles, ALLOWED_AVATAR_FILE_TYPES, MAX_AVATAR_FILE_SIZE } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
@@ -92,10 +92,10 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'max-age=3600')
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
-  public async getUserAvatar(
+  public getUserAvatar(
     @Param('fileName') fileName: string,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<StreamableFile> {
+  ): StreamableFile {
     const file = createReadStream(join(process.cwd(), 'files', 'avatars', fileName));
     response.set({ 'Content-Disposition': `attachment; filename="${fileName}"` });
     return new StreamableFile(file);

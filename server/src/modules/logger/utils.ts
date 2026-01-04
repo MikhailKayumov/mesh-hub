@@ -1,6 +1,7 @@
 import { LogLevel } from '@nestjs/common';
 import { Format } from 'logform';
 import { format } from 'winston';
+import { LoggerMeta, LoggerTransformableInfo } from './types';
 
 function getRowColor(level: LogLevel): string {
   switch (level) {
@@ -17,20 +18,19 @@ function getRowColor(level: LogLevel): string {
   }
 }
 
-function parseMetaData(meta: any): string | null {
-  if (!meta) return null;
+function parseMetaData(meta: LoggerMeta | undefined | null): [string, string?] {
+  if (!meta) return [''];
+  if (typeof meta !== 'object') return [meta.toString()];
+  if (meta instanceof Error) return [meta.message, meta.stack];
 
-  if (typeof meta !== 'object') {
-    meta = { meta: meta };
-  }
-
-  return JSON.stringify(meta, null, 2);
+  const result = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
+  return [result];
 }
 
 export default function getConsoleRowFormat(): Format {
   let prevTimestamp = Date.now();
 
-  return format.printf((info) => {
+  return format.printf((info: LoggerTransformableInfo) => {
     const colorCode = getRowColor(info.level as LogLevel);
     const timestamp = `${colorCode}${info.timestamp}\u001b[0m`;
     const pid = `[PID: ${process.pid}]`;
@@ -38,13 +38,12 @@ export default function getConsoleRowFormat(): Format {
     const context = `[\u001b[1m${colorCode}${info.context ?? 'NestApplication'}\u001b[0m]`;
     const message = `${colorCode}${info.message}\u001b[0m`;
     const timestampDiff = `\u001b[33m+${Date.now() - prevTimestamp}ms\u001b[0m`;
-    const meta = parseMetaData(info.meta);
-    const stackTrace = info.level === 'error' && info.stack ? info.stack : null;
+    const [meta, trace] = parseMetaData(info.meta);
 
     prevTimestamp = Date.now();
 
-    return `${timestamp} ${pid} ${level} ${context}: ${message} ${timestampDiff}${stackTrace ? `\n${stackTrace}` : ''}${
-      meta && meta !== '{}' ? `\nMetaData: ${meta}` : ''
-    }`;
+    return `${timestamp} ${pid} ${level} ${context}: ${message} ${timestampDiff}${
+      meta ? `\n=== Meta Data ===\n${meta}\n` : ''
+    }${trace ? `\n=== Stacktrace ===\n${trace}\n` : ''}`;
   });
 }

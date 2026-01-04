@@ -80,7 +80,7 @@ export class AuthService {
     return AuthMapper.toSessionResponse(request.session);
   }
 
-  public async logout(session: SessionEntity, request: Request): Promise<void> {
+  public logout(session: SessionEntity, request: Request): void {
     request.session = null;
     this.authRepository.delete(session.id);
   }
@@ -100,7 +100,7 @@ export class AuthService {
       request.session = await this.authRepository.save(session);
 
       return AuthMapper.toSessionResponse(request.session);
-    } catch (e) {
+    } catch {
       throw new UnauthorizedException();
     }
   }
@@ -142,7 +142,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       user,
-      request.ip,
+      request.ip!,
       request.headers['user-agent'],
     );
   }
@@ -162,8 +162,8 @@ export class AuthService {
 
   private async verifyAccessToken(token: string): Promise<JwtPayload | null> {
     try {
-      return <JwtPayload>await this.jwtService.verifyAsync(token, { ignoreExpiration: true });
-    } catch (e: unknown) {
+      return await this.jwtService.verifyAsync<JwtPayload>(token, { ignoreExpiration: true });
+    } catch {
       this.logger.warn('Access token has been expire');
       return null;
     }

@@ -70,9 +70,11 @@ export class UserService {
 
   public async updateCurrentUserAvatar(user: UserEntity, file?: Express.Multer.File): Promise<void> {
     try {
-      user.userMeta.avatar && (await this.filesService.removeAvatar(user.userMeta.avatar));
-    } catch (e: any) {
-      if (e?.code === 'ENOENT') {
+      if (user.userMeta.avatar) {
+        await this.filesService.removeAvatar(user.userMeta.avatar);
+      }
+    } catch (e: unknown) {
+      if ((e as { code: string })?.code === 'ENOENT') {
         this.logger.debug(`There is no avatar at "${user.userMeta.avatar}"`);
       } else {
         throw new InternalServerErrorException('Не удалось удалить предыдущий аватар. Попробуйте позже');
@@ -88,7 +90,7 @@ export class UserService {
       }
 
       await this.userRepository.save(user);
-    } catch (e) {
+    } catch {
       throw new UnprocessableEntityException('Не удалось сохранить файл аватара. Попробуйте позже');
     }
   }
@@ -186,14 +188,14 @@ export class UserService {
     }
 
     return new Promise<{ hash: string; salt: string }>((resolve, reject) => {
-      pbkdf2(password, <string>salt, 100000, 64, 'sha512', (err, key) => {
+      pbkdf2(password, salt, 100000, 64, 'sha512', (err, key) => {
         if (err) {
           return reject(err);
         }
 
         resolve({
           hash: key.toString('hex'),
-          salt: <string>salt,
+          salt: salt,
         });
       });
     });

@@ -32,7 +32,7 @@ import { UserRoles, ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from 
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
-import { User } from '@/decorators/user/user.decorator';
+import { OptionalUser, User } from '@/decorators/user/user.decorator';
 import { Model3dResponseDto } from '@/modules/models-3d/dto/model-3d.response.dto';
 import { Model3dUpdateRequestDto } from '@/modules/models-3d/dto/model-3d.update.request.dto';
 import { Models3dRequestDto } from '@/modules/models-3d/dto/models-3d.request.dto';
@@ -66,7 +66,7 @@ export class Model3dController {
   public async get3DModels(
     @PaginatedRequest() pagination: PaginationDto,
     @Query() filters: Models3dRequestDto,
-    @User() user?: UserEntity,
+    @OptionalUser() user?: UserEntity,
   ) {
     return this.model3dService.get3DModels(pagination, filters, user);
   }
@@ -75,7 +75,7 @@ export class Model3dController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
-  public async get3DModel(@Param('modelId', ParseUUIDPipe) modelId: string, @User() user?: UserEntity) {
+  public async get3DModel(@Param('modelId', ParseUUIDPipe) modelId: string, @OptionalUser() user?: UserEntity) {
     return this.model3dService.get3DModel(modelId, user);
   }
 
@@ -142,9 +142,9 @@ export class Model3dController {
   @Get('files/:fileId/thumbnail')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Header('Cache-Control', 'max-age=3600')
+  @Header('Cache-Control', 'max-age=31536000') // 1 year
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
-  public async getModels3DThumbnailFile(@Param('fileId') fileId: string): Promise<StreamableFile> {
+  public getModels3DThumbnailFile(@Param('fileId') fileId: string): StreamableFile {
     const file = createReadStream(join(process.cwd(), 'files', 'models-3d', fileId, 'thumbnail.png'));
     return new StreamableFile(file);
   }
@@ -152,11 +152,9 @@ export class Model3dController {
   @Get('files/:fileId/:fileName')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'max-age=2592000') // 30 days
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
-  public async getModels3DFile(
-    @Param('fileId') fileId: string,
-    @Param('fileName') fileName: string,
-  ): Promise<StreamableFile> {
+  public getModels3DFile(@Param('fileId') fileId: string, @Param('fileName') fileName: string): StreamableFile {
     const file = createReadStream(join(process.cwd(), 'files', 'models-3d', fileId, fileName));
     return new StreamableFile(file);
   }

@@ -44,7 +44,7 @@ export class UserMapper {
       favoriteSoft: favoriteSoft?.reduce<{ new: CgSoftRequest[]; exist: Partial<CgSoftEntity>[] }>(
         (acc, s) => {
           if (s.id === 'new') acc.new.push(s);
-          else if (typeof s.id === 'number') acc.exist.push(s as any);
+          else if (typeof s.id === 'number') acc.exist.push(s as Partial<CgSoftEntity>);
 
           return acc;
         },

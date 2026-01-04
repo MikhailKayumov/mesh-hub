@@ -1,10 +1,10 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { format as dateFormat } from 'date-fns';
 import { createLogger, format, transports, Logger } from 'winston';
 import { FileTransportInstance } from 'winston/lib/winston/transports';
 import { ConfigService } from '@/modules/config/config.service';
-import { LoggerMessage } from '@/modules/logger/types';
+import { LoggerErrorMessage, LoggerMessage } from '@/modules/logger/types';
 import getConsoleRowFormat from '@/modules/logger/utils';
 
 export class AppLogger {
@@ -34,31 +34,15 @@ export class AppLogger {
     return this.logger.log(level, msg, { context: context ?? this.context, meta });
   }
 
-  public error(message: any, trace?: string, context?: string): any {
+  public error(message: LoggerErrorMessage, context?: string): any {
     if (!message) return;
 
-    let msg = null;
-    let meta = null;
-
-    switch (true) {
-      case message instanceof Error:
-        msg = message.message;
-        meta = {
-          stack: trace ?? message.stack,
-          errorName: message.name,
-          error: message,
-        };
-        break;
-      case typeof message === 'object':
-        msg = message.message;
-        break;
+    let meta: null | Error = null;
+    if (message instanceof Error) {
+      meta = message;
     }
 
-    return this.logger.error(msg ?? message, {
-      context: context ?? this.context,
-      stack: trace,
-      ...meta,
-    });
+    return this.logger.error(message.message, { context: context ?? this.context, meta });
   }
 
   public warn(message: LoggerMessage, context?: string): any {
@@ -66,12 +50,12 @@ export class AppLogger {
     return this.log({ ...msg, level: 'warn' }, context);
   }
 
-  public debug(message: any, context?: string): any {
+  public debug(message: LoggerMessage, context?: string): any {
     const msg = typeof message === 'object' ? message : { message };
     return this.log({ ...msg, level: 'debug' }, context);
   }
 
-  public verbose(message: any, context?: string): any {
+  public verbose(message: LoggerMessage, context?: string): any {
     const msg = typeof message === 'object' ? message : { message };
     return this.log({ ...msg, level: 'verbose' }, context);
   }
@@ -90,7 +74,9 @@ export class AppLogger {
 
     try {
       fs.readdirSync(dirname).forEach((file) => fs.unlinkSync(path.join(dirname, file)));
-    } catch {}
+    } catch {
+      /* empty */
+    }
 
     return new transports.File({ filename });
   }

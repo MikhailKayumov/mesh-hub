@@ -1,4 +1,3 @@
-require('module-alias/register');
 import AppBootstrap from './app.bootstrap';
 
 const main = async () => {
@@ -11,8 +10,8 @@ const main = async () => {
     console.log('App bootstrap');
 
     if (bootstrap?.app) {
-      bootstrap.logger.error(error, error?.stack, 'Main.AppBootstrap');
-      await bootstrap.app.close();
+      bootstrap?.logger.error(error as Error, 'Main.AppBootstrap');
+      await bootstrap?.app.close();
     }
 
     process.exit(1);

@@ -155,7 +155,7 @@ export class Model3dService {
     }
 
     model.thumbnail = await this.filesService.save3DModelThumbnailFromBase64(model.file.id, thumbnail);
-    model.save();
+    await model.save();
   }
 
   private async find3DModels(

@@ -1,5 +1,5 @@
 import { Entity, Column } from 'typeorm';
-import { UserRole } from '@/constants';
+import type { UserRole } from '@/constants';
 import { DatabaseSchemas, UserSchemaTables } from '@/database/constants';
 import { IntIdBaseEntity } from '@/database/entities/base';
 

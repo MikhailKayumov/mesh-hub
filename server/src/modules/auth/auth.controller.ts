@@ -12,7 +12,7 @@ import {
   Session,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { SessionEntity } from '@/database/entities/session/session.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Refresh } from '@/decorators/auth/auth.decorator';
@@ -55,7 +55,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'Logout was succeed' })
-  public async logout(@Session() session: SessionEntity, @Req() request: Request): Promise<void> {
+  public logout(@Session() session: SessionEntity, @Req() request: Request): void {
     return this.authService.logout(session, request);
   }
 

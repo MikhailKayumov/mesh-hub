@@ -8,7 +8,7 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -29,13 +29,13 @@ export class LoggingInterceptor implements NestInterceptor {
     const userAgent = request.get('user-agent') ?? 'Unknown user agent';
     const { method, path: url, ip } = request;
 
-    // this.logger.log(`${method} ${url} ${userAgent} ${ip}: ${context.getClass().name}::${context.getHandler().name}`);
+    this.logger.log(`${method} ${url} ${userAgent} ${ip}: ${context.getClass().name}::${context.getHandler().name}`);
 
     return next.handle().pipe(
       tap({
         next: () => {
-          const response = context.switchToHttp().getResponse();
-          // this.logger.log(`${method} ${url} ${response?.statusCode ?? ''}`);
+          const response = context.switchToHttp().getResponse<Response>();
+          this.logger.log(`${method} ${url} ${response?.statusCode ?? ''}`);
         },
         error: (err: unknown) => {
           let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;

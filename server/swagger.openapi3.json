@@ -1069,7 +1069,8 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           }
         },
         "required": [
@@ -1080,7 +1081,8 @@
         "type": "object",
         "properties": {
           "requestId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid"
           },
           "password": {
             "type": "string"
@@ -1118,7 +1120,8 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
           "firstName": {
             "type": "string"
@@ -1179,7 +1182,8 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
           "password": {
             "type": "string",

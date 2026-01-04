@@ -6,18 +6,20 @@ import seedUsersData from './user';
 
 const logger = new Logger('DatabaseSeeding');
 
-(async () => {
-  try {
-    const app = await NestFactory.create(AppModule);
+async function run() {
+  const app = await NestFactory.create(AppModule);
 
-    logger.log('Start seeding');
+  logger.log('Start seeding');
 
-    // await seedResources(app);
-    await seedUsersData(app);
+  // await seedResources(app);
+  await seedUsersData(app);
+}
 
+run()
+  .then(() => {
     process.exit(0);
-  } catch (e) {
-    logger.error(e);
+  })
+  .catch((err) => {
+    logger.error(err);
     process.exit(1);
-  }
-})();
+  });

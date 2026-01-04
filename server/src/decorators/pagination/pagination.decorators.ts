@@ -1,24 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { createParamDecorator, ExecutionContext, Type, applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiQuery, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { Request } from 'express';
 import { PaginationResponseDto } from '@/decorators/pagination/pagination.response.dto';
 import { PaginationDto, PaginationDtoSortItem, PaginationSortOrder } from './pagination.dto';
 
 export const PaginatedRequest = createParamDecorator(
   async (_: unknown, ctx: ExecutionContext): Promise<PaginationDto> => {
-    const request = ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest<Request>();
 
-    const skip = parseInt(request.query.skip);
-    const size = parseInt(request.query.size);
+    const skip = parseInt(request.query.skip as string);
+    const size = parseInt(request.query.size as string);
 
+    const sorts = (request.query?.sort as string)?.split(',') ?? [];
     const sort: PaginationDtoSortItem[] | undefined = await Promise.all(
-      (request.query?.sort?.split(',') ?? []).reduce((acc: Promise<PaginationDtoSortItem>[], item: string) => {
+      sorts.reduce((acc: Promise<PaginationDtoSortItem>[], item: string) => {
         if (item.length) {
-          acc.push(
-            PaginationDtoSortItem.build(
-              (item[0] === '-' || item[0] === '+' ? item.substring(1) : item).trim(),
-              item[0] === '-' ? PaginationSortOrder.DESC : PaginationSortOrder.ASC,
-            ),
-          );
+          const field = (item[0] === '-' || item[0] === '+' ? item.substring(1) : item).trim();
+          const order = item[0] === '-' ? PaginationSortOrder.DESC : PaginationSortOrder.ASC;
+          acc.push(PaginationDtoSortItem.build(field, order));
         }
 
         return acc;

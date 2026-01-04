@@ -1,6 +1,5 @@
-require('module-alias/register');
 import { Logger } from '@nestjs/common';
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import { Client } from 'pg';
 import { Databases, DatabaseSchemas } from '../constants';
 
@@ -39,14 +38,16 @@ export const initSchemas = async (database: string): Promise<void> => {
         logger.log(`Create schema if not exists "${schema}"`);
         await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
         logger.log(`Schema "${schema}" was successfully created`);
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error;
         logger.log(`Error on create schema "${schema}": ${e?.message ? ` (${e.message})` : ''}`, e.stack);
       }
     }
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error;
     logger.log(`Error on init schemes for "${database}": ${e?.message ? ` (${e.message})` : ''}`, e.stack);
   } finally {
-    client?.end();
+    await client?.end();
   }
 };
 
@@ -56,7 +57,7 @@ export const initDatabases = async () => {
   try {
     await client.connect();
 
-    for await (const database of Databases) {
+    for (const database of Databases) {
       try {
         const oid = await client.query(`SELECT oid FROM pg_database WHERE datname = '${database}'`);
         if (!oid.rowCount) {
@@ -67,23 +68,25 @@ export const initDatabases = async () => {
         }
 
         await initSchemas(database);
-      } catch (e) {
+      } catch (err) {
+        const e = err as Error;
         logger.error(`Error on create database "${database}": ${e?.message ? ` (${e.message})` : ''}`, e.stack);
       }
     }
-  } catch (e) {
+  } catch (err) {
+    const e = err as Error;
     logger.error(`Error on create databases: ${e?.message ? ` (${e.message})` : ''}`, e.stack);
   } finally {
     await client?.end();
   }
 };
 
-(async () => {
-  try {
-    await initDatabases();
+initDatabases()
+  .then(() => {
     process.exit(0);
-  } catch (e) {
+  })
+  .catch((err) => {
+    const e = err as Error;
     logger.error(`Error on init databases${e?.message ? ` (${e.message})` : ''}`, e.stack);
     process.exit(1);
-  }
-})();
+  });

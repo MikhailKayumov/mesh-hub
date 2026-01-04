@@ -2,7 +2,7 @@ import { ValidationPipe, ValidationError, HttpStatus } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
 import { AppHttpException } from '@/exceptions/app-http.exception';
 import { LoggingInterceptor } from '@/interceptors/logging.interceptor';
@@ -32,8 +32,8 @@ export default class AppBootstrap {
     this.application.set('trust proxy', 1);
 
     this.application.use(cookieParser());
-    this.application.use(json({ limit: '100kb' }));
-    this.application.use(urlencoded({ extended: true, limit: '100kb' }));
+    this.application.use(json({ limit: '1Mb' }));
+    this.application.use(urlencoded({ extended: true, limit: '1Mb' }));
 
     this.application.enableCors(this.configService.cors);
 

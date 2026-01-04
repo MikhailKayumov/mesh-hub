@@ -17,11 +17,11 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = <Request>context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
 
     const [session, isValid] = await this.authService.validateSession(
-      request?.cookies?.[this.configService.jwt.cookieName],
-      request.ip,
+      request?.cookies?.[this.configService.jwt.cookieName] as string,
+      request.ip!,
       request.headers['user-agent'],
     );
     request.session = session;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModel3DQuery } from '@/app/api/models-3d.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
@@ -21,13 +21,10 @@ export function useModel3D({ id }: UseModel3DProps) {
     }
   }, [id]);
 
-  return useMemo(
-    () => ({
-      model3d: data ?? null,
-      isModelLoading: isLoading,
-      isModelError: isError,
-      model3dError: error,
-    }),
-    [data, isLoading, isError],
-  );
+  return {
+    model3d: data ?? null,
+    isModelLoading: isLoading,
+    isModelError: isError,
+    model3dError: error,
+  };
 }

@@ -1,5 +1,5 @@
 import { object, string } from 'zod';
-import { LoginRequestDto } from '@/app/api/dto.ts';
+import type { LoginRequestDto } from '@/app/api/dto.ts';
 import { ValidationErrorMessages } from '@/shared/constants';
 
 export const initialValues: LoginRequestDto = {

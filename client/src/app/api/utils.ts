@@ -1,7 +1,7 @@
-import { UnknownAction, isRejectedWithValue, Middleware } from '@reduxjs/toolkit';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { type UnknownAction, isRejectedWithValue, type Middleware } from '@reduxjs/toolkit';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { isNumber } from '@/shared/utils/type-guards.ts';
-import { HttpException, ValidationHttpException } from './dto.ts';
+import type { HttpException, ValidationHttpException } from './dto.ts';
 
 export const isFetchQueryError = (error: unknown): error is FetchBaseQueryError => {
   return typeof error === 'object' && error != null && 'status' in error;

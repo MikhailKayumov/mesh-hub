@@ -1,5 +1,5 @@
-import { Flex, Grid, GridColProps } from '@mantine/core';
-import { Model3DResponseDto } from '@/app/api/dto.ts';
+import { Flex, Grid, type GridColProps } from '@mantine/core';
+import type { Model3DResponseDto } from '@/app/api/dto.ts';
 import { EmptyData } from '../../widgets/EmptyData';
 import { Model3DCard } from './components/Model3DCard';
 import classes from './Models3DList.module.scss';

@@ -1,6 +1,6 @@
 import { object, string } from 'zod';
-import { CgSoftRequest, CgSoftResponse, UserCurrentResponseDto, UserCurrentUpdateRequestDto } from '@/app/api/dto.ts';
-import { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
+import type { CgSoftRequest, CgSoftResponse, UserCurrentResponseDto, UserCurrentUpdateRequestDto } from '@/app/api/dto.ts';
+import type { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
 import { AppRegexp, ValidationErrorMessages } from '@/shared/constants';
 
 export const initialValues: ProfileFormData = {

@@ -35,8 +35,8 @@ export function useEditor() {
     addHelpers(viewer, isLight, theme);
     // console.log('# ===== Viewer world ===== #', viewer.world);
     viewer.camera.enableLayer([10]);
-    setIsViewerLoading(false);
-  }, [viewer, key, isLight]);
+    queueMicrotask(() => setIsViewerLoading(false));
+  }, [viewer, key, isLight, theme]);
 
   return {
     viewer,

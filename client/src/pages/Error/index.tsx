@@ -1,6 +1,6 @@
-import { ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { RouterPath, RouterPaths } from '@/shared/router/paths.ts';
+import { type RouterPath, RouterPaths } from '@/shared/router/paths.ts';
 import { BadRequestError, ForbiddenError, NotFoundError, ServiceUnavailableError } from '@/widgets/Errors';
 import { BaseLayout } from '@/widgets/layouts';
 

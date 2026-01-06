@@ -22,7 +22,7 @@ export function useModel3DEditPropertiesForm(onSubmitted: () => void) {
   const { data: categories } = useCategoriesQuery();
   const form = useForm<Model3DPropertiesForm>({
     initialValues,
-    validate: zodResolver(validationSchema),
+    validate: zodResolver(validationSchema as any),
   });
 
   useEffect(() => {

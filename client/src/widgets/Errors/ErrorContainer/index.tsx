@@ -1,6 +1,6 @@
 import { Container } from '@mantine/core';
-import { PropsWithChildren } from 'react';
-import { ErrorTitle, ErrorTitleProps } from '../ErrorTitle';
+import type { PropsWithChildren } from 'react';
+import { ErrorTitle, type ErrorTitleProps } from '../ErrorTitle';
 import classes from './ErrorContainer.module.scss';
 
 export interface ErrorContainerProps extends PropsWithChildren<ErrorTitleProps> {

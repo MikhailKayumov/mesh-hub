@@ -1,4 +1,4 @@
-import { isRouteErrorResponse, ErrorResponse } from 'react-router-dom';
+import { isRouteErrorResponse, type ErrorResponse } from 'react-router-dom';
 
 export function isNil(value: unknown): value is undefined | null {
   return value === undefined || value === null;

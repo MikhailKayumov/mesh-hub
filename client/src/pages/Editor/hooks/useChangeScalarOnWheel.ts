@@ -3,23 +3,27 @@ import { UseScalarFieldWheelProps } from '@/pages/Editor/components/Fields/Scala
 
 export function useChangeScalarOnWheel({ step, onChange }: UseScalarFieldWheelProps) {
   const localRef = useRef<HTMLInputElement>(null);
-
-  const onWheel = useRef<(e: WheelEvent) => void>();
-  onWheel.current = (e: WheelEvent) => {
-    e.preventDefault();
-
-    let multiplier = e.deltaY < 0 ? 1 : -1;
-    if (e.shiftKey) {
-      multiplier *= 10;
-    } else if (e.ctrlKey) {
-      multiplier *= 0.1;
-    }
-
-    onChange(step * multiplier);
-  };
+  const onChangeRef = useRef(onChange);
+  const stepRef = useRef(step);
 
   useLayoutEffect(() => {
-    const wheel = (e: WheelEvent) => onWheel.current?.(e);
+    onChangeRef.current = onChange;
+    stepRef.current = step;
+  });
+
+  useLayoutEffect(() => {
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault();
+
+      let multiplier = e.deltaY < 0 ? 1 : -1;
+      if (e.shiftKey) {
+        multiplier *= 10;
+      } else if (e.ctrlKey) {
+        multiplier *= 0.1;
+      }
+
+      onChangeRef.current(stepRef.current * multiplier);
+    };
 
     localRef.current?.addEventListener('wheel', wheel);
 

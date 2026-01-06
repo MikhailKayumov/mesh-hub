@@ -1,4 +1,4 @@
-import { AppState } from '@/shared/types/store';
+import type { AppState } from '@/shared/types/store';
 
 export const sessionSelector = (state: AppState) => state.user.session;
 

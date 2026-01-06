@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import { ThemeName } from '@/shared/theme/types.ts';
+import type { ThemeName } from '@/shared/theme/types.ts';
 
 export interface UserState {
   session: string | null;

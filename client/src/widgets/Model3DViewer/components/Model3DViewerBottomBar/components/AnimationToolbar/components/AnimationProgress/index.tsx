@@ -50,6 +50,7 @@ export function AnimationProgress({ animations }: AnimationProgressProps) {
   const onAnimationTimeChange = (value: number) => {
     if (!animations.action) return;
     setAnimationTime(value);
+    // eslint-disable-next-line react-hooks/immutability
     animations.action.time = value;
   };
 

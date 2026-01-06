@@ -1,7 +1,7 @@
 import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { UserChangePasswordRequestDto } from '@/app/api/dto.ts';
+import type { UserChangePasswordRequestDto } from '@/app/api/dto.ts';
 import { useChangePasswordMutation } from '@/app/api/user.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 import { initialValues, transformValues, validationSchema } from './constants.ts';
@@ -12,7 +12,7 @@ export function useChangePasswordForm(onSuccess: () => void) {
 
   const form = useForm<UserChangePasswordRequestDto>({
     initialValues,
-    validate: zodResolver(validationSchema),
+    validate: zodResolver(validationSchema as any),
     transformValues,
   });
 

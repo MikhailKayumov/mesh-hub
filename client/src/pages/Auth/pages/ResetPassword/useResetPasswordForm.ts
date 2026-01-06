@@ -2,7 +2,7 @@ import { useForm, zodResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { object, string } from 'zod';
-import { UserResetPasswordRequestDto } from '@/app/api/dto.ts';
+import type { UserResetPasswordRequestDto } from '@/app/api/dto.ts';
 import { useResetPasswordMutation } from '@/app/api/user.ts';
 import { ValidationErrorMessages } from '@/shared/constants';
 import { RouterPaths } from '@/shared/router/paths.ts';
@@ -19,7 +19,7 @@ export function useResetPasswordForm() {
     validate: zodResolver(
       object({
         email: string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
-      }),
+      }) as any,
     ),
     transformValues: (values) => ({ email: values.email.trim() }),
   });

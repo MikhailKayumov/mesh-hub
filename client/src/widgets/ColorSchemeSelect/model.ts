@@ -1,4 +1,4 @@
-import { ActionIconProps, MantineRadius } from '@mantine/core';
+import type { ActionIconProps, MantineRadius } from '@mantine/core';
 
 export interface ColorSchemeSelectProps {
   size?: number;

@@ -1,11 +1,11 @@
 import { Link, RichTextEditor } from '@mantine/tiptap';
-import Highlight from '@tiptap/extension-highlight';
-import SubScript from '@tiptap/extension-subscript';
-import Superscript from '@tiptap/extension-superscript';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
+import { Highlight } from '@tiptap/extension-highlight';
+import { Subscript as SubScript } from '@tiptap/extension-subscript';
+import { Superscript } from '@tiptap/extension-superscript';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { Underline } from '@tiptap/extension-underline';
 import { Editor, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import { StarterKit } from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DContext.ts';
 
@@ -27,7 +27,7 @@ export function Model3DDescription() {
 
   useEffect(() => () => editor?.destroy(), [editor]);
   useEffect(() => {
-    model?.description && editor?.commands.setContent(model.description, true);
+    model?.description && editor?.commands.setContent(model.description, { emitUpdate: false });
   }, [editor, model?.description]);
 
   return (

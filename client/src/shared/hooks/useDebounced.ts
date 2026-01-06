@@ -17,8 +17,8 @@ export function useDebounced<T = any>(value: T, delay = 300) {
 }
 
 export function useDebouncedCallback<A extends any[]>(callback: (...args: A) => void, delay = 300) {
-  const argsRef = useRef<A>();
-  const timeout = useRef<ReturnType<typeof setTimeout>>();
+  const argsRef = useRef<A | undefined>(undefined);
+  const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const cleanup = () => timeout.current && clearTimeout(timeout.current);
 

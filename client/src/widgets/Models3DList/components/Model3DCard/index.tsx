@@ -2,7 +2,7 @@ import { Avatar, Box, Card, Group, Menu, rem, Text, Tooltip } from '@mantine/cor
 import { IconDotsVertical, IconSettings, IconTrash } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { Link } from 'react-router-dom';
-import { Model3DResponseDto } from '@/app/api/dto.ts';
+import type { Model3DResponseDto } from '@/app/api/dto.ts';
 import { useDeleteModel3D } from '@/pages/Models3D/pages/Model3D/components/Header/components/Controls/useDeleteModel3D.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { getBoolean } from '@/shared/utils/env.ts';

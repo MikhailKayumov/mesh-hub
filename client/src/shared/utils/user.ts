@@ -1,4 +1,4 @@
-import { UserCurrentResponseDto } from '@/app/api/dto.ts';
+import type { UserCurrentResponseDto } from '@/app/api/dto.ts';
 
 export const AVATAR_PATH_PREFIX = '/api/user/avatar';
 

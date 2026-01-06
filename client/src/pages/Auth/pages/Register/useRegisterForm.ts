@@ -4,7 +4,7 @@ import { notifications } from '@mantine/notifications';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '@/app/api/auth.ts';
-import { SignupRequestDto } from '@/app/api/dto.ts';
+import type { SignupRequestDto } from '@/app/api/dto.ts';
 import { userActions } from '@/entities/user/store';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
@@ -18,7 +18,7 @@ export function useRegisterForm() {
   const [register] = useRegisterMutation();
 
   const form = useForm<SignupRequestDto>({
-    validate: zodResolver(validationSchema),
+    validate: zodResolver(validationSchema as any),
     initialValues,
     transformValues,
   });

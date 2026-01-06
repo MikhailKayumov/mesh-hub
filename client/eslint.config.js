@@ -1,34 +1,43 @@
 import js from '@eslint/js';
-import importPlugin from 'eslint-plugin-import-x';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import { flatConfigs } from 'eslint-plugin-import-x';
 import eslintConfigPrettier from 'eslint-plugin-prettier/recommended';
-import reactHooks from 'eslint-plugin-react-hooks';
+import { configs as rheslint } from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
-import { config, configs } from 'typescript-eslint';
+import { configs as tseslint } from 'typescript-eslint';
 
-export default config(
-  { ignores: ['dist', 'node_modules'] },
+export default defineConfig([
+  globalIgnores(['dist', 'node_modules']),
   {
-    extends: [
-      js.configs.recommended,
-      ...configs.recommended,
-      eslintConfigPrettier,
-      importPlugin.flatConfigs.recommended,
-      importPlugin.flatConfigs.typescript,
-    ],
-    files: ['**/*.{ts,tsx,js,jsx,cjs}'],
+    files: ['**/*.cjs'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+        module: 'readonly',
+        require: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['**/*.{ts,tsx,js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
+    extends: [
+      js.configs.recommended,
+      tseslint.recommended,
+      rheslint.flat.recommended,
+      reactRefresh.configs.vite,
+      eslintConfigPrettier,
+      flatConfigs.recommended,
+      flatConfigs.typescript,
+    ],
     rules: {
-      ...reactHooks.configs.recommended.rules,
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
-      '@typescript-eslint/no-explicit-any': 1,
+      '@typescript-eslint/no-explicit-any': 0,
       '@typescript-eslint/no-unused-vars': [
         2,
         {
@@ -55,4 +64,4 @@ export default config(
       ],
     },
   },
-);
+]);

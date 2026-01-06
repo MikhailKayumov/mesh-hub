@@ -7,7 +7,7 @@ import { useNewPasswordMutation } from '@/app/api/user.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 import { buildAbsolutePath } from '@/shared/utils/router';
-import { initialValues, transformValues, UserNewPasswordFormData, validationSchema } from './constants.ts';
+import { initialValues, transformValues, type UserNewPasswordFormData, validationSchema } from './constants.ts';
 
 export function useNewPasswordForm() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export function useNewPasswordForm() {
 
   const form = useForm<UserNewPasswordFormData>({
     initialValues,
-    validate: zodResolver(validationSchema),
+    validate: zodResolver(validationSchema as any),
     transformValues,
   });
 

@@ -7,7 +7,7 @@ export function processFormSubmitError<FormData extends Record<string, any> = an
   e: unknown,
 ) {
   if (isValidationException<keyof FormData>(e)) {
-    e.data.forEach((i) => form.setFieldError(i.property, i.errors.join('. ')));
+    e.data.forEach((i) => form.setFieldError(i.property as any, i.errors.join('. ')));
   } else {
     notifications.show({
       title: 'Ошибка',

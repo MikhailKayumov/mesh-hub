@@ -17,6 +17,7 @@ export function Navbar({ className, viewer, defaultTab = TabValues.Scene }: Navb
   const [tabValue, setTabValue] = useState<TabValue | undefined | null>(undefined);
   const config = useMemo(() => getTabsConfig(viewer), [viewer]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setTabValue(defaultTab), [defaultTab]);
 
   return (

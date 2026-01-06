@@ -1,11 +1,11 @@
 import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
-import { Model3DResponseDto } from '@/app/api/dto.ts';
+import type { Model3DResponseDto } from '@/app/api/dto.ts';
 import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
 import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';
-import { LoadedModel3D, ViewerModel3D } from '../types';
+import type { LoadedModel3D, ViewerModel3D } from '../types';
 import { isMesh, isObject3D, isSkinnedMesh } from '../utils';
 import { World } from '../World';
 
@@ -170,7 +170,7 @@ export class Viewer {
     return {
       scene,
       sceneBoundingBox: bb,
-      animations: ag.stats.objects.total && animations?.length ? { objectGroup: ag, clips: animations } : null,
+      animations: animations?.length ? { objectGroup: ag, clips: animations } : null,
       associations,
     };
   }

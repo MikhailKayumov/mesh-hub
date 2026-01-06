@@ -19,9 +19,11 @@ export function Model3DViewerTopBar() {
     if (!viewer) return;
 
     if (viewer.model?.sceneBoundingBox.isBox3) {
-      setResetCameraTargetPosition(
-        new Vector3(0, (viewer.model?.sceneBoundingBox.max.y - viewer.model?.sceneBoundingBox.min.y) / 2, 0),
-      );
+      const maxY = viewer.model.sceneBoundingBox.max.y;
+      const minY = viewer.model.sceneBoundingBox.min.y;
+      if (maxY !== undefined && minY !== undefined) {
+        queueMicrotask(() => setResetCameraTargetPosition(new Vector3(0, (maxY - minY) / 2, 0)));
+      }
     }
   }, [viewer?.model?.sceneBoundingBox]);
 

@@ -1,5 +1,5 @@
 import { generatePath } from 'react-router-dom';
-import { BuildRoutePathOptions } from '../types/router';
+import type { BuildRoutePathOptions } from '../types/router';
 
 export function buildPath(
   route: string | string[],

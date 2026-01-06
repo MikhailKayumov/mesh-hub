@@ -7,8 +7,8 @@ import { Object3DTreeGroupProps } from '../../model.ts';
 import classes from '../../Object3DOutliner.module.scss';
 import { TreeNode } from '../Node';
 
-export function TreeGroup({ item, level, selected, selectedRef, selectNode, filterNode }: Object3DTreeGroupProps) {
-  const isActive = selectedRef.current?.has(item.uuid);
+export function TreeGroup({ item, level, selected, selectedSet, selectNode, filterNode }: Object3DTreeGroupProps) {
+  const isActive = selectedSet.has(item.uuid);
   const isFiltered = filterNode && filterNode(item);
   const [opened, { toggle, open }] = useDisclosure(isActive);
 
@@ -28,8 +28,8 @@ export function TreeGroup({ item, level, selected, selectedRef, selectNode, filt
       item={child}
       level={level + (isFiltered ? 1 : 0)}
       selected={selected}
-      selectedRef={selectedRef}
-      isActive={selectedRef.current?.has(child.uuid)}
+      selectedSet={selectedSet}
+      isActive={selectedSet.has(child.uuid)}
       selectNode={selectNode}
       filterNode={filterNode}
     />

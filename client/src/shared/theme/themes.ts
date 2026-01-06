@@ -10,7 +10,7 @@ import {
   redColors,
   skyblueColors,
 } from '@/shared/theme/colors.ts';
-import { ThemeData, ThemeName } from '@/shared/theme/types.ts';
+import type { ThemeData, ThemeName } from '@/shared/theme/types.ts';
 
 const appScale = Number(localStorage.getItem('mantine-scale') ?? 1);
 

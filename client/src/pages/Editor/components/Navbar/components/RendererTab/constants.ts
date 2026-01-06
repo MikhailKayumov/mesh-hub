@@ -6,8 +6,6 @@ import {
   CineonToneMapping,
   ColorSpace,
   CustomToneMapping,
-  DisplayP3ColorSpace,
-  LinearDisplayP3ColorSpace,
   LinearSRGBColorSpace,
   LinearToneMapping,
   NoToneMapping,
@@ -43,8 +41,6 @@ export const shadowMapTypeOptions: ComboboxItem[] = [
 export const colorSpaceOptions: ComboboxItem[] = [
   { value: SRGBColorSpace, label: 'SRGBColorSpace ' },
   { value: LinearSRGBColorSpace, label: 'LinearSRGBColorSpace' },
-  { value: DisplayP3ColorSpace, label: 'DisplayP3ColorSpace' },
-  { value: LinearDisplayP3ColorSpace, label: 'LinearDisplayP3ColorSpace' },
 ];
 
 export const transformToForm = (settings: RendererSettings): RendererTabFormValues => {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Model3DResponseDto } from '@/app/api/dto.ts';
+import type { Model3DResponseDto } from '@/app/api/dto.ts';
 import { sleep } from '@/shared/utils/sleep.ts';
 import { Viewer } from '../classes/Viewer';
 

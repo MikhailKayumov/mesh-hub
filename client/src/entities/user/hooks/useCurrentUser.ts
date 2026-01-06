@@ -1,5 +1,5 @@
-import { FetchQueryError } from '@/app/api/base.ts';
-import { UserCurrentResponseDto } from '@/app/api/dto.ts';
+import type { FetchQueryError } from '@/app/api/base.ts';
+import type { UserCurrentResponseDto } from '@/app/api/dto.ts';
 import { useCurrentUserQuery } from '@/app/api/user.ts';
 
 export interface UseCurrentUserReturn {

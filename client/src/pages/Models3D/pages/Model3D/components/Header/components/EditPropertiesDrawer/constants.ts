@@ -1,7 +1,7 @@
 import { object, string } from 'zod';
-import { CategoryRequest, CategoryResponse, Model3DResponseDto, Model3DUpdateRequestDto } from '@/app/api/dto.ts';
+import type { CategoryRequest, CategoryResponse, Model3DResponseDto, Model3DUpdateRequestDto } from '@/app/api/dto.ts';
 import { MAX_MODEL_3D_CATEGORIES_LENGTH, MAX_MODEL_3D_NAME_LENGTH, ValidationErrorMessages } from '@/shared/constants';
-import { Model3DPropertiesForm } from './model.ts';
+import type { Model3DPropertiesForm } from './model.ts';
 
 export const initialValues: Model3DPropertiesForm = {
   name: '',

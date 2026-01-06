@@ -3,7 +3,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLoginMutation } from '@/app/api/auth.ts';
-import { LoginRequestDto } from '@/app/api/dto.ts';
+import type { LoginRequestDto } from '@/app/api/dto.ts';
 import { userActions } from '@/entities/user/store';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
@@ -17,7 +17,7 @@ export function useLoginForm() {
   const [apiLogin] = useLoginMutation();
 
   const form = useForm<LoginRequestDto>({
-    validate: zodResolver(validationSchema),
+    validate: zodResolver(validationSchema as any),
     initialValues,
     transformValues,
   });

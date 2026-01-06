@@ -32,7 +32,7 @@ export class LoaderCache {
     if (associations) {
       for (const association of associations) {
         if (isTexture(association) && isImageBitmapSource(association.source)) {
-          Destroyer.destroyImageBitmap(association.source.data);
+          Destroyer.destroyImageBitmap(association.source.data as ImageBitmap);
         }
       }
     }

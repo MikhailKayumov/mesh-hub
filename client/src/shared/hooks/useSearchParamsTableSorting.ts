@@ -1,4 +1,4 @@
-import { DataTableSortStatus } from 'mantine-datatable';
+import type { DataTableSortStatus } from 'mantine-datatable';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 

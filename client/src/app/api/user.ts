@@ -1,5 +1,5 @@
 import { Api } from './base.ts';
-import {
+import type {
   UserChangePasswordRequestDto,
   UserNewPasswordRequestDto,
   UserCurrentResponseDto,

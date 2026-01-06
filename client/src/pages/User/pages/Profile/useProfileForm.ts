@@ -23,7 +23,7 @@ export function useProfileForm() {
 
   const form = useForm<ProfileFormData>({
     initialValues,
-    validate: zodResolver(validationSchema),
+    validate: zodResolver(validationSchema as any),
   });
 
   useEffect(() => {

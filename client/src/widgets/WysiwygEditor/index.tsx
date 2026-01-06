@@ -1,12 +1,12 @@
 import { Input } from '@mantine/core';
 import { RichTextEditor, Link } from '@mantine/tiptap';
-import Highlight from '@tiptap/extension-highlight';
-import SubScript from '@tiptap/extension-subscript';
-import Superscript from '@tiptap/extension-superscript';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
+import { Highlight } from '@tiptap/extension-highlight';
+import { Subscript as SubScript } from '@tiptap/extension-subscript';
+import { Superscript } from '@tiptap/extension-superscript';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { Underline } from '@tiptap/extension-underline';
 import { Editor, useEditor, EditorEvents, JSONContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import { StarterKit } from '@tiptap/starter-kit';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';
 import { useDebouncedCallback } from '@/shared/hooks';

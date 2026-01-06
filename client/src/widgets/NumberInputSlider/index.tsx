@@ -1,5 +1,5 @@
 import { Group, Input, NumberInput, Slider } from '@mantine/core';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { NumberInputSliderProps } from './model.ts';
 import classes from './NumberInputSlider.module.scss';
 
@@ -24,11 +24,20 @@ export const NumberInputSlider = ({
   const ref = useRef<HTMLDivElement>(null);
   const addValueRef = useRef<NumberInputSliderProps['onChange']>(onChange);
 
+  useLayoutEffect(() => {
+    addValueRef.current = (delta: number) => {
+      const result = allowNegative ? localValue + delta : Math.max(localValue + delta, 0);
+
+      onChange?.(result);
+      setLocalValue(result);
+    };
+  });
+
   useEffect(() => {
     if (value !== localValue) {
-      setLocalValue(value ?? 0);
+      queueMicrotask(() => setLocalValue(value ?? 0));
     }
-  }, [value]);
+  }, [value, localValue]);
 
   const onInputChange = (val: string | number) => {
     if (typeof val !== 'number') {
@@ -43,13 +52,6 @@ export const NumberInputSlider = ({
   const onSliderChange = (val: number) => {
     onChange?.(val);
     setLocalValue(val);
-  };
-
-  addValueRef.current = (delta: number) => {
-    const result = allowNegative ? localValue + delta : Math.max(localValue + delta, 0);
-
-    onChange?.(result);
-    setLocalValue(result);
   };
 
   useEffect(() => {

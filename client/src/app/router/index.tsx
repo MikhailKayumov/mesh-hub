@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom';
 import { BasePage } from '@/pages/Base';
 import { ErrorPage } from '@/pages/Error';
 import { MainPage } from '@/pages/Main';

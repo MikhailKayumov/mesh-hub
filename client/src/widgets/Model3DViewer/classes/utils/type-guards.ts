@@ -53,8 +53,8 @@ export const isTexture = (object: unknown): object is Texture => {
   return isObject(object) && (object as Texture).isTexture;
 };
 
-export const isSource = (object: unknown): object is Source => {
-  return isObject(object) && (object as Source).isSource;
+export const isSource = (object: unknown): object is Source<any> => {
+  return isObject(object) && (object as Source<any>).isSource;
 };
 
 export const isImageBitmap = (object: unknown): object is ImageBitmap => {

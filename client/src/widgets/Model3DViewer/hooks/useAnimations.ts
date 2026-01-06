@@ -67,6 +67,7 @@ export function useAnimations({ blends, autorun = false }: UseAnimationsProps): 
   // Set animation state
   useEffect(() => {
     if (!action) return;
+    // eslint-disable-next-line react-hooks/immutability
     action.paused = state === 'pause';
   }, [action, state]);
 

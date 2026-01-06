@@ -1,7 +1,7 @@
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
-import { FileWithPath } from 'react-dropzone-esm';
+import type { FileWithPath } from 'react-dropzone-esm';
 import { useNavigate } from 'react-router-dom';
 import { useUpload3DModelMutation } from '@/app/api/models-3d.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
@@ -14,7 +14,7 @@ export function useUpload3DModal() {
   const [upload, { isLoading }] = useUpload3DModelMutation();
 
   useEffect(() => {
-    if (!opened) setModel(null);
+    if (!opened) queueMicrotask(() => setModel(null));
   }, [opened]);
 
   return {

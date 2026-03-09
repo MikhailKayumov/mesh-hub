@@ -7,7 +7,7 @@ import {
   SpotLightHelper,
   MathUtils,
 } from 'three';
-import { BuildAmbientLightOptions, BuildDirectionLightOptions, BuildSpotLightOptions } from './types.ts';
+import { type BuildAmbientLightOptions, type BuildDirectionLightOptions, type BuildSpotLightOptions } from './types.ts';
 
 export * from './LightBuilder.ts';
 

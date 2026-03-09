@@ -1,6 +1,6 @@
 import { type MantineSize, rem, Stack, Text, useSafeMantineTheme } from '@mantine/core';
-import type { ComponentPropsWithoutRef } from 'react';
 import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
+import type { ComponentPropsWithoutRef } from 'react';
 
 export interface EmptyDataProps extends ComponentPropsWithoutRef<'svg'> {
   label?: string;

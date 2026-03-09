@@ -11,7 +11,7 @@
   "author": "Mikhail Kayumov",
   "license": "ISC",
   "devDependencies": {
-    "swagger-typescript-api": "^13.0.3",
-    "ts-node": "^10.9.1"
+    "swagger-typescript-api": "13.6.10",
+    "ts-node": "10.9.2"
   }
 }

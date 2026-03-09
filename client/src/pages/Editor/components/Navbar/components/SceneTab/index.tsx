@@ -1,14 +1,14 @@
 import { ScrollArea, Stack } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useCallback, useEffect, useState } from 'react';
-import { Object3D, Scene } from 'three';
+import { type Object3D, type Scene } from 'three';
 import { Object3DForm } from '@/pages/Editor/components/Forms';
 import { LayersCheckboxGroup } from '@/pages/Editor/components/LayersCheckboxGroup';
 import { Object3DOutliner } from '@/pages/Editor/components/Object3DOutliner';
-import { SelectedObject3D } from '@/pages/Editor/components/Object3DOutliner/model.ts';
+import { type SelectedObject3D } from '@/pages/Editor/components/Object3DOutliner/model.ts';
 import { isBone, isMesh } from '@/widgets/Model3DViewer/classes/utils';
 import { WorldEventNames } from '@/widgets/Model3DViewer/classes/World';
-import { SceneTabProps } from './model.ts';
+import { type SceneTabProps } from './model.ts';
 import classes from './SceneTab.module.scss';
 
 export function SceneTab({ className, viewer }: SceneTabProps) {

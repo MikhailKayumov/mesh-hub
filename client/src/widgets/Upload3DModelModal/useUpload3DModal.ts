@@ -1,11 +1,11 @@
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useState } from 'react';
-import type { FileWithPath } from 'react-dropzone-esm';
 import { useNavigate } from 'react-router-dom';
 import { useUpload3DModelMutation } from '@/app/api/models-3d.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { buildAbsolutePath } from '@/shared/utils/router';
+import type { FileWithPath } from 'react-dropzone-esm';
 
 export function useUpload3DModal() {
   const navigate = useNavigate();

@@ -2,11 +2,11 @@ import { AppShell, Box, Group, Text } from '@mantine/core';
 import { clsx } from 'clsx';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { WebGLRenderer } from 'three';
+import { type WebGLRenderer } from 'three';
 import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DContext.ts';
 import { formatBytes } from '@/shared/utils/format-bytes.ts';
 import { ColorThemeSwitcher } from '@/widgets/ColorThemeSwitcher';
-import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
+import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import classes from './Footer.module.scss';
 
 export interface FooterProps {

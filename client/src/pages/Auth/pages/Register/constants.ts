@@ -1,5 +1,5 @@
-import { object, string } from 'zod';
-import { SignupRequestDto } from '@/app/api/dto.ts';
+import { object, string, email } from 'zod';
+import { type SignupRequestDto } from '@/app/api/dto.ts';
 import { AppRegexp, ValidationErrorMessages } from '@/shared/constants';
 
 export const initialValues: SignupRequestDto = {
@@ -21,7 +21,7 @@ export const transformValues = (values: SignupRequestDto) => ({
 export const validationSchema = object({
   firstName: string().trim().min(1, ValidationErrorMessages.RequiredField),
   lastName: string().trim(),
-  email: string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
+  email: email(ValidationErrorMessages.Email),
   password: string()
     .trim()
     .regex(AppRegexp.Password, ValidationErrorMessages.PasswordContent)

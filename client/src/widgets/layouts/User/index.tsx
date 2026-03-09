@@ -1,5 +1,5 @@
 import { Box, Container, Flex } from '@mantine/core';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { UserSidebar } from '../../UserSidebar';
 import classes from './UserLayout.module.scss';
 

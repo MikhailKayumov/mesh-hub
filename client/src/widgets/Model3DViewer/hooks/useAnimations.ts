@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimationAction, AnimationClip, AnimationMixer } from 'three';
+import { type AnimationAction, type AnimationClip, AnimationMixer } from 'three';
 import { useViewerContext } from './useViewerContext';
 
 export type AnimationState = 'play' | 'pause';
@@ -37,6 +37,7 @@ export function useAnimations({ blends, autorun = false }: UseAnimationsProps): 
     const clip = viewer.model.animations.clips[0];
     const action = am.clipAction(clip);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMixer(am);
     setClips(viewer.model.animations.clips);
     setClip(clip);

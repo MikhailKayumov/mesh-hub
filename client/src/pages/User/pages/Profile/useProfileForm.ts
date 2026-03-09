@@ -1,4 +1,4 @@
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useMemo } from 'react';
@@ -11,7 +11,7 @@ import {
   transformValuesFromUserToForm,
   validationSchema,
 } from '@/pages/User/pages/Profile/constants.ts';
-import { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
+import { type ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
 import { getFormDirtyFields } from '@/shared/utils/getFormDirtyFields.ts';
 import { processFormSubmitError } from '@/shared/utils/processFormSubmitError.ts';
 
@@ -23,7 +23,7 @@ export function useProfileForm() {
 
   const form = useForm<ProfileFormData>({
     initialValues,
-    validate: zodResolver(validationSchema as any),
+    validate: schemaResolver(validationSchema, { sync: true }),
   });
 
   useEffect(() => {

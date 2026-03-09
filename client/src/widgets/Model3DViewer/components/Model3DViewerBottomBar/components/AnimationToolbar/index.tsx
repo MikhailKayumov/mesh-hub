@@ -1,5 +1,5 @@
 import { Group } from '@mantine/core';
-import { useAnimations, UseAnimationsProps } from '../../../../hooks/useAnimations';
+import { useAnimations, type UseAnimationsProps } from '../../../../hooks/useAnimations';
 import { AnimationList } from './components/AnimationList';
 import { AnimationProgress } from './components/AnimationProgress';
 import { AnimationToggleStateButton } from './components/AnimationToggleStateButton';

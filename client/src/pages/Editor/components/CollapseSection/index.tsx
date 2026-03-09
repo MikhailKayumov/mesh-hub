@@ -3,7 +3,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconCaretDownFilled } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import classes from './CollapseSection.module.scss';
-import { CollapseSectionProps } from './model.ts';
+import { type CollapseSectionProps } from './model.ts';
 
 export const CollapseSection = ({ title, children, defaultOpened = false, className }: CollapseSectionProps) => {
   const [opened, { toggle }] = useDisclosure(defaultOpened);

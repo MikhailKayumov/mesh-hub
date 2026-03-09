@@ -1,4 +1,4 @@
-import { Material, Object3D, Texture } from 'three';
+import { type Material, type Object3D, type Texture } from 'three';
 import { isDisposableObject3D, isLight, isWithGeometryObject3D, isWithMaterialObject3D } from '../utils';
 import { MATERIAL_TEXTURE_MAP_FIELDS } from './constants.ts';
 

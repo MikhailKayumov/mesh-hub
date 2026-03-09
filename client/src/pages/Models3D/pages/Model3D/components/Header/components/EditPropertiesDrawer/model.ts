@@ -1,5 +1,5 @@
-import { DrawerProps } from '@mantine/core';
-import { JSONContent } from '@tiptap/react';
+import { type DrawerProps } from '@mantine/core';
+import { type JSONContent } from '@tiptap/react';
 
 export type Model3DEditPropertiesDrawerProps = Pick<DrawerProps, 'opened' | 'onClose'>;
 

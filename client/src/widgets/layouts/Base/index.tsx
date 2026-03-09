@@ -1,5 +1,5 @@
 import { AppShell } from '@mantine/core';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
 import { Footer } from '@/widgets/Footer';
 import { Header } from '@/widgets/Header';

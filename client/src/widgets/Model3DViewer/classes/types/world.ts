@@ -1,4 +1,4 @@
-import { AmbientLight, Light, Object3D, Scene, SpotLight, SpotLightHelper } from 'three';
+import { type AmbientLight, type Light, type Object3D, type Scene, type SpotLight, type SpotLightHelper } from 'three';
 
 // new
 export type WorldObject3D = Object3D | Promise<Object3D>;

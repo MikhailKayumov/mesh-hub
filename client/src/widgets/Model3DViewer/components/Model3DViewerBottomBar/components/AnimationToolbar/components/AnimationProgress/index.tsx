@@ -1,7 +1,7 @@
 import { Group, Slider } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
-import { AnimationState, UseAnimationsReturn } from '@/widgets/Model3DViewer/hooks/useAnimations.ts';
+import { type AnimationState, type UseAnimationsReturn } from '@/widgets/Model3DViewer/hooks/useAnimations.ts';
 import { useViewerContext } from '@/widgets/Model3DViewer/hooks/useViewerContext.ts';
 import classes from './AnimationProgress.module.scss';
 import { formatAnimationTime } from './utils.ts';

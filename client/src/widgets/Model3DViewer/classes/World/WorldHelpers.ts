@@ -1,4 +1,4 @@
-import { AxesHelper, Box3Helper, GridHelper, Mesh } from 'three';
+import { type AxesHelper, type Box3Helper, type GridHelper, type Mesh } from 'three';
 
 export class WorldHelpers {
   // private static GROUND_HELPER_LAYER = 9;

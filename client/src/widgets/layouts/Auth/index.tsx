@@ -1,5 +1,5 @@
 import { Flex, Paper } from '@mantine/core';
-import { PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 export function AuthLayout({ children }: PropsWithChildren) {
   return (

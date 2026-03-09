@@ -1,5 +1,10 @@
 import { Api } from '@/app/api/base.ts';
-import type { PaginationResponseDto, Model3DResponseDto, PaginationDto, Model3DUpdateRequestDto } from '@/app/api/dto.ts';
+import type {
+  PaginationResponseDto,
+  Model3DResponseDto,
+  PaginationDto,
+  Model3DUpdateRequestDto,
+} from '@/app/api/dto.ts';
 import { ApiTags } from '@/app/api/tags.ts';
 import { ApiUrls } from '@/app/api/urls.ts';
 

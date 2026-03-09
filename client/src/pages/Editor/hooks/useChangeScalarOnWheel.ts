@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { UseScalarFieldWheelProps } from '@/pages/Editor/components/Fields/ScalarField/model.ts';
+import { type UseScalarFieldWheelProps } from '@/pages/Editor/components/Fields/ScalarField/model.ts';
 
 export function useChangeScalarOnWheel({ step, onChange }: UseScalarFieldWheelProps) {
   const localRef = useRef<HTMLInputElement>(null);

@@ -1,5 +1,5 @@
 import { Api } from './base.ts';
-import { CategoryResponse, CgSoftResponse } from './dto.ts';
+import { type CategoryResponse, type CgSoftResponse } from './dto.ts';
 import { ApiTags } from './tags.ts';
 import { ApiUrls } from './urls.ts';
 

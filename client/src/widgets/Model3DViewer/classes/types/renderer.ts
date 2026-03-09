@@ -1,6 +1,6 @@
-import { Clock, Color, WebGLRenderer, WebGLRendererParameters } from 'three';
-import { CameraController } from '../Camera';
-import { World } from '../World';
+import { type Clock, type Color, type WebGLRenderer, type WebGLRendererParameters } from 'three';
+import { type CameraController } from '../Camera';
+import { type World } from '../World';
 
 export interface RendererParameters extends WebGLRendererParameters {
   world: World;

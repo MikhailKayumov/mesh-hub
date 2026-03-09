@@ -14,7 +14,7 @@ import {
   transformFromForm,
   transformToForm,
 } from './constants.ts';
-import { RendererTabFormValues, RendererTabProps } from './model.ts';
+import { type RendererTabFormValues, type RendererTabProps } from './model.ts';
 import classes from './RendererTab.module.scss';
 
 export function RendererTab({ className, viewer }: RendererTabProps) {

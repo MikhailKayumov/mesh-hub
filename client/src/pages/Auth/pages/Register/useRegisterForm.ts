@@ -1,4 +1,4 @@
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useDispatch } from 'react-redux';
@@ -18,7 +18,7 @@ export function useRegisterForm() {
   const [register] = useRegisterMutation();
 
   const form = useForm<SignupRequestDto>({
-    validate: zodResolver(validationSchema as any),
+    validate: schemaResolver(validationSchema, { sync: true }),
     initialValues,
     transformValues,
   });

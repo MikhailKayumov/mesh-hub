@@ -1,7 +1,7 @@
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
-import { object, string } from 'zod';
+import { object, email } from 'zod';
 import type { UserResetPasswordRequestDto } from '@/app/api/dto.ts';
 import { useResetPasswordMutation } from '@/app/api/user.ts';
 import { ValidationErrorMessages } from '@/shared/constants';
@@ -16,11 +16,7 @@ export function useResetPasswordForm() {
 
   const form = useForm<UserResetPasswordRequestDto>({
     initialValues: { email: '' },
-    validate: zodResolver(
-      object({
-        email: string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
-      }) as any,
-    ),
+    validate: schemaResolver(object({ email: email(ValidationErrorMessages.Email) }), { sync: true }),
     transformValues: (values) => ({ email: values.email.trim() }),
   });
 

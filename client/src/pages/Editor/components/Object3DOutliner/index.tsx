@@ -2,7 +2,7 @@ import { ScrollArea } from '@mantine/core';
 import { clsx } from 'clsx';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Tree } from './components/Tree';
-import { Object3DOutlinerProps, SelectedObject3D } from './model.ts';
+import { type Object3DOutlinerProps, type SelectedObject3D } from './model.ts';
 import classes from './Object3DOutliner.module.scss';
 
 export const Object3DOutliner = memo(

@@ -4,7 +4,7 @@ import { Subscript as SubScript } from '@tiptap/extension-subscript';
 import { Superscript } from '@tiptap/extension-superscript';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { Underline } from '@tiptap/extension-underline';
-import { Editor, useEditor } from '@tiptap/react';
+import { type Editor, useEditor } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DContext.ts';

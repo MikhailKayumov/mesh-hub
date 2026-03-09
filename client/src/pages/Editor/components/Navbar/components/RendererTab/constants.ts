@@ -1,10 +1,10 @@
-import { ComboboxItem } from '@mantine/core';
+import { type ComboboxItem } from '@mantine/core';
 import {
   ACESFilmicToneMapping,
   AgXToneMapping,
   BasicShadowMap,
   CineonToneMapping,
-  ColorSpace,
+  type ColorSpace,
   CustomToneMapping,
   LinearSRGBColorSpace,
   LinearToneMapping,
@@ -12,13 +12,13 @@ import {
   PCFShadowMap,
   PCFSoftShadowMap,
   ReinhardToneMapping,
-  ShadowMapType,
+  type ShadowMapType,
   SRGBColorSpace,
-  ToneMapping,
+  type ToneMapping,
   VSMShadowMap,
 } from 'three';
-import { RendererSettings } from '@/widgets/Model3DViewer/classes/types';
-import { RendererTabFormValues } from './model.ts';
+import { type RendererSettings } from '@/widgets/Model3DViewer/classes/types';
+import { type RendererTabFormValues } from './model.ts';
 
 export const toneMappingOptions: ComboboxItem[] = [
   { value: NoToneMapping.toString(), label: 'NoToneMapping' },

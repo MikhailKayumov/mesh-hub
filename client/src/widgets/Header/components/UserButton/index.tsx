@@ -1,7 +1,7 @@
 import { Avatar, Group, UnstyledButton, Text, rem, Stack, Skeleton } from '@mantine/core';
 import { IconChevronDown } from '@tabler/icons-react';
 import { clsx } from 'clsx';
-import { ComponentPropsWithoutRef, forwardRef, useState } from 'react';
+import { type ComponentPropsWithoutRef, forwardRef, useState } from 'react';
 import { useCurrentUser } from '@/entities/user/hooks/useCurrentUser';
 import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
 import { getAvatarInitials, getAvatarSrc, getUserFullName } from '@/shared/utils/user.ts';

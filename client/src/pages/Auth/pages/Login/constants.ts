@@ -1,4 +1,4 @@
-import { object, string } from 'zod';
+import { object, string, email } from 'zod';
 import type { LoginRequestDto } from '@/app/api/dto.ts';
 import { ValidationErrorMessages } from '@/shared/constants';
 
@@ -13,7 +13,7 @@ export const transformValues = (values: LoginRequestDto) => ({
 });
 
 export const validationSchema = object({
-  email: string().trim().email(ValidationErrorMessages.Email).min(1, ValidationErrorMessages.RequiredField),
+  email: email(ValidationErrorMessages.Email),
   password: string()
     .trim()
     .min(6, ValidationErrorMessages.PasswordLength)

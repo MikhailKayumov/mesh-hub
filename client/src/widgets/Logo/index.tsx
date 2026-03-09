@@ -1,5 +1,5 @@
 import { rem, useSafeMantineTheme } from '@mantine/core';
-import { ComponentPropsWithoutRef } from 'react';
+import { type ComponentPropsWithoutRef } from 'react';
 import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
 
 export type LogoProps = ComponentPropsWithoutRef<'svg'>;

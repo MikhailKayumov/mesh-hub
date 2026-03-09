@@ -1,4 +1,4 @@
-import { generatePath } from 'react-router-dom';
+import { type generatePath } from 'react-router-dom';
 
 export interface BuildRoutePathOptions {
   params?: Parameters<typeof generatePath>[1];

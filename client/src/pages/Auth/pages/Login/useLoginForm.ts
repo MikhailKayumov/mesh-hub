@@ -1,4 +1,4 @@
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +17,7 @@ export function useLoginForm() {
   const [apiLogin] = useLoginMutation();
 
   const form = useForm<LoginRequestDto>({
-    validate: zodResolver(validationSchema as any),
+    validate: schemaResolver(validationSchema, { sync: true }),
     initialValues,
     transformValues,
   });

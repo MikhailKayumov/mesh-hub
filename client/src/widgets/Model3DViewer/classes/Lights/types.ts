@@ -1,4 +1,4 @@
-import { ColorRepresentation, LightShadow, OrthographicCamera, Vector3 } from 'three';
+import { type ColorRepresentation, type LightShadow, type OrthographicCamera, type Vector3 } from 'three';
 
 export interface BuildBaseLightOptions {
   name?: string;

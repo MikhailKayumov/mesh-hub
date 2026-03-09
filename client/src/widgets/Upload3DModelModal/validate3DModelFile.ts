@@ -1,4 +1,4 @@
-import { ErrorCode, FileError } from 'react-dropzone-esm';
+import { ErrorCode, type FileError } from 'react-dropzone-esm';
 import { formatBytes } from '@/shared/utils/format-bytes.ts';
 import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '../../shared/constants';
 

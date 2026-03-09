@@ -1,7 +1,7 @@
 import { Group, rem, Text, UnstyledButton } from '@mantine/core';
 import { clsx } from 'clsx';
-import { MouseEvent } from 'react';
-import { Object3DTreeLeafProps } from '../../model.ts';
+import { type MouseEvent } from 'react';
+import { type Object3DTreeLeafProps } from '../../model.ts';
 import classes from '../../Object3DOutliner.module.scss';
 
 export function TreeLeaf({ item, level, isActive, filterNode, selectNode }: Object3DTreeLeafProps) {

@@ -2,7 +2,7 @@ import { Button, Group, Modal, rem, Stack, Text, Tooltip } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
 import { IconCubePlus, IconUpload } from '@tabler/icons-react';
-import { FileRejection } from 'react-dropzone-esm';
+import { type FileRejection } from 'react-dropzone-esm';
 import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
 import { formatBytes } from '@/shared/utils/format-bytes.ts';
 import { ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '../../shared/constants';

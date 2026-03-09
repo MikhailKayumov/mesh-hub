@@ -3,8 +3,8 @@ import { IconBulb, IconCube, IconPhotoEdit } from '@tabler/icons-react';
 import { RendererTab } from '@/pages/Editor/components/Navbar/components/RendererTab';
 import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
-import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
-import { TabsConfig } from './model.ts';
+import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
+import { type TabsConfig } from './model.ts';
 import classes from './Navbar.module.scss';
 
 export const getTabsConfig = (viewer: Viewer | null): TabsConfig[] | undefined => {

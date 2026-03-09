@@ -1,4 +1,4 @@
-import { TabValue } from './model.ts';
+import { type TabValue } from './model.ts';
 
 export const TabValues: Record<Capitalize<TabValue>, TabValue> = {
   Renderer: 'renderer',

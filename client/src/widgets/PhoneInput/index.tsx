@@ -1,6 +1,6 @@
-import { Input, InputProps } from '@mantine/core';
+import { Input, type InputProps } from '@mantine/core';
 import { forwardRef, useState } from 'react';
-import { IMaskInput, IMaskInputProps } from 'react-imask';
+import { IMaskInput, type IMaskInputProps } from 'react-imask';
 
 export interface PhoneInputProps extends InputProps {
   value?: string;

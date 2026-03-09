@@ -5,7 +5,7 @@ import { Subscript as SubScript } from '@tiptap/extension-subscript';
 import { Superscript } from '@tiptap/extension-superscript';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { Underline } from '@tiptap/extension-underline';
-import { Editor, useEditor, EditorEvents, JSONContent } from '@tiptap/react';
+import { type Editor, useEditor, type EditorEvents, type JSONContent } from '@tiptap/react';
 import { StarterKit } from '@tiptap/starter-kit';
 import { clsx } from 'clsx';
 import { useEffect } from 'react';

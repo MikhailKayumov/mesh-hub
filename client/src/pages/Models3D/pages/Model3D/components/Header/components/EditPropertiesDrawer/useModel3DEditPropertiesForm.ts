@@ -1,4 +1,4 @@
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useEffect, useMemo } from 'react';
@@ -13,7 +13,7 @@ import {
   transformValuesFromModel3DToForm,
   validationSchema,
 } from './constants.ts';
-import { Model3DPropertiesForm } from './model.ts';
+import { type Model3DPropertiesForm } from './model.ts';
 
 export function useModel3DEditPropertiesForm(onSubmitted: () => void) {
   const model = useModel3DContext();
@@ -22,7 +22,7 @@ export function useModel3DEditPropertiesForm(onSubmitted: () => void) {
   const { data: categories } = useCategoriesQuery();
   const form = useForm<Model3DPropertiesForm>({
     initialValues,
-    validate: zodResolver(validationSchema as any),
+    validate: schemaResolver(validationSchema, { sync: true }),
   });
 
   useEffect(() => {

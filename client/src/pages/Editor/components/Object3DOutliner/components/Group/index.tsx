@@ -2,8 +2,8 @@ import { ActionIcon, Box, Collapse, Group, Text, UnstyledButton } from '@mantine
 import { useDisclosure } from '@mantine/hooks';
 import { IconFolder, IconFolderOpen } from '@tabler/icons-react';
 import { clsx } from 'clsx';
-import { MouseEvent } from 'react';
-import { Object3DTreeGroupProps } from '../../model.ts';
+import { type MouseEvent } from 'react';
+import { type Object3DTreeGroupProps } from '../../model.ts';
 import classes from '../../Object3DOutliner.module.scss';
 import { TreeNode } from '../Node';
 

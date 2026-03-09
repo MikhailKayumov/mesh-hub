@@ -1,4 +1,4 @@
-import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
+import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 
 export interface RendererTabProps {
   className?: string;

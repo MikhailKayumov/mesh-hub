@@ -1,10 +1,10 @@
-import type { SerializedError } from '@reduxjs/toolkit';
-import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { type BaseQueryFn, createApi, type FetchArgs, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Mutex } from 'async-mutex';
 import { ApiUrls } from '@/app/api/urls.ts';
 import { userActions } from '@/entities/user/store';
 import type { HttpException } from './dto.ts';
+import type { SerializedError } from '@reduxjs/toolkit';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { ApiTags } from './tags.ts';
 import { isFetchError, isFetchQueryError, isUnauthorizedHttpException, processFetchQueryError } from './utils.ts';
 

@@ -1,4 +1,4 @@
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { useLayoutEffect } from 'react';
@@ -18,7 +18,7 @@ export function useNewPasswordForm() {
 
   const form = useForm<UserNewPasswordFormData>({
     initialValues,
-    validate: zodResolver(validationSchema as any),
+    validate: schemaResolver(validationSchema, { sync: true }),
     transformValues,
   });
 

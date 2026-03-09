@@ -2,8 +2,8 @@ import { AppShell, Tabs } from '@mantine/core';
 import { clsx } from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
-import { TabValue } from '@/pages/Editor/components/Navbar/model.ts';
-import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
+import { type TabValue } from '@/pages/Editor/components/Navbar/model.ts';
+import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import classes from './Navbar.module.scss';
 import { getTabsConfig } from './utils.tsx';
 

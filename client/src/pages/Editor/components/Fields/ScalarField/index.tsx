@@ -3,7 +3,7 @@ import { mergeRefs } from '@mantine/hooks';
 import { forwardRef, useState } from 'react';
 import { useChangeScalarOnWheel } from '@/pages/Editor/hooks/useChangeScalarOnWheel.ts';
 import { toFixed } from '@/shared/utils/number.ts';
-import { ScalarFieldProps } from './model.ts';
+import { type ScalarFieldProps } from './model.ts';
 
 export const ScalarField = forwardRef<HTMLInputElement, ScalarFieldProps>(
   (

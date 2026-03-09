@@ -1,4 +1,4 @@
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import type { UserChangePasswordRequestDto } from '@/app/api/dto.ts';
@@ -12,7 +12,7 @@ export function useChangePasswordForm(onSuccess: () => void) {
 
   const form = useForm<UserChangePasswordRequestDto>({
     initialValues,
-    validate: zodResolver(validationSchema as any),
+    validate: schemaResolver(validationSchema, { sync: true }),
     transformValues,
   });
 

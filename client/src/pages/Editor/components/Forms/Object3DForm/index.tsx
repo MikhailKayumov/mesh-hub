@@ -4,7 +4,7 @@ import { clsx } from 'clsx';
 import { useEffect } from 'react';
 import { Vector3Field } from '@/pages/Editor/components/Fields';
 import { CollapseSection } from '../../CollapseSection/index.tsx';
-import { Object3DFormProps, Object3DFormValues } from './model.ts';
+import { type Object3DFormProps, type Object3DFormValues } from './model.ts';
 import classes from './Object3DForm.module.scss';
 
 export function Object3DForm({ selected, className }: Object3DFormProps) {

@@ -1,5 +1,5 @@
 import { Stack } from '@mantine/core';
-import { Object3DTreeProps } from '../../model.ts';
+import { type Object3DTreeProps } from '../../model.ts';
 import { TreeHeader } from '../Header';
 import { TreeNode } from '../Node';
 

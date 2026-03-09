@@ -1,5 +1,5 @@
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { LoadedModel3D } from '../types';
+import { type LoadedModel3D } from '../types';
 import { LoaderCache } from './LoaderCache.ts';
 
 export class Loader {

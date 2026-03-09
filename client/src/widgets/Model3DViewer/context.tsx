@@ -1,5 +1,5 @@
 import { createContext, type PropsWithChildren } from 'react';
-import { Viewer } from './classes/Viewer';
+import { type Viewer } from './classes/Viewer';
 
 export const ViewerContext = createContext<Viewer | null>(null);
 

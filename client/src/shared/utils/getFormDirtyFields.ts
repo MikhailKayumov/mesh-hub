@@ -1,4 +1,4 @@
-import { UseFormReturnType } from '@mantine/form';
+import { type UseFormReturnType } from '@mantine/form';
 
 export function getFormDirtyFields<T extends Record<string | number, any>>(
   form: UseFormReturnType<T>,

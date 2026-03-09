@@ -1,4 +1,4 @@
-import { NumberInputProps } from '@mantine/core';
+import { type NumberInputProps } from '@mantine/core';
 
 export interface ScalarFieldProps extends Omit<NumberInputProps, 'onChange'> {
   value: number;

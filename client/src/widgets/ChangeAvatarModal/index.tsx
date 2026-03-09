@@ -3,10 +3,10 @@ import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
 import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
-import type { FileWithPath } from 'react-dropzone-esm';
 import { useUpdateCurrentUserAvatarMutation } from '@/app/api/user.ts';
 import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
 import { formatBytes } from '@/shared/utils/format-bytes.ts';
+import type { FileWithPath } from 'react-dropzone-esm';
 import { MAX_AVATAR_FILE_SIZE } from '../../shared/constants';
 import classes from './ChangeAvatarModal.module.scss';
 

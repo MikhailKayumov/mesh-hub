@@ -6,7 +6,7 @@ import { useModel3DContext } from '@/shared/contexts/Model3DContext/useModel3DCo
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { canNavigateBack } from '@/shared/utils/router.ts';
 import { ColorSchemeSelect } from '@/widgets/ColorSchemeSelect';
-import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
+import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import classes from './Header.module.scss';
 
 export interface HeaderProps {

@@ -1,10 +1,10 @@
 import {
   AxesHelper,
-  Box3,
+  type Box3,
   Box3Helper,
   Color,
   GridHelper,
-  Light,
+  type Light,
   MathUtils,
   Mesh,
   Object3D,
@@ -15,9 +15,9 @@ import {
 } from 'three';
 import { Destroyer } from '../Destroyer';
 import { buildAmbientLight, buildDirectionalLight } from '../Lights';
-import { WorldEventListener, WorldObject3D, WorldObjects3D, WorldSpawnOptions } from '../types';
+import { type WorldEventListener, type WorldObject3D, type WorldObjects3D, type WorldSpawnOptions } from '../types';
 import { isLight, isObject3D } from '../utils';
-import { DEFAULT_LAYER, WorldEvent, WorldEventNames } from './constants.ts';
+import { DEFAULT_LAYER, type WorldEvent, WorldEventNames } from './constants.ts';
 import { WorldHelpers } from './WorldHelpers.ts';
 
 // setting up axis

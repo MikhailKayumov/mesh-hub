@@ -1,7 +1,7 @@
 import CameraControls from 'camera-controls';
 import {
   Box3,
-  Layers,
+  type Layers,
   MathUtils,
   Matrix4,
   PerspectiveCamera,

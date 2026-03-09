@@ -1,4 +1,4 @@
-import { UserCurrentUpdateRequestDto } from '@/app/api/dto.ts';
+import { type UserCurrentUpdateRequestDto } from '@/app/api/dto.ts';
 
 export interface ProfileFormData extends Omit<UserCurrentUpdateRequestDto, 'favoriteSoft'> {
   email?: string;

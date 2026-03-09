@@ -1,9 +1,9 @@
 import { Checkbox, Group, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { ChangeEvent, useEffect } from 'react';
+import { type ChangeEvent, useEffect } from 'react';
 import { CollapseSection } from '../CollapseSection';
 import classes from './LayersCheckboxGroup.module.scss';
-import { LayersCheckboxGroupProps, SceneLayersFormValues } from './model.ts';
+import { type LayersCheckboxGroupProps, type SceneLayersFormValues } from './model.ts';
 
 export const LayersCheckboxGroup = ({
   viewer,

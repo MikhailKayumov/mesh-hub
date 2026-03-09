@@ -1,11 +1,11 @@
-import { AnimationObjectGroup, Box3, Object3D, Vector3 } from 'three';
+import { AnimationObjectGroup, Box3, type Object3D, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import type { Model3DResponseDto } from '@/app/api/dto.ts';
 import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
+import type { LoadedModel3D, ViewerModel3D } from '../types';
 import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';
-import type { LoadedModel3D, ViewerModel3D } from '../types';
 import { isMesh, isObject3D, isSkinnedMesh } from '../utils';
 import { World } from '../World';
 

@@ -1,5 +1,5 @@
 import { Destroyer } from '../Destroyer';
-import { ViewerModel3D } from '../types';
+import { type ViewerModel3D } from '../types';
 import { isImageBitmapSource, isTexture } from '../utils';
 
 export class LoaderCache {

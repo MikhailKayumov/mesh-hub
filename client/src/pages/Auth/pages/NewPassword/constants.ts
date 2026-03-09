@@ -1,5 +1,5 @@
 import { object, string } from 'zod';
-import { UserNewPasswordRequestDto } from '@/app/api/dto.ts';
+import { type UserNewPasswordRequestDto } from '@/app/api/dto.ts';
 import { AppRegexp, ValidationErrorMessages } from '@/shared/constants';
 
 export type UserNewPasswordFormData = Omit<UserNewPasswordRequestDto, 'requestId'>;

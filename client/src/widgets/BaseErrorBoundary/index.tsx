@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useRouteError } from 'react-router-dom';
 import { isRouteNotFoundErrorResponse } from '@/shared/utils/type-guards.ts';
 import { NotFoundError } from '@/widgets/Errors';

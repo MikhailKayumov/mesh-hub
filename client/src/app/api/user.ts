@@ -1,10 +1,10 @@
-import { Api } from './base.ts';
 import type {
   UserChangePasswordRequestDto,
   UserNewPasswordRequestDto,
   UserCurrentResponseDto,
   UserCurrentUpdateRequestDto,
 } from './dto.ts';
+import { Api } from './base.ts';
 import { ApiTags } from './tags.ts';
 import { ApiUrls } from './urls.ts';
 

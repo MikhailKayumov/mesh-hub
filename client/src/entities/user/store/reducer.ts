@@ -1,7 +1,19 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
 import type { ThemeName } from '@/shared/theme/types.ts';
+import type { WebStorage } from 'redux-persist/lib/types';
+
+const storage: WebStorage = {
+  getItem: (key) => Promise.resolve(localStorage.getItem(key)),
+  setItem: (key, value) => {
+    localStorage.setItem(key, value);
+    return Promise.resolve();
+  },
+  removeItem: (key) => {
+    localStorage.removeItem(key);
+    return Promise.resolve();
+  },
+};
 
 export interface UserState {
   session: string | null;

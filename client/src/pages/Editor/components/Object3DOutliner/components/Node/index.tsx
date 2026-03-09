@@ -1,4 +1,4 @@
-import { Object3DTreeNodeProps } from '../../model.ts';
+import { type Object3DTreeNodeProps } from '../../model.ts';
 import { TreeGroup } from '../Group';
 import { TreeLeaf } from '../Leaf';
 

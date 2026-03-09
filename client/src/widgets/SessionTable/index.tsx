@@ -2,7 +2,7 @@ import { ActionIcon, Button, Group, Title } from '@mantine/core';
 import { IconRefresh } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
 import { useCloseCurrentUserSessionsMutation, useCurrentUserSessionsQuery } from '@/app/api/auth.ts';
-import { SessionResponseDto } from '@/app/api/dto.ts';
+import { type SessionResponseDto } from '@/app/api/dto.ts';
 import { useSession } from '@/entities/user/hooks/useSession.ts';
 import { useCurrentColorScheme, useSearchParamsPagination, useSearchParamsTableSorting } from '@/shared/hooks';
 import { columns } from './columns.tsx';

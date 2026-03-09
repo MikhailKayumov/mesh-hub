@@ -1,5 +1,5 @@
 import { createTheme, MantineProvider, mergeMantineTheme } from '@mantine/core';
-import { PropsWithChildren, useMemo } from 'react';
+import { type PropsWithChildren, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { themeSelector } from '@/entities/user/store';
 import { baseTheme, themes } from '@/shared/theme/themes.ts';

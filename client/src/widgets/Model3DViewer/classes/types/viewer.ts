@@ -1,5 +1,5 @@
-import { AnimationClip, AnimationObjectGroup, Box3, Group } from 'three';
-import { GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { type AnimationClip, type AnimationObjectGroup, type Box3, type Group } from 'three';
+import { type GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export interface ViewerAnimations {
   clips: AnimationClip[];

@@ -1,5 +1,10 @@
 import { object, string } from 'zod';
-import type { CgSoftRequest, CgSoftResponse, UserCurrentResponseDto, UserCurrentUpdateRequestDto } from '@/app/api/dto.ts';
+import type {
+  CgSoftRequest,
+  CgSoftResponse,
+  UserCurrentResponseDto,
+  UserCurrentUpdateRequestDto,
+} from '@/app/api/dto.ts';
 import type { ProfileFormData } from '@/pages/User/pages/Profile/model.ts';
 import { AppRegexp, ValidationErrorMessages } from '@/shared/constants';
 

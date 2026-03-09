@@ -48,14 +48,14 @@ export default class AppBootstrap {
 
   public async run(): Promise<NestExpressApplication> {
     if (!this.application) {
-      throw new Error(`It's immposible to run undefined application.`);
+      throw new Error(`It's impossible to run undefined application.`);
     }
 
     const swaggerService = new SwaggerService(this.application, this.configService);
     SwaggerModule.setup('swagger', this.application, await swaggerService.createDocument());
 
     await this.application.listen(this.configService.app.port, this.configService.app.host);
-    this.logger.log(`Server is running on ${this.configService.app.host}:${this.configService.app.port}`);
+    this.logger.log(`Server is running on http://${this.configService.app.host}:${this.configService.app.port}`);
 
     return this.application;
   }

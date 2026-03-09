@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from 'react';
 import type { Model3DResponseDto } from '@/app/api/dto.ts';
+import type { PropsWithChildren } from 'react';
 import { Model3DContext } from './context.ts';
 
 export interface Model3DContextProviderProps {

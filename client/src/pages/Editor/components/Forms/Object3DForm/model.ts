@@ -1,4 +1,4 @@
-import { SelectedObject3D } from '@/pages/Editor/components/Object3DOutliner/model.ts';
+import { type SelectedObject3D } from '@/pages/Editor/components/Object3DOutliner/model.ts';
 
 export type Object3DFormValues = {
   position: [number, number, number];

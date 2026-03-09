@@ -1,6 +1,6 @@
 import { Group, Input, NumberInput, Slider } from '@mantine/core';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { NumberInputSliderProps } from './model.ts';
+import { type NumberInputSliderProps } from './model.ts';
 import classes from './NumberInputSlider.module.scss';
 
 // @refresh reset

@@ -4,13 +4,13 @@ import {
   Color,
   PCFSoftShadowMap,
   ReinhardToneMapping,
-  ShadowMapType,
+  type ShadowMapType,
   WebGLRenderer,
 } from 'three';
-import { CameraController } from '../Camera';
-import { RenderCallback, RendererParameters, RendererSettings } from '../types';
+import { type CameraController } from '../Camera';
+import { type RenderCallback, type RendererParameters, type RendererSettings } from '../types';
 import { isMesh } from '../utils';
-import { World } from '../World';
+import { type World } from '../World';
 
 export class Renderer {
   private readonly world: World;

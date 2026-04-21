@@ -1,73 +1,123 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# MeshHub — Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS REST API backend for the MeshHub 3D model sharing platform. Provides authentication, user management, 3D model storage, and reference data.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech Stack
 
-## Description
+| Layer | Technology |
+|---|---|
+| Framework | NestJS 11 (Express) |
+| Language | TypeScript 6 |
+| Database | PostgreSQL 18 via TypeORM 0.3 |
+| Auth | JWT (HS512) + DB sessions, cookie transport |
+| File storage | Local filesystem (pluggable strategy) |
+| Email | Nodemailer / Yandex SMTP |
+| Queue | Bull (Redis) |
+| Docs | Swagger / OpenAPI 3 at `/swagger` |
+| Runtime | Node.js ≥ 24.11.1 |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Documentation
 
-## Installation
+| File | Contents |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | Module structure, design patterns, request lifecycle |
+| [docs/api.md](docs/api.md) | Full REST endpoint reference |
+| [docs/auth.md](docs/auth.md) | Auth flow, JWT, sessions, RBAC, decorators |
+| [docs/database.md](docs/database.md) | Entities, schemas, migrations, seeds |
+| [docs/configuration.md](docs/configuration.md) | All environment variables |
+| [docs/file-storage.md](docs/file-storage.md) | File storage strategy, directory layout, limits |
+| [docs/modules.md](docs/modules.md) | Per-module controller/service/DTO reference |
+| [AGENTS.md](AGENTS.md) | LLM-friendly conventions and how-to guides |
+
+## Quick Start (local)
+
+### Prerequisites
+
+- Node.js ≥ 24.11.1, npm ≥ 11.6.2
+- PostgreSQL instance (see `docker-compose.dev.yml` in the repo root)
+
+### 1. Environment
 
 ```bash
-$ npm install
+cp .env.example .env
+# Edit .env — at minimum set POSTGRES_* vars
 ```
 
-## Running the app
+### 2. Install dependencies
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
+
+### 3. Init database and run seeds
+
+```bash
+npm run db:init    # runs schema init + TypeORM migrations
+npm run db:seeds   # seeds roles and reference data
+```
+
+### 4. Start the server
+
+```bash
+npm run start:dev   # watch mode (development)
+npm run start       # single run
+```
+
+API is available at `http://localhost:8080/api`.
+Swagger UI is available at `http://localhost:8080/swagger`.
+
+## Quick Start (Docker)
+
+Use the `docker-compose.dev.yml` in the repository root:
+
+```bash
+# From the repo root
+docker compose -f docker-compose.dev.yml up --build
+```
+
+The compose file starts both the API container and PostgreSQL.
+
+## Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run start` | Start server (production build must exist) |
+| `npm run start:dev` | Start with file watcher (development) |
+| `npm run start:debug` | Start with debug port open |
+| `npm run start:prod` | Start compiled JS from `dist/` |
+| `npm run build` | Compile TypeScript via Nest CLI |
+| `npm run db:init` | Init schemas + run all migrations |
+| `npm run db:init:hard` | Drop all schemas, re-init, run migrations |
+| `npm run db:seeds` | Run database seeds (requires prior build) |
+| `npm run db:build` | `db:init` + `db:seeds` |
+| `npm run db:build:hard` | `db:init:hard` + `db:seeds` |
+| `npm run migration:generate` | Generate a new migration (pass `--schema=` `--name=`) |
+| `npm run migration:run` | Apply pending migrations |
+| `npm run migration:revert` | Revert last migration |
+| `npm run swagger:generate` | Build project and export `swagger.openapi3.json` |
+| `npm run lint` | Lint source files |
+| `npm run lint:fix` | Lint and auto-fix |
+| `npm run tscheck` | Type-check without emit |
+| `npm test` | Run unit tests (Jest) |
+| `npm run test:e2e` | Run end-to-end tests |
+| `npm run test:cov` | Run tests with coverage report |
 
 ## Test
 
 ```bash
 # unit tests
-$ npm run test
+npm test
+
+# unit tests with watch
+npm run test:watch
 
 # e2e tests
-$ npm run test:e2e
+npm run test:e2e
 
-# test coverage
-$ npm run test:cov
+# coverage report
+npm run test:cov
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+UNLICENSED — private project.

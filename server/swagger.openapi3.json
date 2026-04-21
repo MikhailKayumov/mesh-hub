@@ -775,9 +775,6 @@
           "200": {
             "description": ""
           },
-          "201": {
-            "description": ""
-          },
           "400": {
             "description": ""
           }
@@ -812,9 +809,6 @@
         },
         "responses": {
           "200": {
-            "description": ""
-          },
-          "201": {
             "description": ""
           },
           "400": {

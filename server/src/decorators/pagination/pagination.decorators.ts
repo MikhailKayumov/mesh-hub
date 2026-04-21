@@ -28,7 +28,8 @@ export const PaginatedRequest = createParamDecorator(
     return PaginationDto.build(skip, size, sort);
   },
   [
-    (target: any, key: string) => {
+    (target: any, propertyKey: string | symbol | undefined) => {
+      const key = String(propertyKey);
       ApiQuery({
         name: 'skip',
         schema: { type: 'number', minimum: 0 },

@@ -1,5 +1,5 @@
 import { ConfigService } from '@/modules/config/config.service';
-import AppBootstrap from 'src/app.bootstrap';
+import AppBootstrap from '../app.bootstrap';
 import { SwaggerService } from './swagger.service';
 
 async function run() {

@@ -30,7 +30,9 @@ function parseMetaData(meta: LoggerMeta | undefined | null): [string, string?] {
 export default function getConsoleRowFormat(): Format {
   let prevTimestamp = Date.now();
 
-  return format.printf((info: LoggerTransformableInfo) => {
+  return format.printf((rawInfo) => {
+    const info = rawInfo as LoggerTransformableInfo;
+
     const colorCode = getRowColor(info.level as LogLevel);
     const timestamp = `${colorCode}${info.timestamp}\u001b[0m`;
     const pid = `[PID: ${process.pid}]`;

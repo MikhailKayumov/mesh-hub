@@ -46,9 +46,6 @@ mesh-hub/
 │   ├── Dockerfile        # Multi-stage: Node build → Node run
 │   └── AGENTS.md
 │
-├── codegen/              # swagger-typescript-api scripts
-│   └── package.json
-│
 ├── data/                 # Runtime volumes (gitignored)
 │   ├── db/               # PostgreSQL data
 │   └── files/            # Uploaded files (production mount)
@@ -358,19 +355,10 @@ Networks: `net-db` (db ↔ api), `net-api` (api ↔ client).
 
 ---
 
-## Code Generation (swagger → TypeScript types)
+## DTO Types
 
-```bash
-# Step 1: export OpenAPI spec from the server
-cd server
-npm run swagger:generate   # → server/swagger.openapi3.json
-
-# Step 2: generate DTO types for the client
-cd ../codegen
-npm install
-npm run generate-client-types:no-client
-# → client/src/app/api/new_dto.ts
-```
+Client-side DTO types live in `client/src/app/api/dto.ts` and are maintained manually.
+When the server API changes, update `dto.ts` by hand to reflect the new response/request shapes.
 
 ---
 

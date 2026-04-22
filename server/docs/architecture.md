@@ -187,7 +187,7 @@ Temp uploads are stored in `files/models-3d/temp/` before being moved to the mod
 The Swagger document is generated at application startup by `SwaggerService` (`src/swagger/swagger.service.ts`). It:
 - Scans all controllers decorated with NestJS Swagger decorators
 - Adds Bearer authentication and Cookie authentication schemes
-- Is served at `/swagger` (UI) and exported to `swagger.openapi3.json` (for use by the code generator in `codegen/`)
+- Is served at `/swagger` (UI) and exported to `swagger.openapi3.json`
 
 To regenerate the static JSON file:
 

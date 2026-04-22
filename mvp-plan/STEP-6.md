@@ -52,11 +52,11 @@ All call sites that pass `model.file.name` must be updated to `model.file.entryF
 
 ## 3. DTO Types
 
-**File:** `client/src/app/api/dto.ts` (or `new_dto.ts` — whichever has `Model3DFileDto`)
+**File:** `client/src/app/api/dto.ts`
 
-Add `entryFile: string` to `Model3DFileDto`:
+Add `entryFile: string` to `Model3DFileResponseDto`:
 ```ts
-export interface Model3DFileDto {
+export interface Model3DFileResponseDto {
   id: string;
   name: string;
   entryFile: string;  // ← add

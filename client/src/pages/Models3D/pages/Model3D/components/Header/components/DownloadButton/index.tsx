@@ -11,7 +11,7 @@ export function Model3DDownloadButton() {
       leftSection={<IconDownload size={18} />}
       component="a"
       download
-      href={model ? getModel3DFileSrc(model.id, model.file.name) : undefined}
+      href={model ? getModel3DFileSrc(model.id, model.file.entryFile) : undefined}
     >
       Скачать
     </Button>

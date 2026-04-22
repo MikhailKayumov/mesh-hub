@@ -13,7 +13,7 @@
 | STEP-3 | 1 | Workspaces Module Backend | DONE | |
 | STEP-4 | 1 | Frontend — Orgs/Workspaces | DONE | |
 | STEP-5 | 1.5 | ZIP Support Backend | DONE | |
-| STEP-6 | 1.5 | ZIP Support Frontend | TODO | |
+| STEP-6 | 1.5 | ZIP Support Frontend | DONE | |
 | STEP-7 | 2 | StorageQuota + OrgSubscription | TODO | |
 | STEP-8 | 2 | S3 File Strategy | TODO | |
 | STEP-9 | 3 | API Keys + Embed Entities | TODO | |
@@ -35,6 +35,7 @@
 | STEP-3 | 2026-04-22 | Full Workspaces module — CRUD, member management, workspaceId on Model3d, workspace-scoped visibility filter |
 | STEP-4 | 2026-04-22 | RTK Query org/workspace API, org Redux slice (persisted), OrgCreate/OrgDashboard pages, QuotaBar/OrgSwitcher widgets, Header integration |
 | STEP-5 | 2026-04-22 | ZIP upload support — adm-zip extraction, entryFile column + migration, wildcard file serving route |
+| STEP-6 | 2026-04-22 | ZIP frontend — .zip added to accepted types, entryFile in DTOs, all call sites updated, UI hint in upload modal |
 
 ## Known Issues / Decisions Made
 
@@ -59,7 +60,7 @@
 - New `ModelVisibility` enum (`public | private | unlisted`) in models-3d.ts
 - `Model3dEntity`: `isVisible: boolean` → `visibility: ModelVisibility`
 - New migration 1745280000000-FixVisibilityColumnAndAddEnum.ts — creates the `model_visibility` enum type, adds `visibility` column, migrates data from the old camelCase column, then drops it
-- Updated model-3d.response.dto.ts, model-3d.update.request.dto.ts, model-3d.mapper.ts, service filter, and client dto.ts/new_dto.ts/`EditPropertiesDrawer/constants.ts`
+- Updated model-3d.response.dto.ts, model-3d.update.request.dto.ts, model-3d.mapper.ts, service filter, and client dto.ts/`EditPropertiesDrawer/constants.ts`
 
 ### Fix 3 — Path traversal in file serving
 - Replaced `join()` with `resolve()` + a `safeResolvePath()` private method that throws `ForbiddenException` if the resolved path escapes the per-model base directory
@@ -330,3 +331,25 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - Temp ZIP file is deleted after successful extraction (inside the transaction block, after all DB saves succeed).
 - On any error in `upload3DModel`, existing cleanup logic (`delete3DModel(savedModelId)` or `deleteFile(file.path)`) covers both ZIP and non-ZIP cases.
 - Wildcard route fix was not in STEP-0 as described in the plan spec — the real code used `:fileName` which cannot capture `/`-containing paths; fixed here.
+
+
+## STEP-6 SUMMARY
+
+### Constants — `client/src/shared/constants/files.ts`
+- Added `'.zip'` to `ACCEPTED_3D_MODEL_FILE_TYPES`. Validation in `validate3DModelFile.ts` uses this constant directly — no separate change needed.
+
+### DTOs — `client/src/app/api/dto.ts`
+- Added `entryFile: string` field to `Model3DFileResponseDto`. The mapper on the server side always populates this field (fallback to `name` for native uploads), so the field is non-optional.
+
+### Upload modal — `client/src/widgets/Upload3DModelModal/index.tsx`
+- Added a third line to the dropzone hint text: *"ZIP-архив должен содержать ровно один .gltf или .glb файл."*
+
+### Viewer — `client/src/widgets/Model3DViewer/classes/Viewer/Viewer.ts`
+- `loadModel()`: changed `getModel3DFileSrc(modelData.id, modelData.file.name)` → `getModel3DFileSrc(modelData.id, modelData.file.entryFile)`. GLTFLoader resolves relative texture/buffer paths against the base URL of the `.gltf` automatically — no further changes needed.
+
+### Download links — 2 call sites
+- `client/src/pages/Models3D/.../Controls/index.tsx` — changed `model.file.name` → `model.file.entryFile`.
+- `client/src/pages/Models3D/.../DownloadButton/index.tsx` — same change.
+
+### Verification
+- `npm run tscheck` — 0 errors

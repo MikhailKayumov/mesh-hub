@@ -10,7 +10,6 @@ A full-stack web platform for uploading, browsing, and interactively viewing 3D 
 mesh-hub/
 ├── client/               # React SPA (Vite + Mantine + Three.js)
 ├── server/               # NestJS REST API
-├── codegen/              # swagger-typescript-api code generation scripts
 ├── data/                 # Persistent data volumes (gitignored)
 │   ├── db/               # PostgreSQL data directory
 │   └── files/            # Uploaded files (production volume)
@@ -324,18 +323,15 @@ Full viewer reference: [`client/docs/3d-viewer.md`](client/docs/3d-viewer.md)
 
 ---
 
-## Code Generation
+## DTO Types
 
-The `codegen/` directory contains a helper script that generates TypeScript types from the server's OpenAPI spec:
+Client-side DTO types live in `client/src/app/api/dto.ts` and are maintained manually.
+When the server API changes, update `dto.ts` by hand to reflect the new response/request shapes.
+
+To export the current OpenAPI spec from the server (for reference):
 
 ```bash
-# 1. Regenerate the OpenAPI spec from the server
-cd server && npm run swagger:generate
-
-# 2. Generate DTO types for the client
-cd ../codegen && npm install
-npm run generate-client-types:no-client
-# → outputs to client/src/app/api/new_dto.ts
+cd server && npm run swagger:generate  # → server/swagger.openapi3.json
 ```
 
 ---

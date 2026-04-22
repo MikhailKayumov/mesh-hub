@@ -33,7 +33,7 @@ export function Model3DControls() {
               component="a"
               download
               disabled={!model}
-              href={model ? getModel3DFileSrc(model.id, model.file.name) : undefined}
+              href={model ? getModel3DFileSrc(model.id, model.file.entryFile) : undefined}
               leftSection={<IconDownload style={{ width: rem(16), height: rem(16) }} stroke={1.5} />}
             >
               Скачать

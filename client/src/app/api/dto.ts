@@ -100,6 +100,7 @@ export interface Model3DFileResponseDto {
   createdAt: string;
   updatedAt?: string;
   name: string;
+  entryFile: string;
   size: number;
   extension: string;
 }
@@ -140,28 +141,32 @@ export interface Model3DUpdateRequestDto {
 /**
  * Organizations & Workspaces
  */
-export enum OrgMemberRole {
-  Owner = 'owner',
-  Admin = 'admin',
-  Editor = 'editor',
-  Viewer = 'viewer',
-}
+export const OrgMemberRole = {
+  Owner: 'owner',
+  Admin: 'admin',
+  Editor: 'editor',
+  Viewer: 'viewer',
+} as const;
+export type OrgMemberRole = (typeof OrgMemberRole)[keyof typeof OrgMemberRole];
 
-export enum WorkspaceMemberRole {
-  Editor = 'editor',
-  Viewer = 'viewer',
-}
+export const WorkspaceMemberRole = {
+  Editor: 'editor',
+  Viewer: 'viewer',
+} as const;
+export type WorkspaceMemberRole = (typeof WorkspaceMemberRole)[keyof typeof WorkspaceMemberRole];
 
-export enum PlanType {
-  Starter = 'starter',
-  Growth = 'growth',
-  Enterprise = 'enterprise',
-}
+export const PlanType = {
+  Starter: 'starter',
+  Growth: 'growth',
+  Enterprise: 'enterprise',
+} as const;
+export type PlanType = (typeof PlanType)[keyof typeof PlanType];
 
-export enum StorageBackend {
-  Local = 'local',
-  S3 = 's3',
-}
+export const StorageBackend = {
+  Local: 'local',
+  S3: 's3',
+} as const;
+export type StorageBackend = (typeof StorageBackend)[keyof typeof StorageBackend];
 
 export interface OrgSubscriptionSummaryDto {
   storageLimitBytes: string | null;

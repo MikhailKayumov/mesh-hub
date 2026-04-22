@@ -93,7 +93,9 @@ export function Upload3DModelModal() {
             </Text>
             <Text size="sm" c={isDark ? 'gray.5' : 'gray.6'} lh={rem(18)} ta="center">
               Размер файла не должен превышать {formatBytes(MAX_3D_MODEL_FILE_SIZE)}.<br />
-              Допустимые форматы {ACCEPTED_3D_MODEL_FILE_TYPES.map((i) => i.substring(1).toUpperCase()).join(', ')}
+              Допустимые форматы {ACCEPTED_3D_MODEL_FILE_TYPES.map((i) => i.substring(1).toUpperCase()).join(', ')}.
+              <br />
+              ZIP-архив должен содержать ровно один .gltf или .glb файл.
             </Text>
           </Stack>
         </Dropzone>

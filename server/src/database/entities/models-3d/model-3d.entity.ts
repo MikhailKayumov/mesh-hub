@@ -28,6 +28,9 @@ export class Model3dEntity extends GuidIdEntityBase {
   @Column({ type: 'enum', enum: ModelVisibility, enumName: 'model_visibility', default: ModelVisibility.Public })
   public visibility: ModelVisibility;
 
+  @Column({ type: 'uuid', nullable: true, name: 'workspace_id' })
+  public workspaceId?: string;
+
   @ManyToMany(() => CategoryEntity, { nullable: true })
   @JoinTable({
     name: Models3DSchemaTables.Model3DCategories,

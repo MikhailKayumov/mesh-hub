@@ -84,6 +84,20 @@ const routes: RouteObject[] = [
           },
         ],
       },
+      // organizations
+      {
+        path: RouterPaths.Org,
+        children: [
+          {
+            path: RouterPaths.OrgCreate,
+            lazy: async () => ({ Component: (await import('@/pages/OrgCreate')).OrgCreatePage }),
+          },
+          {
+            path: RouterPaths.OrgId,
+            lazy: async () => ({ Component: (await import('@/pages/OrgDashboard')).OrgDashboardPage }),
+          },
+        ],
+      },
     ],
   },
   {

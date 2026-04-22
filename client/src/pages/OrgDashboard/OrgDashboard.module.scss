@@ -1,0 +1,13 @@
+.header {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--mantine-spacing-lg);
+}
+
+.quotaWrap {
+    min-width: 220px;
+    flex: 1;
+    max-width: 360px;
+}

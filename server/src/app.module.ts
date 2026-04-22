@@ -15,6 +15,7 @@ import { NotificationsModule } from '@/modules/notifications/notifications.modul
 import { OrganizationsModule } from '@/modules/organizations/organizations.module';
 import { ResourcesModule } from '@/modules/resources/resources.module';
 import { UserModule } from '@/modules/user/user.module';
+import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { UserModule } from '@/modules/user/user.module';
     AuthModule,
     Models3dModule,
     OrganizationsModule,
+    WorkspacesModule,
   ],
   providers: [
     {

@@ -138,6 +138,100 @@ export interface Model3DUpdateRequestDto {
 }
 
 /**
+ * Organizations & Workspaces
+ */
+export enum OrgMemberRole {
+  Owner = 'owner',
+  Admin = 'admin',
+  Editor = 'editor',
+  Viewer = 'viewer',
+}
+
+export enum WorkspaceMemberRole {
+  Editor = 'editor',
+  Viewer = 'viewer',
+}
+
+export enum PlanType {
+  Starter = 'starter',
+  Growth = 'growth',
+  Enterprise = 'enterprise',
+}
+
+export enum StorageBackend {
+  Local = 'local',
+  S3 = 's3',
+}
+
+export interface OrgSubscriptionSummaryDto {
+  storageLimitBytes: string | null;
+  seatsLimit: number | null;
+  storageBackend: StorageBackend;
+}
+
+export interface OrganizationResponseDto {
+  id: string;
+  name: string;
+  slug: string;
+  planType: PlanType;
+  createdAt: string;
+  subscription?: OrgSubscriptionSummaryDto;
+}
+
+export interface OrganizationCreateRequestDto {
+  name: string;
+  slug: string;
+}
+
+export interface OrganizationUpdateRequestDto {
+  name?: string;
+}
+
+export interface OrgMemberResponseDto {
+  userId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role: OrgMemberRole;
+  joinedAt: string;
+}
+
+export interface OrgInviteCreateRequestDto {
+  email: string;
+  role: OrgMemberRole;
+}
+
+export interface OrgMemberRoleChangeRequestDto {
+  role: OrgMemberRole;
+}
+
+export interface OrgInviteAcceptRequestDto {
+  token: string;
+}
+
+export interface WorkspaceResponseDto {
+  id: string;
+  name: string;
+  orgId: string;
+  memberCount: number;
+  createdAt: string;
+}
+
+export interface WorkspaceCreateRequestDto {
+  name: string;
+  orgId: string;
+}
+
+export interface WorkspaceUpdateRequestDto {
+  name?: string;
+}
+
+export interface WorkspaceMemberAddRequestDto {
+  userId: string;
+  role: WorkspaceMemberRole;
+}
+
+/**
  * Exceptions
  */
 export interface HttpException {

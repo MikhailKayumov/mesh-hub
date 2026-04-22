@@ -1,0 +1,10 @@
+.barWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.label {
+    font-size: var(--mantine-font-size-xs);
+    color: var(--mantine-color-dimmed);
+}

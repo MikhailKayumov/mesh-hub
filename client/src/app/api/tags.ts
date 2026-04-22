@@ -7,6 +7,10 @@ export const ApiTags = {
   Get3DModel: 'Get3DModels',
   CurrentUser3DModels: 'CurrentUser3DModels',
   CurrentUser3DModel: 'CurrentUser3DModel',
+  Organization: 'Organization',
+  OrgMembers: 'OrgMembers',
+  Workspaces: 'Workspaces',
+  Workspace: 'Workspace',
 } as const;
 
 export type ApiTag = keyof typeof ApiTags;

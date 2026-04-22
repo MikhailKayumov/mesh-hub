@@ -21,6 +21,10 @@ export const ApiUrls = {
   SaveThumbnailBase64: 'save-thumbnail-base64',
   CurrentUser3DModels: 'models-3d/current-user',
   Upload3DModel: 'models-3d/upload',
+  // organizations
+  Organizations: 'organizations',
+  // workspaces
+  Workspaces: 'workspaces',
 } as const;
 
 export type ApiUrl = keyof typeof ApiUrls;

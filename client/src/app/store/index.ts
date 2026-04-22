@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistStore } from 'redux-persist';
+import { orgReducer } from '@/entities/organization';
 import { userReducer } from '@/entities/user/store';
 import { Api } from '../api/base';
 import { rtkErrorLogger } from '../api/utils';
@@ -9,6 +10,7 @@ export const store = configureStore({
   reducer: {
     [Api.reducerPath]: Api.reducer,
     user: userReducer,
+    org: orgReducer,
   },
   middleware: (getDefaultMiddleware) => {
     const defaultMiddleware = getDefaultMiddleware({

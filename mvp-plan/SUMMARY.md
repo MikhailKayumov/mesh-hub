@@ -10,8 +10,8 @@
 | STEP-0 | Pre-MVP | Critical Fixes (FS, Migration, Security) | DONE | |
 | STEP-1 | 1 | DB Entities — Orgs & Workspaces | DONE | |
 | STEP-2 | 1 | Organizations Module Backend | DONE | |
-| STEP-3 | 1 | Workspaces Module Backend | TODO | |
-| STEP-4 | 1 | Frontend — Orgs/Workspaces | TODO | |
+| STEP-3 | 1 | Workspaces Module Backend | DONE | |
+| STEP-4 | 1 | Frontend — Orgs/Workspaces | DONE | |
 | STEP-5 | 1.5 | ZIP Support Backend | TODO | |
 | STEP-6 | 1.5 | ZIP Support Frontend | TODO | |
 | STEP-7 | 2 | StorageQuota + OrgSubscription | TODO | |
@@ -32,6 +32,8 @@
 | STEP-0 | 2026-04-22 | All three fixes applied — FS path, visibility migration, path traversal |
 | STEP-1 | 2026-04-22 | DB schemas, 6 entities, 2 migrations for organizations & workspaces |
 | STEP-2 | 2026-04-22 | Full Organizations module — CRUD, membership, invite flow, OrgMemberGuard |
+| STEP-3 | 2026-04-22 | Full Workspaces module — CRUD, member management, workspaceId on Model3d, workspace-scoped visibility filter |
+| STEP-4 | 2026-04-22 | RTK Query org/workspace API, org Redux slice (persisted), OrgCreate/OrgDashboard pages, QuotaBar/OrgSwitcher widgets, Header integration |
 
 ## Known Issues / Decisions Made
 
@@ -153,3 +155,118 @@
 - `NotificationsModule` is `@Global()` — not re-imported in `OrganizationsModule`
 - Invite email is sent fire-and-forget (`.catch()` only logs) — transient email failure should not fail the invite creation
 - `inviteMember` stores duplicate-email check result but does **not** block on non-registered emails (the invite row is created; `acceptInvite` will reject with 422 if the user hasn't registered yet)
+
+
+## STEP-3 SUMMARY
+
+### New module — `server/src/modules/workspaces/`
+
+**DTOs** (`dto/`)
+- **`workspace.create.request.dto.ts`** — `name` (@IsNotEmpty, @MaxLength(100)), `orgId` (@IsUUID)
+- **`workspace.update.request.dto.ts`** — `name?` optional
+- **`workspace.response.dto.ts`** — `id`, `name`, `orgId`, `memberCount`, `createdAt`
+- **`workspace-member.add.request.dto.ts`** — `userId` (@IsUUID), `role` (@IsEnum(WorkspaceMemberRole))
+
+**Repositories** (`repositories/`)
+- **`workspace.repository.ts`** — thin wrapper extending `Repository<WorkspaceEntity>`
+- **`workspace-member.repository.ts`** — adds `findByWorkspaceAndUser(workspaceId, userId)` and `countByWorkspace(workspaceId)`
+
+**Mapper** (`mappers/workspace.mapper.ts`)
+- Static `toResponse(workspace, memberCount = 0): WorkspaceResponseDto`
+
+**Service** (`services/workspace.service.ts`)
+- Injects `WorkspaceRepository`, `WorkspaceMemberRepository`, `OrgMemberRepository` (from `OrganizationsModule`)
+- `createWorkspace` — org admin check; transaction saves workspace + creator as `editor` member
+- `getMyWorkspaces` — finds all memberships for user, optional `orgId` filter
+- `getWorkspace` — workspace membership check (403), count members
+- `updateWorkspace` — org admin check
+- `deleteWorkspace` — org admin check, soft-delete
+- `addMember` — actor must be org admin or workspace editor; target must be org member; no duplicate check
+- `removeMember` — self-leave allowed; otherwise org admin required; soft-delete
+- `requireOrgAdmin()` — private helper for repeated role check
+
+**Controller** (`controllers/workspace.controller.ts`)
+- Prefix `/workspaces`; all 7 routes use `@Roles([UserRoles.User])` + `ParseUUIDPipe`
+- No custom guard — all access control lives in service
+
+**Module** (`workspaces.module.ts`)
+- `TypeOrmModule.forFeature([WorkspaceEntity, WorkspaceMemberEntity])` + `OrganizationsModule`
+- Exports: `WorkspaceService`, `WorkspaceMemberRepository`
+
+### Model3d extension
+
+**`server/src/database/entities/models-3d/model-3d.entity.ts`**
+- Added `workspaceId?: string` raw UUID column (`workspace_id`, nullable) — no `@ManyToOne` to avoid circular module dependency
+
+**`server/src/modules/models-3d/dto/models-3d.request.dto.ts`**
+- Added `workspaceId?: string` (@IsOptional, @IsUUID) filter field
+
+**Migration** `server/src/database/migrations/models-3d/1776862730000-AddWorkspaceId.ts`
+- `up()`: `ALTER TABLE "model_3d"."model_3d" ADD COLUMN IF NOT EXISTS "workspace_id" uuid;`
+- `down()`: `DROP COLUMN IF EXISTS "workspace_id";`
+
+**`server/src/modules/models-3d/services/model-3d.service.ts`**
+- Injected `WorkspaceMemberRepository`
+- `find3DModels()` extended: if `workspaceId` present in filters, scopes query to that workspace; skips visibility filter for confirmed workspace members; non-members still see only `public` models
+
+**`server/src/modules/models-3d/models-3d.module.ts`**
+- Added `WorkspacesModule` to imports (provides `WorkspaceMemberRepository`)
+
+### App registration
+- Added `WorkspacesModule` to `src/app.module.ts` imports
+
+### Verification
+- `npm run lint` — 0 errors, 0 warnings
+- `npm run build` — 0 errors
+
+### Decisions
+- No `OrgMemberGuard`-style custom guard for workspaces — access control in service (workspace access depends simultaneously on workspace membership AND org-level role)
+- `workspaceId` in `model-3d.entity.ts` is a raw UUID column — no `@ManyToOne` keeps module graph acyclic
+- No cascade on workspace deletion for models — orphaned models are a known MVP limitation (per STEP-3 spec)
+- `WorkspacesModule` NOT `@Global()` — explicit import in `Models3dModule`
+
+
+## STEP-4 SUMMARY
+
+### API Layer
+
+Added 4 new cache tags: Organization, OrgMembers, Workspaces, Workspace to tags.ts.
+Added Organizations and Workspaces URL constants to urls.ts.
+Appended org/workspace DTOs (enums + interfaces) to dto.ts.
+
+New client/src/app/api/organizations.ts - OrganizationsApi with 9 endpoints: createOrganization, myOrganizations, organization, updateOrganization, orgMembers, inviteOrgMember, acceptOrgInvite, changeOrgMemberRole, removeOrgMember.
+
+New client/src/app/api/workspaces.ts - WorkspacesApi with 7 endpoints: createWorkspace, myWorkspaces, workspace, updateWorkspace, deleteWorkspace, addWorkspaceMember, removeWorkspaceMember.
+
+### Redux Slice
+
+New client/src/entities/organization/model.ts - orgSlice with state { currentOrgId, currentWorkspaceId }, actions setCurrentOrg (resets workspaceId), setCurrentWorkspace, clearOrg. Wrapped with persistReducer key '@mesh_hub/org'.
+New client/src/entities/organization/selectors.ts - currentOrgIdSelector, currentWorkspaceIdSelector.
+New client/src/entities/organization/index.ts - re-exports model + selectors.
+client/src/app/store/index.ts - Added org: orgReducer to reducer map.
+
+### Routing
+
+client/src/shared/router/paths.ts - Added Org, OrgId, OrgCreate, WorkspaceId, WorkspaceSeg path constants.
+client/src/app/router/index.tsx - Added lazy routes: org/create -> OrgCreatePage, org/:orgId -> OrgDashboardPage inside BasePage children.
+
+### Pages
+
+New client/src/pages/OrgCreate/OrgCreate.tsx - Form with name + slug fields. Inline slugify on name change. On success dispatches setCurrentOrg, navigates to /org/:id.
+New client/src/pages/OrgDashboard/OrgDashboard.tsx - Mantine Tabs: Members tab (table + invite modal + role/remove kebab menus) and Workspaces tab (card grid + create modal). Header shows org name, plan badge, QuotaBar. Storage used is 0 pending STEP-7.
+
+### Widgets
+
+New client/src/widgets/QuotaBar/QuotaBar.tsx - Props: { used, limit, unit?, label? }. null limit shows "Без ограничений". Progress color: green <60%, yellow 60-80%, red >=80%.
+New client/src/widgets/OrgSwitcher/OrgSwitcher.tsx - Mantine Menu showing current org name. Switches org via setCurrentOrg + navigate. Shows workspaces for current org via setCurrentWorkspace.
+client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between ColorSchemeSelect and User/AuthButtons.
+
+### Verification
+- npm run tscheck - 0 errors
+- npm run lint - 0 errors (1 pre-existing warning in Model3DViewer/context.tsx, unrelated)
+
+### Decisions
+- storageLimitBytes from server is a bigint string - converted with Number() for QuotaBar (safe for MVP values)
+- No dedicated invite-accept page in STEP-4 - acceptOrgInvite API endpoint is wired; page is a future step
+- Workspace inner page (/org/:orgId/workspace/:workspaceId) is not implemented - OrgDashboard links to it; page is a future step
+- Storage used bytes hardcoded to 0 until STEP-7 (StorageQuotaModule) provides real usage data

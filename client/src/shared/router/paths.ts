@@ -25,6 +25,13 @@ export const RouterPaths = {
 
   // editor
   Editor: 'editor',
+
+  // organizations
+  Org: 'org',
+  OrgId: ':orgId',
+  OrgCreate: 'create',
+  WorkspaceId: ':workspaceId',
+  WorkspaceSeg: 'workspace',
 } as const;
 
 export type RouterPathName = keyof typeof RouterPaths;

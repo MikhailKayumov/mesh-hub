@@ -30,8 +30,8 @@ export const RouterPaths = {
   Org: 'org',
   OrgId: ':orgId',
   OrgCreate: 'create',
-  WorkspaceId: ':workspaceId',
   WorkspaceSeg: 'workspace',
+  WorkspaceId: ':workspaceId',
 } as const;
 
 export type RouterPathName = keyof typeof RouterPaths;

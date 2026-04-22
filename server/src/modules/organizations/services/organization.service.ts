@@ -18,6 +18,7 @@ import { OrgSubscriptionEntity, StorageBackend } from '@/database/entities/organ
 import { OrganizationEntity, PlanType } from '@/database/entities/organizations/organization.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
+import { ConfigService } from '@/modules/config/config.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { OrgInviteCreateRequestDto } from '@/modules/organizations/dto/org-invite.create.request.dto';
 import { OrgMemberResponseDto } from '@/modules/organizations/dto/org-member.response.dto';
@@ -49,6 +50,7 @@ export class OrganizationService {
     private readonly orgSubscriptionRepository: Repository<OrgSubscriptionEntity>,
     private readonly userRepository: UserRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly configService: ConfigService,
   ) {}
 
   // ─── Organizations CRUD ──────────────────────────────────────────────────────
@@ -237,7 +239,7 @@ export class OrganizationService {
     const savedInvite = await this.orgInviteRepository.save(invite);
 
     const subject = `You're invited to join ${org.name} on MeshHub`;
-    const text = `You have been invited to join the organization "${org.name}" with the role "${savedInvite.role}".\n\nAccept the invitation by clicking the link below:\n${process.env['APP_FRONTEND_URL'] ?? 'http://localhost:8000'}/invite/accept?token=${savedInvite.token}\n\nThis link expires in ${INVITE_EXPIRES_DAYS} days.`;
+    const text = `You have been invited to join the organization "${org.name}" with the role "${savedInvite.role}".\n\nAccept the invitation by clicking the link below:\n${this.configService.app.frontendUrl}/invite/accept?token=${savedInvite.token}\n\nThis link expires in ${INVITE_EXPIRES_DAYS} days.`;
 
     this.notificationsService.sendEmail(dto.email, subject, text).catch((e: unknown) => {
       this.logger.error('Failed to send invite email', e);

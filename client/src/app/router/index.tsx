@@ -96,6 +96,12 @@ const routes: RouteObject[] = [
             path: RouterPaths.OrgId,
             lazy: async () => ({ Component: (await import('@/pages/OrgDashboard')).OrgDashboardPage }),
           },
+          {
+            path: `${RouterPaths.OrgId}/${RouterPaths.WorkspaceSeg}/${RouterPaths.WorkspaceId}`,
+            lazy: async () => ({
+              Component: (await import('@/pages/OrgDashboard/WorkspaceDashboard')).WorkspaceDashboardPage,
+            }),
+          },
         ],
       },
     ],

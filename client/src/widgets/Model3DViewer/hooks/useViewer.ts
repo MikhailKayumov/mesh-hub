@@ -55,7 +55,7 @@ export function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps)
     run();
 
     return () => {};
-  }, [viewer, model?.file.id]);
+  }, [viewer, model?.id]);
 
   return {
     placeRef,

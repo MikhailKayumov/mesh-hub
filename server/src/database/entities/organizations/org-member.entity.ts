@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
-import { DatabaseSchemas, OrganizationsSchemaTables, UserSchemaTables } from '@/database/constants';
+import { DatabaseSchemas, OrganizationsSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { OrganizationEntity } from './organization.entity';
@@ -10,6 +10,14 @@ export enum OrgMemberRole {
   Editor = 'editor',
   Viewer = 'viewer',
 }
+
+/** Higher weight = more privileged. Used for hierarchical role checks. */
+export const OrgMemberRoleWeights: Record<OrgMemberRole, number> = {
+  [OrgMemberRole.Owner]: 3,
+  [OrgMemberRole.Admin]: 2,
+  [OrgMemberRole.Editor]: 1,
+  [OrgMemberRole.Viewer]: 0,
+};
 
 @Unique(['orgId', 'userId'])
 @Entity({ name: OrganizationsSchemaTables.OrgMember, schema: DatabaseSchemas.Organizations })

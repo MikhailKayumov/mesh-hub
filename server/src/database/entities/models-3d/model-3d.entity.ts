@@ -1,10 +1,10 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from 'typeorm';
+import { ModelVisibility } from '@/constants';
 import { DatabaseSchemas, Models3DSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { Model3dFileEntity } from '@/database/entities/models-3d/model-3d-file.entity';
 import { CategoryEntity } from '@/database/entities/resources/category.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { ModelVisibility } from '@/constants';
 
 @Entity({ name: Models3DSchemaTables.Model3D, schema: DatabaseSchemas.Models3D })
 export class Model3dEntity extends GuidIdEntityBase {

@@ -12,6 +12,7 @@ import { ConfigService } from '@/modules/config/config.service';
 import { FileStorageModule } from '@/modules/files/files.module';
 import { Models3dModule } from '@/modules/models-3d/models-3d.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
+import { OrganizationsModule } from '@/modules/organizations/organizations.module';
 import { ResourcesModule } from '@/modules/resources/resources.module';
 import { UserModule } from '@/modules/user/user.module';
 
@@ -33,6 +34,7 @@ import { UserModule } from '@/modules/user/user.module';
     UserModule,
     AuthModule,
     Models3dModule,
+    OrganizationsModule,
   ],
   providers: [
     {

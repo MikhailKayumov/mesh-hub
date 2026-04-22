@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | STEP-0 | Pre-MVP | Critical Fixes (FS, Migration, Security) | DONE | |
 | STEP-1 | 1 | DB Entities — Orgs & Workspaces | DONE | |
-| STEP-2 | 1 | Organizations Module Backend | TODO | |
+| STEP-2 | 1 | Organizations Module Backend | DONE | |
 | STEP-3 | 1 | Workspaces Module Backend | TODO | |
 | STEP-4 | 1 | Frontend — Orgs/Workspaces | TODO | |
 | STEP-5 | 1.5 | ZIP Support Backend | TODO | |
@@ -31,6 +31,7 @@
 |---|---|---|
 | STEP-0 | 2026-04-22 | All three fixes applied — FS path, visibility migration, path traversal |
 | STEP-1 | 2026-04-22 | DB schemas, 6 entities, 2 migrations for organizations & workspaces |
+| STEP-2 | 2026-04-22 | Full Organizations module — CRUD, membership, invite flow, OrgMemberGuard |
 
 ## Known Issues / Decisions Made
 
@@ -87,3 +88,68 @@
 ### Decisions
 - No SQL init files — existing `init/index.ts` approach is sufficient; enum types live in migrations (consistent with `model_visibility` pattern from STEP-0)
 - `data.source.ts` and `app.module.ts` not modified — entity glob `entities/**/*.entity.ts` picks up new files automatically
+
+
+## STEP-2 SUMMARY
+
+### Type extension — `server/src/types/index.d.ts`
+- Added `orgMember?: OrgMemberEntity | null` to `Express.Request` so `OrgMemberGuard` can attach the resolved member to the request and controller handlers can read it
+
+### Entity patch — `server/src/database/entities/organizations/org-member.entity.ts`
+- Added `OrgMemberRoleWeights` constant `{ owner:3, admin:2, editor:1, viewer:0 }` for hierarchical role comparison in the guard and service
+
+### DTOs — `server/src/modules/organizations/dto/`
+- **`organization.create.request.dto.ts`** — `name` (@MaxLength(100)), `slug` (@Matches(/^[a-z0-9-]+$/), @MaxLength(50))
+- **`organization.update.request.dto.ts`** — `name?` optional
+- **`organization.response.dto.ts`** — `id`, `name`, `slug`, `planType`, `createdAt`; inline `OrgSubscriptionSummaryDto` (storageLimitBytes, seatsLimit, storageBackend) nested as `subscription?`
+- **`org-member.response.dto.ts`** — `userId`, `email`, `firstName?`, `lastName?`, `role`, `joinedAt`
+- **`org-invite.create.request.dto.ts`** — `email` (@IsEmail), `role` (@IsEnum(OrgMemberRole))
+- **`org-member-role.change.request.dto.ts`** — `role` (@IsEnum(OrgMemberRole))
+
+### Repositories — `server/src/modules/organizations/repositories/`
+- **`organization.repository.ts`** — thin wrapper; no custom methods
+- **`org-member.repository.ts`** — adds `findByOrgAndUser(orgId, userId)` and `countByOrg(orgId)`
+- **`org-invite.repository.ts`** — adds `findActiveByToken(token)` (WHERE accepted_at IS NULL AND expires_at > NOW())
+
+### Mapper — `server/src/modules/organizations/mappers/organization.mapper.ts`
+- `toResponse(org, subscription?)` → `OrganizationResponseDto`
+- `toMemberResponse(member)` → `OrgMemberResponseDto` (requires `.user` relation loaded)
+
+### Guard + Decorator — `server/src/modules/organizations/guards/`
+- **`org-member-role.decorator.ts`** — `@OrgMemberRole(...roles)` via `applyDecorators(SetMetadata(ORG_MEMBER_ROLE_KEY, roles), UseGuards(OrgMemberGuard))`
+- **`org-member.guard.ts`** — extracts `orgId` from `request.params.id`, queries membership, checks `OrgMemberRoleWeights` hierarchy, attaches member to `request.orgMember`; 403 if not a member or insufficient role
+
+### Service — `server/src/modules/organizations/services/organization.service.ts`
+- `createOrganization(user, dto)` — slug uniqueness check (409); transaction: saves `OrganizationEntity` + `OrgSubscriptionEntity` (50 GiB / 10 seats / local) + `OrgMemberEntity` (owner)
+- `getCurrentUserOrganizations(user)` — finds OrgMember rows by userId, loads subscriptions in bulk
+- `getOrganization(orgId, user)` — verifies membership (403) before returning org + subscription
+- `updateOrganization(orgId, dto)` — merge + save; role check done by guard
+- `getMembers(orgId, pagination)` — paginated `OrgMember` JOIN user; returns `PaginationResponseDto<OrgMemberResponseDto>`
+- `inviteMember(orgId, dto)` — seats quota check; duplicate member check; creates `OrgInviteEntity` (token = uuid(), expiresAt = +7d); fires invite email via `NotificationsService` (non-blocking)
+- `acceptInvite(token)` — `findActiveByToken` or 422; find user by email or 422; transaction: create member + set invite.acceptedAt
+- `changeMemberRole(orgId, actorMember, targetUserId, role)` — cannot change owner; cannot target self; actor weight must exceed assigned role weight
+- `removeMember(orgId, actorUser, targetUserId)` — owner is protected; self-removal allowed; otherwise actor must be ≥ admin; soft-delete via `softDelete()`
+
+### Controller — `server/src/modules/organizations/controllers/organization.controller.ts`
+- Prefix: `/organizations`; `@ApiTags('organizations')`
+- Route `/invite/accept` (POST, @Public) declared **before** `/:id` to prevent Express from treating "invite" as an org UUID param
+- Routes using `@OrgMemberRole` get both JWT auth (from `JwtAuthGuard` global) and membership + role check (from `OrgMemberGuard` applied by the decorator)
+- `changeMemberRole` reads `req.orgMember` (set by guard) as the actor; `removeMember` uses `@Roles([User])` + manual actor check in service to allow self-removal
+
+### Module — `server/src/modules/organizations/organizations.module.ts`
+- `TypeOrmModule.forFeature([4 entities])` + `UserModule` imported
+- Provides: 3 repositories + `OrganizationService` + `OrgMemberGuard`
+- Exports: `OrganizationService`, `OrgMemberRepository` (consumed by future Workspaces module)
+
+### App registration — `server/src/app.module.ts`
+- Added `OrganizationsModule` to imports
+
+### Verification
+- `npm run lint` — 0 errors, 0 warnings
+- `npm run build` — 0 errors
+
+### Decisions
+- `storageLimitBytes` stored and passed as bigint string (`"53687091200"`) — PostgreSQL `bigint` ↔ TypeScript `string` via TypeORM
+- `NotificationsModule` is `@Global()` — not re-imported in `OrganizationsModule`
+- Invite email is sent fire-and-forget (`.catch()` only logs) — transient email failure should not fail the invite creation
+- `inviteMember` stores duplicate-email check result but does **not** block on non-registered emails (the invite row is created; `acceptInvite` will reject with 422 if the user hasn't registered yet)

@@ -1,6 +1,7 @@
 import { extname } from 'path';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { In } from 'typeorm';
+import { ModelVisibility } from '@/constants';
 import { Model3dFileEntity } from '@/database/entities/models-3d/model-3d-file.entity';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
@@ -69,7 +70,7 @@ export class Model3dService {
   }
 
   public async upload3DModel(user: UserEntity, file: Express.Multer.File): Promise<{ modelId: string }> {
-    let savedFileId: string = '';
+    let savedModelId: string = '';
 
     try {
       const model = await this.model3dRepository.manager.transaction(async (em) => {
@@ -79,15 +80,18 @@ export class Model3dService {
         fileEntity.extension = extname(file.originalname);
 
         const createdFileEntity = await em.save(fileEntity);
-        await this.filesService.save3DModel(createdFileEntity.id, file);
-        savedFileId = createdFileEntity.id;
 
         const modelEntity = new Model3dEntity();
         modelEntity.user = user;
         modelEntity.name = file.originalname.substring(0, file.originalname.lastIndexOf('.')).trim();
-        modelEntity.file = fileEntity;
+        modelEntity.file = createdFileEntity;
 
-        return em.save(modelEntity);
+        const savedModel = await em.save(modelEntity);
+        savedModelId = savedModel.id;
+
+        await this.filesService.save3DModel(savedModel.id, file);
+
+        return savedModel;
       });
 
       return {
@@ -96,8 +100,8 @@ export class Model3dService {
     } catch (e) {
       this.logger.error(e);
 
-      if (savedFileId) {
-        this.filesService.delete3DModel(savedFileId);
+      if (savedModelId) {
+        this.filesService.delete3DModel(savedModelId);
       } else {
         this.filesService.deleteFile(file.path);
       }
@@ -119,7 +123,7 @@ export class Model3dService {
     try {
       await this.model3dRepository.delete({ id });
       await this.model3dFileRepository.delete({ id: model.file.id });
-      await this.filesService.delete3DModel(model.file.id, false);
+      await this.filesService.delete3DModel(model.id, false);
     } catch (e) {
       this.logger.error(e);
       throw new BadRequestException('Не удалось удалить файл');
@@ -154,13 +158,13 @@ export class Model3dService {
       throw new NotFoundException('Модель не найдена');
     }
 
-    model.thumbnail = await this.filesService.save3DModelThumbnailFromBase64(model.file.id, thumbnail);
+    model.thumbnail = await this.filesService.save3DModelThumbnailFromBase64(model.id, thumbnail);
     await model.save();
   }
 
   private async find3DModels(
-    { size, skip, sort }: PaginationDto,
-    { search, categories }: Models3dRequestDto,
+    { size, skip }: PaginationDto,
+    { categories }: Models3dRequestDto,
     user: UserEntity | undefined,
     asCurrent = false,
   ) {
@@ -174,12 +178,9 @@ export class Model3dService {
       .orderBy('model.createdAt', 'ASC');
 
     if (asCurrent && user) qb.andWhere({ user: { id: user.id } });
-    else qb.andWhere({ isVisible: true });
+    else qb.andWhere({ visibility: ModelVisibility.Public });
 
     if (categories?.length) qb.andWhere({ categories: In(categories) });
-    if (search?.length) {
-      const qb = this.model3dRepository.findOne({});
-    }
 
     if (skip) qb.skip(skip);
     if (size) qb.take(size);

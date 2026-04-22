@@ -21,6 +21,7 @@ export const UserButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef
             radius="xl"
             size="md"
             className={classes.avatar}
+            styles={{ placeholder: { backgroundColor: 'transparent' } }}
             onLoad={() => setIsAvatarLoading(false)}
             onError={() => setIsAvatarLoading(false)}
           >

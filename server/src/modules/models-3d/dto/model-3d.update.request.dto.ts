@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { ValidationErrorMessages } from '@/constants';
+import { IsArray, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { ModelVisibility, ValidationErrorMessages } from '@/constants';
 import { CategoryRequest } from '@/modules/resources/dto/category.request';
 
 export class Model3dUpdateRequestDto {
@@ -11,10 +11,10 @@ export class Model3dUpdateRequestDto {
   @IsNotEmpty({ message: ValidationErrorMessages.RequiredField })
   public name?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: ModelVisibility })
   @IsOptional()
-  @IsBoolean()
-  public isVisible?: boolean;
+  @IsEnum(ModelVisibility)
+  public visibility?: ModelVisibility;
 
   @ApiPropertyOptional()
   @IsOptional()

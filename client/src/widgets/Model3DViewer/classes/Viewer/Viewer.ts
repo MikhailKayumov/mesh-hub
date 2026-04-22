@@ -56,7 +56,7 @@ export class Viewer {
       return;
     }
 
-    const loadedModel = await Loader.load(getModel3DFileSrc(modelData.file.id, modelData.file.name));
+    const loadedModel = await Loader.load(getModel3DFileSrc(modelData.id, modelData.file.name));
 
     this.model = {
       data: modelData,

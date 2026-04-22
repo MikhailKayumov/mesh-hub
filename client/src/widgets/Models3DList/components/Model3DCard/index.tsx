@@ -20,7 +20,7 @@ export function Model3DCard({ model }: Model3DCard) {
 
   return (
     <Card withBorder className={clsx(classes.card, isDeleting && classes['card-deleting'])} p={0}>
-      <Model3DCardThumbnail id={model.id} name={model.name} fileId={model.file.id} thumbnail={model.thumbnail} />
+      <Model3DCardThumbnail id={model.id} name={model.name} fileId={model.id} thumbnail={model.thumbnail} />
       <Group wrap="nowrap" gap={0} p="xs" py="xs">
         <Tooltip label={model.ownerName} withArrow position="top-start" offset={1} openDelay={500}>
           <Avatar radius="xs" src={getAvatarSrcByString(model.ownerAvatar)} color="primary" size={22} />

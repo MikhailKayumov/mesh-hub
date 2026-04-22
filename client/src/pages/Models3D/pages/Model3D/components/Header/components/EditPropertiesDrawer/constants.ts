@@ -28,7 +28,7 @@ export const transformValuesFromFormToRequest = (
   return {
     name: values.name?.trim(),
     description: values.description!,
-    isVisible: values.visible,
+    visibility: values.visible ? 'public' : 'private',
     categories: values.categories?.reduce<CategoryRequest[]>((acc, name) => {
       const category = categories.find((c) => c.name === name);
       if (category) acc.push(category);
@@ -41,7 +41,7 @@ export const transformValuesFromModel3DToForm = (model: Model3DResponseDto): Mod
   return {
     name: model.name,
     description: model.description ?? null,
-    visible: model.isVisible,
+    visible: model.visibility === 'public',
     categories: model.categories?.map((c) => c.name) ?? [],
   };
 };

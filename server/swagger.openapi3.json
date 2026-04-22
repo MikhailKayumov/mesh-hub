@@ -820,12 +820,12 @@
         ]
       }
     },
-    "/api/models-3d/files/{fileId}/thumbnail": {
+    "/api/models-3d/files/{modelId}/thumbnail": {
       "get": {
         "operationId": "Model3dController_getModels3DThumbnailFile",
         "parameters": [
           {
-            "name": "fileId",
+            "name": "modelId",
             "required": true,
             "in": "path",
             "schema": {
@@ -851,12 +851,12 @@
         ]
       }
     },
-    "/api/models-3d/files/{fileId}/{fileName}": {
+    "/api/models-3d/files/{modelId}/{fileName}": {
       "get": {
         "operationId": "Model3dController_getModels3DFile",
         "parameters": [
           {
-            "name": "fileId",
+            "name": "modelId",
             "required": true,
             "in": "path",
             "schema": {
@@ -1306,8 +1306,13 @@
           "name": {
             "type": "string"
           },
-          "isVisible": {
-            "type": "boolean"
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "unlisted"
+            ]
           },
           "file": {
             "$ref": "#/components/schemas/Model3dFileResponseDto"
@@ -1331,7 +1336,7 @@
           "isOwner",
           "ownerName",
           "name",
-          "isVisible",
+          "visibility",
           "file"
         ]
       },
@@ -1356,8 +1361,13 @@
           "name": {
             "type": "string"
           },
-          "isVisible": {
-            "type": "boolean"
+          "visibility": {
+            "enum": [
+              "public",
+              "private",
+              "unlisted"
+            ],
+            "type": "string"
           },
           "description": {
             "type": "object"

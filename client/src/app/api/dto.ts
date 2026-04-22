@@ -123,7 +123,7 @@ export interface Model3DResponseDto {
   ownerAvatar?: string;
   ownerName: string;
   name: string;
-  isVisible: boolean;
+  visibility: string;
   file: Model3DFileResponseDto;
   description?: Record<string, any>;
   thumbnail?: string;
@@ -132,7 +132,7 @@ export interface Model3DResponseDto {
 
 export interface Model3DUpdateRequestDto {
   name?: string;
-  isVisible?: boolean;
+  visibility?: string;
   description?: object;
   categories?: CategoryRequest[];
 }

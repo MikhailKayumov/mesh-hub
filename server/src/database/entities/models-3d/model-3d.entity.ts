@@ -4,6 +4,7 @@ import { GuidIdEntityBase } from '@/database/entities/base';
 import { Model3dFileEntity } from '@/database/entities/models-3d/model-3d-file.entity';
 import { CategoryEntity } from '@/database/entities/resources/category.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
+import { ModelVisibility } from '@/constants';
 
 @Entity({ name: Models3DSchemaTables.Model3D, schema: DatabaseSchemas.Models3D })
 export class Model3dEntity extends GuidIdEntityBase {
@@ -24,8 +25,8 @@ export class Model3dEntity extends GuidIdEntityBase {
   @Column({ type: 'text', nullable: true })
   public thumbnail?: string;
 
-  @Column({ type: 'boolean', nullable: false, default: true })
-  public isVisible: boolean;
+  @Column({ type: 'enum', enum: ModelVisibility, enumName: 'model_visibility', default: ModelVisibility.Public })
+  public visibility: ModelVisibility;
 
   @ManyToMany(() => CategoryEntity, { nullable: true })
   @JoinTable({

@@ -15,7 +15,7 @@ export class Model3dMapper {
       thumbnail: entity.thumbnail,
       categories: entity.categories ?? [],
       isOwner: entity.user.id === user?.id,
-      isVisible: entity.isVisible,
+      visibility: entity.visibility,
       ownerAvatar: entity.user.userMeta.avatar,
       ownerName: `${entity.user.firstName} ${entity.user.lastName}`,
     };

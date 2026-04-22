@@ -1,9 +1,10 @@
 import { createReadStream } from 'fs';
-import { join } from 'path';
+import { resolve, sep } from 'path';
 import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Header,
   HttpCode,
@@ -139,23 +140,36 @@ export class Model3dController {
     return this.model3dService.upload3DModel(user, file);
   }
 
-  @Get('files/:fileId/thumbnail')
+  @Get('files/:modelId/thumbnail')
   @Public()
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'max-age=31536000') // 1 year
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
-  public getModels3DThumbnailFile(@Param('fileId') fileId: string): StreamableFile {
-    const file = createReadStream(join(process.cwd(), 'files', 'models-3d', fileId, 'thumbnail.png'));
-    return new StreamableFile(file);
+  public getModels3DThumbnailFile(@Param('modelId', ParseUUIDPipe) modelId: string): StreamableFile {
+    const base = resolve(process.cwd(), 'files', 'models-3d', modelId);
+    const target = this.safeResolvePath(base, 'thumbnail.png');
+    return new StreamableFile(createReadStream(target));
   }
 
-  @Get('files/:fileId/:fileName')
+  @Get('files/:modelId/:fileName')
   @Public()
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'max-age=2592000') // 30 days
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
-  public getModels3DFile(@Param('fileId') fileId: string, @Param('fileName') fileName: string): StreamableFile {
-    const file = createReadStream(join(process.cwd(), 'files', 'models-3d', fileId, fileName));
-    return new StreamableFile(file);
+  public getModels3DFile(
+    @Param('modelId', ParseUUIDPipe) modelId: string,
+    @Param('fileName') fileName: string,
+  ): StreamableFile {
+    const base = resolve(process.cwd(), 'files', 'models-3d', modelId);
+    const target = this.safeResolvePath(base, fileName);
+    return new StreamableFile(createReadStream(target));
+  }
+
+  private safeResolvePath(base: string, ...segments: string[]): string {
+    const resolved = resolve(base, ...segments);
+    if (!resolved.startsWith(base + sep) && resolved !== base) {
+      throw new ForbiddenException();
+    }
+    return resolved;
   }
 }

@@ -24,8 +24,8 @@ export class Model3dResponseDto {
   @ApiProperty()
   public name: string;
 
-  @ApiProperty()
-  public isVisible: boolean;
+  @ApiProperty({ enum: ['public', 'private', 'unlisted'] })
+  public visibility: string;
 
   @ApiProperty({ type: () => Model3dFileResponseDto })
   public file: Model3dFileResponseDto;

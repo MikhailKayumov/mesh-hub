@@ -489,6 +489,16 @@
             }
           },
           {
+            "name": "workspaceId",
+            "required": false,
+            "in": "query",
+            "description": "Filter models belonging to this workspace",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -532,6 +542,16 @@
               "items": {
                 "type": "string"
               }
+            }
+          },
+          {
+            "required": false,
+            "description": "Filter models belonging to this workspace",
+            "name": "workspaceId",
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           }
         ],
@@ -595,6 +615,16 @@
             }
           },
           {
+            "name": "workspaceId",
+            "required": false,
+            "in": "query",
+            "description": "Filter models belonging to this workspace",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -638,6 +668,16 @@
               "items": {
                 "type": "string"
               }
+            }
+          },
+          {
+            "required": false,
+            "description": "Filter models belonging to this workspace",
+            "name": "workspaceId",
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           }
         ],
@@ -851,7 +891,7 @@
         ]
       }
     },
-    "/api/models-3d/files/{modelId}/{fileName}": {
+    "/api/models-3d/files/{modelId}/{path}": {
       "get": {
         "operationId": "Model3dController_getModels3DFile",
         "parameters": [
@@ -864,7 +904,7 @@
             }
           },
           {
-            "name": "fileName",
+            "name": "0",
             "required": true,
             "in": "path",
             "schema": {
@@ -887,6 +927,627 @@
         },
         "tags": [
           "models-3d"
+        ]
+      }
+    },
+    "/api/workspaces": {
+      "post": {
+        "operationId": "WorkspaceController_createWorkspace",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller is not an org admin"
+          }
+        },
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "get": {
+        "operationId": "WorkspaceController_getMyWorkspaces",
+        "parameters": [
+          {
+            "name": "orgId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkspaceResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/workspaces/{id}": {
+      "get": {
+        "operationId": "WorkspaceController_getWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a workspace member"
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "patch": {
+        "operationId": "WorkspaceController_updateWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller is not an org admin"
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "delete": {
+        "operationId": "WorkspaceController_deleteWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace deleted"
+          },
+          "403": {
+            "description": "Caller is not an org admin"
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/members": {
+      "post": {
+        "operationId": "WorkspaceController_addMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceMemberAddRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Member added"
+          },
+          "403": {
+            "description": "Insufficient permissions"
+          },
+          "404": {
+            "description": ""
+          },
+          "409": {
+            "description": "Already a member"
+          },
+          "422": {
+            "description": "Target user is not an org member"
+          }
+        },
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/workspaces/{id}/members/{userId}": {
+      "delete": {
+        "operationId": "WorkspaceController_removeMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member removed"
+          },
+          "403": {
+            "description": "Insufficient permissions"
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/organizations": {
+      "post": {
+        "operationId": "OrganizationController_createOrganization",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Slug already taken"
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/organizations/current": {
+      "get": {
+        "operationId": "OrganizationController_getCurrentUserOrganizations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizationResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/organizations/invite/accept": {
+      "post": {
+        "operationId": "OrganizationController_acceptInvite",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invite accepted"
+          },
+          "409": {
+            "description": "Already a member"
+          },
+          "422": {
+            "description": "Invalid or expired token, or user not registered"
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/organizations/{id}": {
+      "get": {
+        "operationId": "OrganizationController_getOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a member"
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      },
+      "patch": {
+        "operationId": "OrganizationController_updateOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient org role"
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/organizations/{id}/members": {
+      "get": {
+        "operationId": "OrganizationController_getMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Sorting fields in format: [+-][fieldName]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponseDto"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "readOnly": true,
+                          "nullable": false,
+                          "items": {
+                            "$ref": "#/components/schemas/OrgMemberResponseDto"
+                          }
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient org role"
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/organizations/{id}/invite": {
+      "post": {
+        "operationId": "OrganizationController_inviteMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgInviteCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invite sent"
+          },
+          "403": {
+            "description": "Insufficient org role"
+          },
+          "409": {
+            "description": "Seat limit reached or already a member"
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      }
+    },
+    "/api/organizations/{id}/members/{userId}": {
+      "patch": {
+        "operationId": "OrganizationController_changeMemberRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgMemberRoleChangeRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated"
+          },
+          "403": {
+            "description": "Insufficient org role"
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "tags": [
+          "organizations"
+        ]
+      },
+      "delete": {
+        "operationId": "OrganizationController_removeMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member removed"
+          },
+          "403": {
+            "description": "Insufficient permissions"
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "tags": [
+          "organizations"
         ]
       }
     }
@@ -1270,6 +1931,9 @@
           },
           "extension": {
             "type": "string"
+          },
+          "entryFile": {
+            "type": "string"
           }
         },
         "required": [
@@ -1379,6 +2043,241 @@
             }
           }
         }
+      },
+      "WorkspaceCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "orgId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "name",
+          "orgId"
+        ]
+      },
+      "WorkspaceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "orgId": {
+            "type": "string"
+          },
+          "memberCount": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "orgId",
+          "memberCount",
+          "createdAt"
+        ]
+      },
+      "WorkspaceUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          }
+        }
+      },
+      "WorkspaceMemberAddRequestDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "enum": [
+              "editor",
+              "viewer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "role"
+        ]
+      },
+      "OrganizationCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 50,
+            "pattern": "^[a-z0-9-]+$"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "OrgSubscriptionSummaryDto": {
+        "type": "object",
+        "properties": {
+          "storageLimitBytes": {
+            "type": "string",
+            "nullable": true
+          },
+          "seatsLimit": {
+            "type": "number",
+            "nullable": true
+          },
+          "storageBackend": {
+            "enum": [
+              "local",
+              "s3"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "storageBackend"
+        ]
+      },
+      "OrganizationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "planType": {
+            "enum": [
+              "starter",
+              "growth",
+              "enterprise"
+            ],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "subscription": {
+            "$ref": "#/components/schemas/OrgSubscriptionSummaryDto"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "planType",
+          "createdAt"
+        ]
+      },
+      "OrganizationUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          }
+        }
+      },
+      "OrgMemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "owner",
+              "admin",
+              "editor",
+              "viewer"
+            ],
+            "type": "string"
+          },
+          "joinedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "email",
+          "role",
+          "joinedAt"
+        ]
+      },
+      "OrgInviteCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "enum": [
+              "owner",
+              "admin",
+              "editor",
+              "viewer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
+      },
+      "OrgMemberRoleChangeRequestDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "enum": [
+              "owner",
+              "admin",
+              "editor",
+              "viewer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ]
       }
     }
   }

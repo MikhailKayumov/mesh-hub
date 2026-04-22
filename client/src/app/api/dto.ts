@@ -174,6 +174,27 @@ export interface OrgSubscriptionSummaryDto {
   storageBackend: StorageBackend;
 }
 
+export interface OrgSubscriptionDetailDto {
+  planType: PlanType;
+  storageLimitBytes: string | null;
+  seatsLimit: number | null;
+  storageBackend: StorageBackend;
+  storageUsedBytes: number;
+}
+
+export interface S3StorageConfigDto {
+  region: string;
+  bucket: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  endpoint?: string;
+}
+
+export interface UpdateStorageConfigRequestDto {
+  storageBackend: StorageBackend;
+  s3Config?: S3StorageConfigDto;
+}
+
 export interface OrganizationResponseDto {
   id: string;
   name: string;

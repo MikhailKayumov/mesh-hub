@@ -119,6 +119,21 @@ export class OrganizationService {
     return OrganizationMapper.toResponse(org, subscription);
   }
 
+  public async getOrganizationEntity(orgId: string): Promise<OrganizationEntity> {
+    const org = await this.organizationRepository.findOne({ where: { id: orgId } });
+    if (!org) throw new NotFoundException('Organization not found');
+    return org;
+  }
+
+  public async updateStorageConfig(orgId: string, storageBackend: StorageBackend, storageConfigEncrypted: string | null): Promise<void> {
+    const sub = await this.orgSubscriptionRepository.findOne({ where: { orgId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+
+    sub.storageBackend = storageBackend;
+    sub.storageConfigEncrypted = storageConfigEncrypted;
+    await this.orgSubscriptionRepository.save(sub);
+  }
+
   public async updateOrganization(orgId: string, dto: OrganizationUpdateRequestDto): Promise<OrganizationResponseDto> {
     const org = await this.organizationRepository.findOne({ where: { id: orgId } });
     if (!org) throw new NotFoundException('Organization not found');

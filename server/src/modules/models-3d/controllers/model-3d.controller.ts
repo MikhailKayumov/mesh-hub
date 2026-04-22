@@ -15,6 +15,9 @@ import {
   Patch,
   Post,
   Query,
+  Redirect,
+  Req,
+  Res,
   StreamableFile,
   UploadedFile,
   UseInterceptors,
@@ -29,14 +32,16 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { UserRoles, ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { OptionalUser, User } from '@/decorators/user/user.decorator';
+import { FilesService } from '@/modules/files/files.service';
 import { Model3dResponseDto } from '@/modules/models-3d/dto/model-3d.response.dto';
 import { Model3dUpdateRequestDto } from '@/modules/models-3d/dto/model-3d.update.request.dto';
-import { Models3dRequestDto } from '@/modules/models-3d/dto/models-3d.request.dto';
+import { Models3dRequestDto, UploadModel3dRequestDto } from '@/modules/models-3d/dto/models-3d.request.dto';
 import { Model3dService } from '@/modules/models-3d/services/model-3d.service';
 import { FileExtensionValidatorPipe } from '@/pipes/file-extension-validator.pipe';
 import { FileSizeValidator } from '@/pipes/file-size-validator.pipe';
@@ -44,7 +49,10 @@ import { FileSizeValidator } from '@/pipes/file-size-validator.pipe';
 @Controller('models-3d')
 @ApiTags('models-3d')
 export class Model3dController {
-  public constructor(private readonly model3dService: Model3dService) {}
+  public constructor(
+    private readonly model3dService: Model3dService,
+    private readonly filesService: FilesService,
+  ) {}
 
   @Get('current-user')
   @Roles([UserRoles.User])
@@ -120,7 +128,14 @@ export class Model3dController {
   @UseInterceptors(FileInterceptor('file', { dest: './files/models-3d/temp' }))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    schema: { type: 'object', required: ['file'], properties: { file: { type: 'string', format: 'binary' } } },
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        workspaceId: { type: 'string', format: 'uuid' },
+      },
+    },
   })
   @ApiOkResponse()
   @ApiBadRequestResponse()
@@ -136,8 +151,9 @@ export class Model3dController {
       }),
     )
     file: Express.Multer.File,
+    @Body() body: UploadModel3dRequestDto,
   ): Promise<{ modelId: string }> {
-    return this.model3dService.upload3DModel(user, file);
+    return this.model3dService.upload3DModel(user, file, body.workspaceId);
   }
 
   @Get('files/:modelId/thumbnail')
@@ -156,10 +172,23 @@ export class Model3dController {
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'max-age=2592000') // 30 days
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
-  public getModels3DFile(
+  public async getModels3DFile(
     @Param('modelId', ParseUUIDPipe) modelId: string,
     @Param('0') fileName: string,
-  ): StreamableFile {
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile | void> {
+    const model = await this.model3dService.getModel(modelId);
+
+    if (model.workspaceId) {
+      const workspace = await this.model3dService.getWorkspace(model.workspaceId);
+      const strategy = await this.filesService.getStrategyForOrg(workspace.orgId);
+      const url = await strategy.getFileUrl(`models-3d/${modelId}/${fileName}`);
+      if (url) {
+        res.redirect(307, url);
+        return;
+      }
+    }
+
     const base = resolve(process.cwd(), 'files', 'models-3d', modelId);
     const target = this.safeResolvePath(base, fileName);
     return new StreamableFile(createReadStream(target));

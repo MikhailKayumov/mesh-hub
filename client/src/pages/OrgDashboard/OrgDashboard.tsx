@@ -20,14 +20,17 @@ import {
 import { IconDots, IconTrash, IconUserEdit } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { OrgMemberRole } from '@/app/api/dto.ts';
+import { OrgMemberRole, StorageBackend } from '@/app/api/dto.ts';
 import {
     useOrganizationQuery,
     useOrgMembersQuery,
     useInviteOrgMemberMutation,
     useChangeOrgMemberRoleMutation,
     useRemoveOrgMemberMutation,
+    useGetOrgSubscriptionQuery,
+    useUpdateOrgStorageConfigMutation,
 } from '@/app/api/organizations.ts';
+import { useCurrentUserQuery } from '@/app/api/user.ts';
 import { useMyWorkspacesQuery, useCreateWorkspaceMutation } from '@/app/api/workspaces.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { buildAbsolutePath } from '@/shared/utils/router';
@@ -49,15 +52,18 @@ const INVITABLE_ROLES = [
 
 export function OrgDashboardPage() {
     const { orgId } = useParams<{ orgId: string }>();
+    const { data: currentUser } = useCurrentUserQuery();
 
     const { data: org, isLoading: orgLoading } = useOrganizationQuery(orgId ?? '', { skip: !orgId });
     const { data: membersPage, isLoading: membersLoading } = useOrgMembersQuery({ id: orgId ?? '' }, { skip: !orgId });
     const { data: workspaces, isLoading: wsLoading } = useMyWorkspacesQuery({ orgId: orgId ?? '' }, { skip: !orgId });
+    const { data: subscriptionDetail } = useGetOrgSubscriptionQuery(orgId ?? '', { skip: !orgId });
 
     const [inviteOrgMember, { isLoading: inviting }] = useInviteOrgMemberMutation();
     const [changeOrgMemberRole] = useChangeOrgMemberRoleMutation();
     const [removeOrgMember] = useRemoveOrgMemberMutation();
     const [createWorkspace, { isLoading: creatingWs }] = useCreateWorkspaceMutation();
+    const [updateStorageConfig, { isLoading: savingStorage }] = useUpdateOrgStorageConfigMutation();
 
     // Invite modal state
     const [inviteOpen, setInviteOpen] = useState(false);
@@ -67,6 +73,18 @@ export function OrgDashboardPage() {
     // Create workspace modal state
     const [wsModalOpen, setWsModalOpen] = useState(false);
     const [wsName, setWsName] = useState('');
+
+    // Storage config state
+    const [storageBackend, setStorageBackend] = useState<StorageBackend>(StorageBackend.Local);
+    const [s3Region, setS3Region] = useState('');
+    const [s3Bucket, setS3Bucket] = useState('');
+    const [s3AccessKey, setS3AccessKey] = useState('');
+    const [s3SecretKey, setS3SecretKey] = useState('');
+    const [s3Endpoint, setS3Endpoint] = useState('');
+
+    const isOwner = (membersPage?.data ?? []).some(
+        (m) => m.userId === currentUser?.id && m.role === OrgMemberRole.Owner,
+    );
 
     async function handleInvite() {
         if (!orgId || !inviteEmail.trim()) return;
@@ -81,6 +99,27 @@ export function OrgDashboardPage() {
         await createWorkspace({ name: wsName.trim(), orgId });
         setWsModalOpen(false);
         setWsName('');
+    }
+
+    async function handleSaveStorageConfig() {
+        if (!orgId) return;
+        await updateStorageConfig({
+            id: orgId,
+            body: {
+                storageBackend,
+                ...(storageBackend === StorageBackend.S3
+                    ? {
+                        s3Config: {
+                            region: s3Region.trim(),
+                            bucket: s3Bucket.trim(),
+                            accessKeyId: s3AccessKey.trim(),
+                            secretAccessKey: s3SecretKey.trim(),
+                            ...(s3Endpoint.trim() ? { endpoint: s3Endpoint.trim() } : {}),
+                        },
+                    }
+                    : {}),
+            },
+        });
     }
 
     if (orgLoading) {
@@ -100,7 +139,7 @@ export function OrgDashboardPage() {
     }
 
     const subscription = org.subscription;
-    const usedBytes = 0; // placeholder until StorageQuota module (STEP-7)
+    const usedBytes = subscriptionDetail?.storageUsedBytes ?? 0;
     const limitBytes = subscription?.storageLimitBytes ? Number(subscription.storageLimitBytes) : null;
 
     return (
@@ -129,6 +168,7 @@ export function OrgDashboardPage() {
                 <Tabs.List>
                     <Tabs.Tab value="members">Участники</Tabs.Tab>
                     <Tabs.Tab value="workspaces">Рабочие пространства</Tabs.Tab>
+                    {isOwner && <Tabs.Tab value="storage">Хранилище</Tabs.Tab>}
                 </Tabs.List>
 
                 {/* Members tab */}
@@ -246,6 +286,36 @@ export function OrgDashboardPage() {
                         )}
                     </Stack>
                 </Tabs.Panel>
+
+                {/* Storage settings tab — Owner only */}
+                {isOwner && (
+                    <Tabs.Panel value="storage" pt="md">
+                        <Stack gap="sm" maw={480}>
+                            <Text fw={600}>Бэкенд хранилища</Text>
+                            <Select
+                                label="Тип хранилища"
+                                data={[
+                                    { value: StorageBackend.Local, label: 'Локальное (по умолчанию)' },
+                                    { value: StorageBackend.S3, label: 'S3-совместимое' },
+                                ]}
+                                value={storageBackend}
+                                onChange={(v) => v && setStorageBackend(v as StorageBackend)}
+                            />
+                            {storageBackend === StorageBackend.S3 && (
+                                <>
+                                    <TextInput label="Регион" placeholder="us-east-1" value={s3Region} onChange={(e) => setS3Region(e.currentTarget.value)} />
+                                    <TextInput label="Бакет" placeholder="my-bucket" value={s3Bucket} onChange={(e) => setS3Bucket(e.currentTarget.value)} />
+                                    <TextInput label="Access Key ID" value={s3AccessKey} onChange={(e) => setS3AccessKey(e.currentTarget.value)} />
+                                    <TextInput label="Secret Access Key" type="password" value={s3SecretKey} onChange={(e) => setS3SecretKey(e.currentTarget.value)} />
+                                    <TextInput label="Эндпоинт (опционально)" placeholder="https://s3.example.com" value={s3Endpoint} onChange={(e) => setS3Endpoint(e.currentTarget.value)} />
+                                </>
+                            )}
+                            <Button onClick={handleSaveStorageConfig} loading={savingStorage} mt="xs">
+                                Сохранить
+                            </Button>
+                        </Stack>
+                    </Tabs.Panel>
+                )}
             </Tabs>
 
             {/* Invite modal */}

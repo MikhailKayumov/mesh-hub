@@ -27,23 +27,33 @@ import {
   OrgMemberEntity,
   OrgMemberRole as OrgMemberRoleEnum,
 } from '@/database/entities/organizations/org-member.entity';
+import { StorageBackend } from '@/database/entities/organizations/org-subscription.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { User } from '@/decorators/user/user.decorator';
+import { ConfigService } from '@/modules/config/config.service';
 import { OrgInviteCreateRequestDto } from '@/modules/organizations/dto/org-invite.create.request.dto';
 import { OrgMemberRoleChangeRequestDto } from '@/modules/organizations/dto/org-member-role.change.request.dto';
 import { OrgMemberResponseDto } from '@/modules/organizations/dto/org-member.response.dto';
+import { OrgSubscriptionDetailDto } from '@/modules/organizations/dto/org-subscription.detail.dto';
 import { OrganizationCreateRequestDto } from '@/modules/organizations/dto/organization.create.request.dto';
 import { OrganizationResponseDto } from '@/modules/organizations/dto/organization.response.dto';
 import { OrganizationUpdateRequestDto } from '@/modules/organizations/dto/organization.update.request.dto';
+import { UpdateStorageConfigRequestDto } from '@/modules/organizations/dto/update-storage-config.request.dto';
 import { OrgMemberRole } from '@/modules/organizations/guards/org-member-role.decorator';
 import { OrganizationService } from '@/modules/organizations/services/organization.service';
+import { StorageQuotaService } from '@/modules/storage-quota/storage-quota.service';
+import { encryptAes256 } from '@/utils/encryption';
 
 @Controller('organizations')
 @ApiTags('organizations')
 export class OrganizationController {
-  public constructor(private readonly organizationService: OrganizationService) {}
+  public constructor(
+    private readonly organizationService: OrganizationService,
+    private readonly storageQuotaService: StorageQuotaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post()
   @Roles([UserRoles.User])
@@ -157,5 +167,44 @@ export class OrganizationController {
     @User() user: UserEntity,
   ): Promise<void> {
     return this.organizationService.removeMember(orgId, user, targetUserId);
+  }
+
+  @Get(':id/subscription')
+  @OrgMemberRole(OrgMemberRoleEnum.Viewer)
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: OrgSubscriptionDetailDto })
+  @ApiForbiddenResponse({ description: 'Insufficient org role' })
+  public async getSubscription(@Param('id', ParseUUIDPipe) orgId: string): Promise<OrgSubscriptionDetailDto> {
+    const sub = await this.storageQuotaService.getSubscription(orgId);
+    const used = await this.storageQuotaService.getStorageUsed(orgId);
+
+    const org = await this.organizationService.getOrganizationEntity(orgId);
+
+    const dto = new OrgSubscriptionDetailDto();
+    dto.planType = org.planType;
+    dto.storageLimitBytes = sub.storageLimitBytes;
+    dto.seatsLimit = sub.seatsLimit;
+    dto.storageBackend = sub.storageBackend;
+    dto.storageUsedBytes = used;
+    return dto;
+  }
+
+  @Patch(':id/subscription/storage')
+  @OrgMemberRole(OrgMemberRoleEnum.Owner)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiForbiddenResponse({ description: 'Insufficient org role' })
+  @ApiNotFoundResponse({ description: 'Organization subscription not found' })
+  public async updateStorageConfig(
+    @Param('id', ParseUUIDPipe) orgId: string,
+    @Body() dto: UpdateStorageConfigRequestDto,
+  ): Promise<void> {
+    let storageConfigEncrypted: string | null = null;
+
+    if (dto.storageBackend === StorageBackend.S3 && dto.s3Config) {
+      const encKey = this.configService.storageEncryptionKey;
+      storageConfigEncrypted = encryptAes256(JSON.stringify(dto.s3Config), encKey);
+    }
+
+    await this.organizationService.updateStorageConfig(orgId, dto.storageBackend, storageConfigEncrypted);
   }
 }

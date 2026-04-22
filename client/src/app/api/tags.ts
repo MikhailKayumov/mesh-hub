@@ -9,6 +9,7 @@ export const ApiTags = {
   CurrentUser3DModel: 'CurrentUser3DModel',
   Organization: 'Organization',
   OrgMembers: 'OrgMembers',
+  OrgSubscription: 'OrgSubscription',
   Workspaces: 'Workspaces',
   Workspace: 'Workspace',
 } as const;

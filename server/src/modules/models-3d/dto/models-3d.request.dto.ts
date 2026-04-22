@@ -14,3 +14,10 @@ export class Models3dRequestDto {
   @IsUUID()
   public workspaceId?: string;
 }
+
+export class UploadModel3dRequestDto {
+  @ApiPropertyOptional({ description: 'Workspace to assign the uploaded model to' })
+  @IsOptional()
+  @IsUUID()
+  public workspaceId?: string;
+}

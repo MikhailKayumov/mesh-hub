@@ -14,8 +14,8 @@
 | STEP-4 | 1 | Frontend — Orgs/Workspaces | DONE | |
 | STEP-5 | 1.5 | ZIP Support Backend | DONE | |
 | STEP-6 | 1.5 | ZIP Support Frontend | DONE | |
-| STEP-7 | 2 | StorageQuota + OrgSubscription | TODO | |
-| STEP-8 | 2 | S3 File Strategy | TODO | |
+| STEP-7 | 2 | StorageQuota + OrgSubscription | DONE | |
+| STEP-8 | 2 | S3 File Strategy | DONE | |
 | STEP-9 | 3 | API Keys + Embed Entities | TODO | |
 | STEP-10 | 3 | Embed Module Backend | TODO | |
 | STEP-11 | 3 | Embed Frontend | TODO | |
@@ -36,6 +36,8 @@
 | STEP-4 | 2026-04-22 | RTK Query org/workspace API, org Redux slice (persisted), OrgCreate/OrgDashboard pages, QuotaBar/OrgSwitcher widgets, Header integration |
 | STEP-5 | 2026-04-22 | ZIP upload support — adm-zip extraction, entryFile column + migration, wildcard file serving route |
 | STEP-6 | 2026-04-22 | ZIP frontend — .zip added to accepted types, entryFile in DTOs, all call sites updated, UI hint in upload modal |
+| STEP-7 | 2026-04-22 | StorageQuotaModule, quota checks on upload, GET subscription endpoint, frontend QuotaBar wired to real data |
+| STEP-8 | 2026-04-22 | AWS SDK v3, AES-256-CBC encryption util, S3FileStorageStrategy, FilesService.getStrategyForOrg, presigned URL redirect, admin S3 config endpoint + frontend UI |
 
 ## Known Issues / Decisions Made
 
@@ -353,3 +355,77 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 
 ### Verification
 - `npm run tscheck` — 0 errors
+
+
+## STEP-7 SUMMARY
+
+### StorageQuotaModule — `server/src/modules/storage-quota/`
+- New `StorageQuotaService` uses `@InjectDataSource() DataSource` (no circular deps with OrganizationsModule or Models3dModule).
+- `getStorageUsed(orgId)` — raw SQL SUM of `model_3d_file.size` joining through `model_3d` → workspace WHERE `org_id = $1` AND `deleted_at IS NULL`.
+- `getSubscription(orgId)` — loads `OrgSubscriptionEntity` via `dataSource.getRepository`.
+- `checkStorageQuota(orgId)` — throws 402 if `storageUsedBytes >= storageLimitBytes` (null = unlimited).
+- `checkSeatsQuota(orgId)` — counts active `OrgMemberEntity` rows; throws 402 if count >= `seatsLimit`.
+- `checkStorageQuotaByWorkspace(workspaceId)` — resolves workspace → orgId then calls `checkStorageQuota`.
+
+### Upload integration
+- `UploadModel3dRequestDto` adds optional `workspaceId: string` (`@IsOptional @IsUUID`).
+- `Model3dController.upload3DModel` passes `workspaceId` from body to service.
+- `Model3dService.upload3DModel` calls `checkStorageQuotaByWorkspace(workspaceId)` before the transaction when workspaceId provided.
+- Frontend `useUpload3DModal` appends `workspaceId` from Redux to FormData when available.
+
+### GET subscription endpoint
+- `GET /organizations/:id/subscription` (OrgMemberRole ≥ Viewer) returns `OrgSubscriptionDetailDto`: `planType`, `storageLimitBytes`, `seatsLimit`, `storageBackend`, `storageUsedBytes`.
+- `OrganizationsModule` imports `StorageQuotaModule`.
+- Frontend `getOrgSubscription` RTK Query endpoint added; `OrgDashboard` uses `subscriptionDetail.storageUsedBytes` for the `QuotaBar` (real data, no longer hardcoded 0).
+
+### Key decisions
+- `AppHttpException` constructor is `(message: string, status: HttpStatus)` — message first.
+- `OrgSubscriptionEntity.orgId` is a direct UUID column — query with `{ where: { orgId } }` not via relation.
+
+
+## STEP-8 SUMMARY
+
+### AWS SDK
+- Installed `@aws-sdk/client-s3`, `@aws-sdk/lib-storage`, `@aws-sdk/s3-request-presigner` in `server/`.
+
+### Encryption utility — `server/src/utils/encryption.ts`
+- `encryptAes256(plaintext, keyHex)` — AES-256-CBC, returns `<ivHex>:<ciphertextHex>`.
+- `decryptAes256(ciphertext, keyHex)` — inverse.
+- Key stored in `STORAGE_ENCRYPTION_KEY` env var (32-byte hex); accessed via `ConfigService.storageEncryptionKey`.
+
+### IFileStorageStrategy updates — `server/src/modules/files/types.ts`
+- Added `S3StorageConfig` interface: `{ region, bucket, accessKeyId, secretAccessKey, endpoint? }`.
+- Added `getFileUrl(relativePath): Promise<string | null>` to `IFileStorageStrategy`.
+- `FsFileStorageStrategy.getFileUrl` returns `null` (file served locally).
+
+### S3FileStorageStrategy — `server/src/modules/files/strategies/s3.files.strategy.ts`
+- Plain class (not NestJS provider), instantiated per-request inside `getStrategyForOrg()`.
+- `saveAvatar` / `removeAvatar` → `PutObjectCommand` / `DeleteObjectCommand` under `avatars/` prefix.
+- `save3DModel` → streaming `Upload` from `@aws-sdk/lib-storage` under `models-3d/<id>/`.
+- `save3DModelDirectory` → parallel `PutObjectCommand` for each `ExtractedFile`.
+- `save3DModelThumbnailFromBase64` → base64 decode → `PutObjectCommand`.
+- `delete3DModel` → paginated `ListObjectsV2Command` + `DeleteObjectsCommand`.
+- `getFileUrl` → `getSignedUrl(GetObjectCommand, { expiresIn: 3600 })`.
+- Custom endpoint support (`forcePathStyle: true`) for MinIO/S3-compatible backends.
+
+### FilesService — `server/src/modules/files/files.service.ts`
+- Renamed `this.strategy` → `this.localStrategy`.
+- Added `@InjectDataSource() DataSource` injection.
+- Added `getStrategyForOrg(orgId)` — loads `OrgSubscriptionEntity`; if `storageBackend === S3` and `storageConfigEncrypted` present, decrypts config and returns `new S3FileStorageStrategy(config)`; otherwise returns `this.localStrategy`.
+
+### File serving redirect — `GET /models-3d/files/:modelId/*`
+- Endpoint is now `async`; injects `@Res({ passthrough: true }) res: Response`.
+- Loads model entity (`Model3dService.getModel`) to check `workspaceId`.
+- If workspace present → `getStrategyForOrg(workspace.orgId)` → `strategy.getFileUrl(...)` → `res.redirect(307, url)` for S3.
+- Falls back to local `StreamableFile(createReadStream(...))` when strategy returns `null`.
+
+### Admin S3 config endpoint
+- `PATCH /organizations/:id/subscription/storage` (OrgMemberRole = Owner).
+- Body: `UpdateStorageConfigRequestDto` with `storageBackend: StorageBackend` and optional `s3Config: S3StorageConfigInputDto`.
+- S3 credentials are encrypted with AES-256-CBC before storage in `org_subscription.storage_config_encrypted`.
+- `OrganizationService.updateStorageConfig` saves new backend + encrypted config.
+
+### Frontend S3 config UI
+- `dto.ts`: added `S3StorageConfigDto` and `UpdateStorageConfigRequestDto`.
+- `organizations.ts`: added `updateOrgStorageConfig` mutation invalidating `ApiTags.OrgSubscription`.
+- `OrgDashboard`: new "Хранилище" tab visible to Owner only; `Select` for backend type; S3 credential fields shown when S3 selected; Save button calls `updateOrgStorageConfig` mutation.

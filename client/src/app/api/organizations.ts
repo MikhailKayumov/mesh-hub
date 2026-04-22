@@ -6,6 +6,8 @@ import type {
   OrgInviteCreateRequestDto,
   OrgInviteAcceptRequestDto,
   OrgMemberRoleChangeRequestDto,
+  OrgSubscriptionDetailDto,
+  UpdateStorageConfigRequestDto,
   PaginationDto,
   PaginationResponseDto,
 } from './dto.ts';
@@ -83,6 +85,21 @@ export const OrganizationsApi = Api.injectEndpoints({
         url: `${ApiUrls.Organizations}/${id}/members/${userId}`,
       }),
     }),
+    getOrgSubscription: build.query<OrgSubscriptionDetailDto, string>({
+      providesTags: (_result, _error, id) => [{ type: ApiTags.OrgSubscription, id }],
+      query: (id) => ({
+        method: 'GET',
+        url: `${ApiUrls.Organizations}/${id}/subscription`,
+      }),
+    }),
+    updateOrgStorageConfig: build.mutation<void, { id: string; body: UpdateStorageConfigRequestDto }>({
+      invalidatesTags: (_result, _error, arg) => [{ type: ApiTags.OrgSubscription, id: arg.id }],
+      query: ({ id, body }) => ({
+        method: 'PATCH',
+        url: `${ApiUrls.Organizations}/${id}/subscription/storage`,
+        body,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -97,4 +114,6 @@ export const {
   useAcceptOrgInviteMutation,
   useChangeOrgMemberRoleMutation,
   useRemoveOrgMemberMutation,
+  useGetOrgSubscriptionQuery,
+  useUpdateOrgStorageConfigMutation,
 } = OrganizationsApi;

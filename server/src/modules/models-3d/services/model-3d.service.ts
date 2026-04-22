@@ -1,9 +1,12 @@
 import { extname } from 'path';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { In } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { ModelVisibility } from '@/constants';
 import { Model3dFileEntity } from '@/database/entities/models-3d/model-3d-file.entity';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
+import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { FilesService } from '@/modules/files/files.service';
@@ -14,6 +17,7 @@ import { Model3dMapper } from '@/modules/models-3d/mappers/model-3d.mapper';
 import { Model3dFileRepository } from '@/modules/models-3d/repositories/model-3d-file.repository';
 import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.repository';
 import { CategoryRepository } from '@/modules/resources/repositories/category.repository';
+import { StorageQuotaService } from '@/modules/storage-quota/storage-quota.service';
 import { WorkspaceMemberRepository } from '@/modules/workspaces/repositories/workspace-member.repository';
 
 @Injectable()
@@ -26,7 +30,23 @@ export class Model3dService {
     private readonly model3dFileRepository: Model3dFileRepository,
     private readonly categoryRepository: CategoryRepository,
     private readonly workspaceMemberRepository: WorkspaceMemberRepository,
+    private readonly storageQuotaService: StorageQuotaService,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
+
+  /** Load a bare model entity (no relations) — used for file serving path resolution. */
+  public async getModel(id: string): Promise<Model3dEntity> {
+    const model = await this.model3dRepository.findOne({ where: { id } });
+    if (!model) throw new NotFoundException('Модель не найдена');
+    return model;
+  }
+
+  /** Load a workspace entity by id — used to resolve orgId for storage strategy. */
+  public async getWorkspace(id: string): Promise<WorkspaceEntity> {
+    const workspace = await this.dataSource.getRepository(WorkspaceEntity).findOne({ where: { id } });
+    if (!workspace) throw new NotFoundException('Workspace not found');
+    return workspace;
+  }
 
   public async get3DModel(id: string, user?: UserEntity) {
     const model = await this.model3dRepository.findOne({
@@ -71,8 +91,12 @@ export class Model3dService {
     );
   }
 
-  public async upload3DModel(user: UserEntity, file: Express.Multer.File): Promise<{ modelId: string }> {
+  public async upload3DModel(user: UserEntity, file: Express.Multer.File, workspaceId?: string): Promise<{ modelId: string }> {
     let savedModelId: string = '';
+
+    if (workspaceId) {
+      await this.storageQuotaService.checkStorageQuotaByWorkspace(workspaceId);
+    }
 
     try {
       const model = await this.model3dRepository.manager.transaction(async (em) => {
@@ -87,6 +111,9 @@ export class Model3dService {
         modelEntity.user = user;
         modelEntity.name = file.originalname.substring(0, file.originalname.lastIndexOf('.')).trim();
         modelEntity.file = createdFileEntity;
+        if (workspaceId) {
+          modelEntity.workspaceId = workspaceId;
+        }
 
         const savedModel = await em.save(modelEntity);
         savedModelId = savedModel.id;

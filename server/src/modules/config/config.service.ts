@@ -154,6 +154,10 @@ export class ConfigService {
     };
   }
 
+  public get storageEncryptionKey(): string {
+    return this.get('STORAGE_ENCRYPTION_KEY', '');
+  }
+
   public get<T = string>(name: string, defaultValue?: T): T {
     return !isNil(defaultValue) ? this.config.get<T>(name, defaultValue) : this.config.getOrThrow(name);
   }

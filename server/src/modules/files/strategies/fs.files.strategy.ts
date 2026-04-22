@@ -99,4 +99,8 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
   private get3DModelThumbnailFilePath(id: string): string {
     return resolve(process.cwd(), this.configService.fsConfig.folders.models, id, 'thumbnail.png');
   }
+
+  public async getFileUrl(_relativePath: string): Promise<string | null> {
+    return null;
+  }
 }

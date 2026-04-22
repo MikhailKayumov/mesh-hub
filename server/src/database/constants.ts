@@ -6,6 +6,8 @@ export const DatabaseSchemas = {
   Auth: 'auth',
   Users: 'users',
   Models3D: 'model_3d',
+  Organizations: 'organizations',
+  Workspaces: 'workspaces',
 } as const;
 
 export const ResourcesSchemaTables = {
@@ -30,4 +32,16 @@ export const Models3DSchemaTables = {
   Model3D: 'model_3d',
   Model3DFile: 'model_3d_file',
   Model3DCategories: 'model_3d_categories',
+} as const;
+
+export const OrganizationsSchemaTables = {
+  Organization: 'organization',
+  OrgMember: 'org_member',
+  OrgSubscription: 'org_subscription',
+  OrgInvite: 'org_invite',
+} as const;
+
+export const WorkspacesSchemaTables = {
+  Workspace: 'workspace',
+  WorkspaceMember: 'workspace_member',
 } as const;

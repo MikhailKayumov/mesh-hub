@@ -8,7 +8,7 @@
 | Step | Block | Title | Status | Notes |
 |---|---|---|---|---|
 | STEP-0 | Pre-MVP | Critical Fixes (FS, Migration, Security) | DONE | |
-| STEP-1 | 1 | DB Entities — Orgs & Workspaces | TODO | |
+| STEP-1 | 1 | DB Entities — Orgs & Workspaces | DONE | |
 | STEP-2 | 1 | Organizations Module Backend | TODO | |
 | STEP-3 | 1 | Workspaces Module Backend | TODO | |
 | STEP-4 | 1 | Frontend — Orgs/Workspaces | TODO | |
@@ -30,6 +30,7 @@
 | Step | Date | Notes |
 |---|---|---|
 | STEP-0 | 2026-04-22 | All three fixes applied — FS path, visibility migration, path traversal |
+| STEP-1 | 2026-04-22 | DB schemas, 6 entities, 2 migrations for organizations & workspaces |
 
 ## Known Issues / Decisions Made
 
@@ -59,3 +60,30 @@
 ### Fix 3 — Path traversal in file serving
 - Replaced `join()` with `resolve()` + a `safeResolvePath()` private method that throws `ForbiddenException` if the resolved path escapes the per-model base directory
 - Both endpoints renamed `:fileId` → `:modelId` and now use `ParseUUIDPipe` to additionally block UUID-shaped traversal
+
+
+## STEP-1 SUMMARY
+
+### Constants — `server/src/database/constants.ts`
+- Added `Organizations: 'organizations'` and `Workspaces: 'workspaces'` to `DatabaseSchemas`
+- Added `OrganizationsSchemaTables = { Organization, OrgMember, OrgSubscription, OrgInvite }` constant object
+- Added `WorkspacesSchemaTables = { Workspace, WorkspaceMember }` constant object
+- No changes to `init/index.ts` — it already iterates all `DatabaseSchemas` values to `CREATE SCHEMA IF NOT EXISTS`; new schemas are created automatically on next `db:init` run
+
+### Entities — `server/src/database/entities/organizations/`
+- **`organization.entity.ts`** — `name: text`, `slug: text` (unique), `planType: PlanType`; enum `PlanType { starter | growth | enterprise }`
+- **`org-member.entity.ts`** — `role: OrgMemberRole`; FK `org_id → organizations.organization`, FK `user_id → users.user`; composite unique `(org_id, user_id)` via `@Unique`; enum `OrgMemberRole { owner | admin | editor | viewer }`
+- **`org-subscription.entity.ts`** — `storageLimitBytes: bigint?`, `seatsLimit: int?`, `storageBackend: StorageBackend`, `storageConfigEncrypted: text?`; OneToOne FK `org_id → organizations.organization` (unique); enum `StorageBackend { local | s3 }`
+- **`org-invite.entity.ts`** — `invitedEmail: text`, `role: OrgMemberRole`, `token: uuid` (unique), `expiresAt: timestamptz`, `acceptedAt: timestamptz?`; FK `org_id → organizations.organization`; reuses `OrgMemberRole` from `org-member.entity.ts`
+
+### Entities — `server/src/database/entities/workspaces/`
+- **`workspace.entity.ts`** — `name: text`; FK `org_id → organizations.organization`
+- **`workspace-member.entity.ts`** — `role: WorkspaceMemberRole`; FK `workspace_id → workspaces.workspace`, FK `user_id → users.user`; composite unique `(workspace_id, user_id)` via `@Unique`; enum `WorkspaceMemberRole { editor | viewer }`
+
+### Migrations
+- **`migrations/organizations/1745280001000-InitOrganizations.ts`** — creates 3 enum types (`plan_type`, `org_member_role`, `storage_backend`); creates 4 tables (`organization`, `org_member`, `org_subscription`, `org_invite`) with all FK constraints; `down()` drops FKs → tables → enum types in reverse order
+- **`migrations/workspaces/1745280002000-InitWorkspaces.ts`** — creates 1 enum type (`workspace_member_role`); creates 2 tables (`workspace`, `workspace_member`) with FK constraints including cross-schema FK to `organizations.organization`; `down()` drops FKs → tables → enum type in reverse order
+
+### Decisions
+- No SQL init files — existing `init/index.ts` approach is sufficient; enum types live in migrations (consistent with `model_visibility` pattern from STEP-0)
+- `data.source.ts` and `app.module.ts` not modified — entity glob `entities/**/*.entity.ts` picks up new files automatically

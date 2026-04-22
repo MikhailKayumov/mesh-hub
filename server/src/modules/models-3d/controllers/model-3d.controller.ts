@@ -151,14 +151,14 @@ export class Model3dController {
     return new StreamableFile(createReadStream(target));
   }
 
-  @Get('files/:modelId/:fileName')
+  @Get('files/:modelId/*')
   @Public()
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'max-age=2592000') // 30 days
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
   public getModels3DFile(
     @Param('modelId', ParseUUIDPipe) modelId: string,
-    @Param('fileName') fileName: string,
+    @Param('0') fileName: string,
   ): StreamableFile {
     const base = resolve(process.cwd(), 'files', 'models-3d', modelId);
     const target = this.safeResolvePath(base, fileName);

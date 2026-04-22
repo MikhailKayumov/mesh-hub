@@ -91,7 +91,16 @@ export class Model3dService {
         const savedModel = await em.save(modelEntity);
         savedModelId = savedModel.id;
 
-        await this.filesService.save3DModel(savedModel.id, file);
+        const isZip = extname(file.originalname).toLowerCase() === '.zip';
+
+        if (isZip) {
+          const entryFile = await this.filesService.extractAndSave3DModelDirectory(savedModel.id, file);
+          createdFileEntity.entryFile = entryFile;
+          await em.save(createdFileEntity);
+          await this.filesService.deleteFile(file.path);
+        } else {
+          await this.filesService.save3DModel(savedModel.id, file);
+        }
 
         return savedModel;
       });

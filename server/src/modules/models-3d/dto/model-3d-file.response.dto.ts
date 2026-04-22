@@ -18,4 +18,7 @@ export class Model3dFileResponseDto {
 
   @ApiProperty()
   public extension: string;
+
+  @ApiPropertyOptional()
+  public entryFile?: string;
 }

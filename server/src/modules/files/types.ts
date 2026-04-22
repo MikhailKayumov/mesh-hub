@@ -1,3 +1,8 @@
+export interface ExtractedFile {
+  relativePath: string;
+  buffer: Buffer;
+}
+
 export interface IFileStorageStrategy {
   init?: () => void | Promise<void>;
   deleteFile(path: string, silent: boolean): Promise<void>;
@@ -6,4 +11,5 @@ export interface IFileStorageStrategy {
   save3DModel(id: string, file: Express.Multer.File): Promise<string>;
   save3DModelThumbnailFromBase64(id: string, thumbnail: string): Promise<string>;
   delete3DModel(id: string, silent: boolean): Promise<void>;
+  save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string>;
 }

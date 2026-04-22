@@ -1,8 +1,8 @@
 import { mkdir, writeFile, unlink, rename, rm } from 'fs/promises';
-import { resolve, extname, dirname } from 'path';
-import { Logger } from '@nestjs/common';
+import { resolve, extname, dirname, sep } from 'path';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@/modules/config/config.service';
-import { IFileStorageStrategy } from '@/modules/files/types';
+import { ExtractedFile, IFileStorageStrategy } from '@/modules/files/types';
 
 export class FsFileStorageStrategy implements IFileStorageStrategy {
   private readonly logger = new Logger('FsFileStorageStrategy');
@@ -63,6 +63,29 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
 
   public async delete3DModel(id: string, silent = true): Promise<void> {
     return this.deleteFile(this.get3DModelFilePath(id), silent);
+  }
+
+  public async save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string> {
+    const modelDir = this.get3DModelFilePath(modelId);
+
+    for (const f of files) {
+      const target = resolve(modelDir, f.relativePath);
+      if (!target.startsWith(modelDir + sep)) {
+        throw new BadRequestException(`Invalid file path in archive: ${f.relativePath}`);
+      }
+    }
+
+    for (const f of files) {
+      const target = resolve(modelDir, f.relativePath);
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, f.buffer);
+    }
+
+    const entryFile = files.find((f) => /\.(gltf|glb)$/i.test(f.relativePath));
+    if (!entryFile) {
+      throw new BadRequestException('No .gltf or .glb entry point found in archive');
+    }
+    return entryFile.relativePath;
   }
 
   private getAvatarFilePath(path: string): string {

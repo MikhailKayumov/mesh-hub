@@ -11,4 +11,4 @@ export const ALLOWED_AVATAR_FILE_TYPES = [
 
 export const MAX_3D_MODEL_FILE_SIZE = 1024 ** 3 * 3; // 3gb
 
-export const ACCEPTED_3D_MODEL_FILE_TYPES = [/*'.fbx', */ '.gltf', '.glb'];
+export const ACCEPTED_3D_MODEL_FILE_TYPES = [/*'.fbx', */ '.gltf', '.glb', '.zip'];

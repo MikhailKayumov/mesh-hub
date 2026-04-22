@@ -12,4 +12,7 @@ export class Model3dFileEntity extends GuidIdEntityBase {
 
   @Column({ type: 'text', nullable: false })
   public extension: string;
+
+  @Column({ type: 'text', nullable: true, name: 'entry_file' })
+  public entryFile?: string;
 }

@@ -12,7 +12,7 @@
 | STEP-2 | 1 | Organizations Module Backend | DONE | |
 | STEP-3 | 1 | Workspaces Module Backend | DONE | |
 | STEP-4 | 1 | Frontend — Orgs/Workspaces | DONE | |
-| STEP-5 | 1.5 | ZIP Support Backend | TODO | |
+| STEP-5 | 1.5 | ZIP Support Backend | DONE | |
 | STEP-6 | 1.5 | ZIP Support Frontend | TODO | |
 | STEP-7 | 2 | StorageQuota + OrgSubscription | TODO | |
 | STEP-8 | 2 | S3 File Strategy | TODO | |
@@ -34,6 +34,7 @@
 | STEP-2 | 2026-04-22 | Full Organizations module — CRUD, membership, invite flow, OrgMemberGuard |
 | STEP-3 | 2026-04-22 | Full Workspaces module — CRUD, member management, workspaceId on Model3d, workspace-scoped visibility filter |
 | STEP-4 | 2026-04-22 | RTK Query org/workspace API, org Redux slice (persisted), OrgCreate/OrgDashboard pages, QuotaBar/OrgSwitcher widgets, Header integration |
+| STEP-5 | 2026-04-22 | ZIP upload support — adm-zip extraction, entryFile column + migration, wildcard file serving route |
 
 ## Known Issues / Decisions Made
 
@@ -270,3 +271,62 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - No dedicated invite-accept page in STEP-4 - acceptOrgInvite API endpoint is wired; page is a future step
 - Workspace inner page (/org/:orgId/workspace/:workspaceId) is not implemented - OrgDashboard links to it; page is a future step
 - Storage used bytes hardcoded to 0 until STEP-7 (StorageQuotaModule) provides real usage data
+
+
+## STEP-5 SUMMARY
+
+### Dependency
+
+- `adm-zip` added to `server/package.json` (production); `@types/adm-zip` as devDependency.
+
+### Type layer — `server/src/modules/files/types.ts`
+- New `ExtractedFile` interface: `{ relativePath: string; buffer: Buffer }`.
+- Added `save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string>` to `IFileStorageStrategy`.
+
+### FS strategy — `server/src/modules/files/strategies/fs.files.strategy.ts`
+- Implemented `save3DModelDirectory`: path-traversal check (each resolved path must start with `modelDir + sep`), creates subdirectories recursively via `mkdir({ recursive: true })`, writes each file via `writeFile`, returns the relative path of the first `.gltf`/`.glb` entry (throws `BadRequestException` if none found).
+
+### Entity — `server/src/database/entities/models-3d/model-3d-file.entity.ts`
+- Added `@Column({ type: 'text', nullable: true, name: 'entry_file' }) entryFile?: string`.
+- Null for native `.glb`/`.gltf` uploads; stores e.g. `'scene.gltf'` for ZIP-extracted models.
+
+### Migration — `server/src/database/migrations/models-3d/1745345000000-AddEntryFile.ts`
+- `up()`: `ALTER TABLE "model_3d"."model_3d_file" ADD COLUMN "entry_file" text`
+- `down()`: `DROP COLUMN "entry_file"`
+
+### Constants — `server/src/constants/files.ts`
+- Added `'.zip'` to `ACCEPTED_3D_MODEL_FILE_TYPES`.
+
+### Files service — `server/src/modules/files/files.service.ts`
+- Added `save3DModelDirectory` delegation method.
+- Added `extractAndSave3DModelDirectory(modelId, zipFile)`:
+  - Parses ZIP via `AdmZip(zipFile.path)`.
+  - Guards: depth ≤ 1 per entry; allowed extensions only (`.gltf .glb .bin .png .jpg .jpeg .webp .ktx2 .mp3 .ogg .wav`); total uncompressed size ≤ 3 GB; exactly one `.gltf`/`.glb` entry point.
+  - Delegates to `strategy.save3DModelDirectory`.
+
+### Model3d service — `server/src/modules/models-3d/services/model-3d.service.ts`
+- `upload3DModel`: branching after `savedModel` is created.
+  - ZIP branch: `extractAndSave3DModelDirectory` → stores `entryFile` on `createdFileEntity` → deletes temp ZIP file via `deleteFile(file.path)`.
+  - Non-ZIP branch: existing `save3DModel` call unchanged.
+
+### DTO — `server/src/modules/models-3d/dto/model-3d-file.response.dto.ts`
+- Added `@ApiPropertyOptional() entryFile?: string`.
+
+### Mapper — `server/src/modules/models-3d/mappers/model-3d-file.mapper.ts`
+- Added `entryFile: entity.entryFile ?? entity.name` (fallback to `name` for native uploads so the client always has a usable value).
+
+### Controller — `server/src/modules/models-3d/controllers/model-3d.controller.ts`
+- Changed file-serving route from `@Get('files/:modelId/:fileName')` to `@Get('files/:modelId/*')` and parameter from `@Param('fileName')` to `@Param('0')`.
+- Enables serving assets at subdirectory paths (e.g. `GET /models-3d/files/<modelId>/textures/albedo.png`).
+- Existing `safeResolvePath` guard remains in place; no path traversal risk introduced.
+
+### Verification
+- `npm run build` — 0 errors
+- `npm run lint` — 0 errors, 0 warnings
+- `npm run migration:run` — `AddEntryFile1745345000000` applied successfully
+
+### Decisions
+- `adm-zip` loads ZIP fully into memory — acceptable because Multer's `FileSizeValidator` already rejects uploads > 3 GB before the service is called.
+- Temp ZIP file is deleted after successful extraction (inside the transaction block, after all DB saves succeed).
+- On any error in `upload3DModel`, existing cleanup logic (`delete3DModel(savedModelId)` or `deleteFile(file.path)`) covers both ZIP and non-ZIP cases.
+- Wildcard route fix was not in STEP-0 as described in the plan spec — the real code used `:fileName` which cannot capture `/`-containing paths; fixed here.

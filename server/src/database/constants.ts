@@ -35,6 +35,7 @@ export const Models3DSchemaTables = {
   Model3DCategories: 'model_3d_categories',
   ModelComment: 'model_comment',
   ModelAnnotation: 'model_annotation',
+  ModelVersion: 'model_version',
 } as const;
 
 export const OrganizationsSchemaTables = {

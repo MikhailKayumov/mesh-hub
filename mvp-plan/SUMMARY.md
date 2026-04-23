@@ -21,7 +21,7 @@
 | STEP-11 | 3 | Embed Frontend | DONE | |
 | STEP-12 | 4 | Reviews + Annotations Backend | DONE | |
 | STEP-13 | 4 | Reviews Frontend + Viewer Extensions | DONE | |
-| STEP-14 | 5 | Versions (Full Stack) | TODO | |
+| STEP-14 | 5 | Versions (Full Stack) | DONE | |
 | STEP-15 | 6 | Scenes Backend | TODO | |
 | STEP-16 | 6 | Scenes Frontend | TODO | |
 
@@ -43,6 +43,7 @@
 | STEP-11 | 2026-04-23 | Embed frontend — logo upload backend (FsStrategy + S3Strategy + FilesService + EmbedService), embed API layer (embed.ts + dto.ts + tags + urls), EmbedViewer standalone page, EmbedProject management page (domains/branding/analytics), OrgDashboard Embed tab, @mantine/charts for analytics chart |
 | STEP-12 | 2026-04-23 | 2 entities + migration in model_3d schema; ReviewsModule (4 CRUD endpoints); AnnotationsModule (5 endpoints incl. reorder); workspace-level access control |
 | STEP-13 | 2026-04-23 | ReviewPanel + AnnotationManager widgets; viewer modes + raycasting + markers + flyTo; Editor + Model3D page integration |
+| STEP-14 | 2026-04-23 | ModelVersionEntity + migration, file storage extensions, VersionsModule backend, VersionHistory widget, Editor/Model3DPage integration, useViewer versionId support |
 
 ## Known Issues / Decisions Made
 
@@ -731,3 +732,145 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 
 ### Verification
 - npx tsc --noEmit in client/ -- 0 errors
+
+
+## STEP-14 SUMMARY
+
+### Entity — `server/src/database/entities/models-3d/model-version.entity.ts`
+- New `ModelVersionEntity` extends `GuidIdEntityBase`
+- Columns: `versionNumber: int`, `fileName: text`, `fileSize: bigint`, `mimeType: text`, `entryFile?: text` (for ZIP versions), `changeNotes?: varchar(500)`, `isActive: boolean (default false)`, `modelId: uuid FK → model_3d`, `uploaderId: uuid FK → users.user`
+- Relations: `@ManyToOne → Model3dEntity`, `@ManyToOne → UserEntity` with uploader.userMeta eager load
+- `@Index(['modelId'])` on entity class
+
+### Entity patch — `server/src/database/entities/models-3d/model-3d.entity.ts`
+- Added `currentVersionId?: string` UUID column (`current_version_id`, nullable)
+- Added `@OneToMany(() => ModelVersionEntity) versions?: ModelVersionEntity[]` relation
+
+### DB Constants — `server/src/database/constants.ts`
+- Added `ModelVersion: 'model_version'` to `Models3DSchemaTables`
+
+### Migration — `server/src/database/migrations/models-3d/1776930000000-AddModelVersions.ts`
+- Creates `model_3d.model_version` table with FKs to `model_3d` (CASCADE) and `users.user` (CASCADE)
+- Adds `current_version_id uuid nullable` column to `model_3d.model_3d`
+- Backfill: INSERTs v1 rows for all existing models from `model_3d_file` data (isActive=true)
+- UPDATEs each model's `current_version_id` to the backfilled v1 row
+- `down()` drops column, drops index, drops table
+
+### File Storage Extensions
+
+**`server/src/modules/files/types.ts`** — 4 new methods added to `IFileStorageStrategy`:
+- `saveModelVersion(modelId, versionId, file)` — save single file under `versions/<versionId>/`
+- `saveModelVersionDirectory(modelId, versionId, files: ExtractedFile[])` — save extracted ZIP; returns entryFile path
+- `deleteModelVersion(modelId, versionId)` — remove entire version directory
+- `copyVersionToRoot(modelId, versionId, entryFile?)` — copy version files to model root dir
+
+**`server/src/modules/files/strategies/fs.files.strategy.ts`**
+- Implemented all 4 methods; private `getVersionDirPath()` helper → `models-3d/<modelId>/versions/<versionId>`
+- `saveModelVersion`: `mkdir` + `rename` temp file; `deleteModelVersion`: `rm -rf`; `copyVersionToRoot`: list files + `copyFile` each; `saveModelVersionDirectory`: validate paths + write extracted files
+
+**`server/src/modules/files/strategies/s3.files.strategy.ts`**
+- Implemented all 4 methods with S3 equivalents using `PutObjectCommand`, `CopyObjectCommand`, `ListObjectsV2Command`, `DeleteObjectsCommand`
+
+**`server/src/modules/files/files.service.ts`**
+- Added 8 new delegation methods (local + org-aware variants for each operation)
+- Added `extractAndSaveModelVersionDirectory(modelId, versionId, zipFile, orgId?)` — full ZIP extraction with validation delegating to storage strategy
+
+### `versions` Submodule — `server/src/modules/models-3d/versions/`
+
+**DTOs**
+- `version.upload.request.dto.ts` — `changeNotes?` (@IsOptional, @MaxLength(500))
+- `version.response.dto.ts` — `VersionUploaderDto` (id, firstName?, lastName?, avatar?); `VersionResponseDto` (id, versionNumber, fileName, fileSize, entryFile?, changeNotes, isActive, uploader, createdAt)
+
+**Repository** (`model-version.repository.ts`)
+- `findByModelId(modelId)` — DESC order, loads `uploader.userMeta`
+- `findActive(modelId)`, `findById(versionId)`, `findLastVersion(modelId, em?)` (EntityManager-aware for transactions)
+
+**Mapper** (`model-version.mapper.ts`)
+- `ModelVersionMapper.toResponse(entity)` → `VersionResponseDto`; `Number()` cast for bigint fileSize
+
+**Service** (`versions.service.ts`)
+- `getVersions(modelId, user)` — owner-only check, returns ordered list
+- `uploadVersion(modelId, user, file, dto)` — pessimistic write lock on Model3dEntity; computes nextVersion; saves entity in transaction; saves file after (ZIP → extract; else single file); cleans up on error
+- `activateVersion(modelId, versionId, user)` — transaction: deactivate all → activate target → update model.file.entryFile + model.currentVersionId; then `copyVersionToRoot`; file copy errors logged but not thrown
+- `deleteVersion(modelId, versionId, user)` — rejects active version (400); soft-deletes entity; deletes files
+
+**Controller** (`versions.controller.ts`)
+- `GET /models-3d/:modelId/versions` — owner-only
+- `POST /models-3d/:modelId/versions` — multipart with `FileSizeValidator(MAX_3D_MODEL_FILE_SIZE)` + `FileExtensionValidatorPipe(['.glb','.gltf','.zip'])`
+- `POST /models-3d/:modelId/versions/:versionId/activate`
+- `DELETE /models-3d/:modelId/versions/:versionId`
+
+**Module** (`versions.module.ts`)
+- `TypeOrmModule.forFeature([ModelVersionEntity])` + providers + exports
+
+### Model3dController — versioned file serving
+
+**`GET /models-3d/files/:modelId/versions/:versionId/*`** added **before** `GET /models-3d/files/:modelId/*` to avoid route shadowing:
+- `@Public()`, `@Header('Cache-Control', 'max-age=2592000')`
+- S3 redirect via `strategy.getFileUrl('models-3d/<modelId>/versions/<versionId>/<fileName>')`
+- FS path: `files/models-3d/<modelId>/versions/<versionId>/<fileName>` with `safeResolvePath` guard
+
+### `Models3dModule` updates
+- Added `ModelVersionEntity` to `TypeOrmModule.forFeature([...])`
+- Imported `VersionsModule`
+
+### Frontend — Data Layer
+
+**`client/src/app/api/dto.ts`**
+- Added `ModelVersionUploaderDto`, `ModelVersionResponseDto`
+
+**`client/src/app/api/tags.ts`**
+- Added `ModelVersions: 'ModelVersions'`
+
+**`client/src/app/api/versions.ts`** (new)
+- `VersionsApi` with 4 endpoints: `modelVersions`, `uploadVersion`, `activateVersion`, `deleteVersion`
+- Exported hooks: `useModelVersionsQuery`, `useUploadVersionMutation`, `useActivateVersionMutation`, `useDeleteVersionMutation`
+- `activateVersion` invalidates both `ModelVersions` and `Get3DModel` tags
+
+### Frontend — Shared Utils
+
+**`client/src/shared/utils/model3d.ts`**
+- Added `getModel3DVersionFileSrc(modelId, versionId, fileName)` → `/api/models-3d/files/<modelId>/versions/<versionId>/<fileName>`
+
+### Viewer Extension
+
+**`client/src/widgets/Model3DViewer/classes/Viewer/Viewer.ts`**
+- Added `loadFile(url: string): Promise<void>` — calls `world.destroy()` to clear scene, then `processLoadedModel(Loader.load(url))`; reuses existing world (Renderer holds reference); no extra spawn needed
+
+### `VersionHistory` Widget — `client/src/widgets/VersionHistory/`
+
+- `index.tsx` — re-exports `VersionHistory`, `VersionHistoryProps`
+- `VersionHistory.tsx` — props `{ modelId, canEdit, viewer? }`:
+  - Fetches versions via `useModelVersionsQuery`
+  - "Upload" button (canEdit) → `UploadVersionModal`
+  - Renders `VersionCard` list
+- `UploadVersionModal` — FileInput (`.glb,.gltf,.zip`) + Textarea for changeNotes; `useUploadVersionMutation`
+- `VersionCard` — shows versionNumber, badge if active, fileName, changeNotes, uploader+date; Preview button (if viewer → `viewer.loadFile()`); Restore button → `useActivateVersionMutation`; Delete button → confirm modal → `useDeleteVersionMutation`
+
+### Model3DPage Integration
+
+**`ReviewDrawerButtons`** — added `onVersions` prop + `IconClockHour4` button
+
+**`Model3DPage`** (`client/src/pages/Models3D/pages/Model3D/index.tsx`)
+- Added `versionsOpened` disclosure + `openVersions/closeVersions`
+- Added versions Drawer (right, size 400) with `<VersionHistory modelId={id} canEdit={model3d?.isOwner ?? false} viewer={viewer} />`
+
+### Editor Navbar Integration
+
+- `model.ts` — `TabValue` union extended with `'versions'`
+- `constants.ts` — `TabValues.Versions = 'versions'` added
+- `utils.tsx` — new tab entry with `IconClockHour4` + `<VersionHistory modelId={modelId ?? ''} canEdit viewer={viewer} />`; added `VersionHistory` import
+
+### `useViewer.ts` — `versionId` Query Param Support
+
+- Added `useSearchParams` import
+- In `run` effect: reads `searchParams.get('versionId')`
+- If `versionId` present: loads `getModel3DVersionFileSrc(model.id, versionId, model.file.entryFile || model.file.name)` via `viewer.loadFile(url)` instead of `viewer.loadModel(model)`
+- Dependency array extended: `[viewer, model?.id, searchParams.get('versionId')]`
+
+### Decisions
+- Active version cannot be deleted (400) — must activate a different version first
+- File copy errors in `activateVersion` are logged but do not roll back the DB transaction — keeps DB consistent even on transient FS/S3 failures
+- `fileSize` stored as PostgreSQL `bigint`; mapper uses `Number()` cast (safe for MVP file sizes ≤ 3 GB)
+- `loadFile()` does not cache (unlike `loadModel()`) — preview is ephemeral; user can reload the main model via `useViewer` re-run
+

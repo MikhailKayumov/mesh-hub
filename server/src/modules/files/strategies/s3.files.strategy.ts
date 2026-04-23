@@ -1,5 +1,5 @@
 import { createReadStream } from 'fs';
-import { extname } from 'path';
+import { extname, basename } from 'path';
 import { Readable } from 'stream';
 import {
   S3Client,
@@ -8,6 +8,7 @@ import {
   DeleteObjectsCommand,
   ListObjectsV2Command,
   GetObjectCommand,
+  CopyObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -162,5 +163,82 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
     } catch (e) {
       if (!silent) throw e;
     }
+  }
+
+  public async saveModelVersion(modelId: string, versionId: string, file: Express.Multer.File): Promise<void> {
+    const key = `models-3d/${modelId}/versions/${versionId}/${file.originalname}`;
+    const body = file.buffer ? Readable.from(file.buffer) : Readable.from(createReadStream(file.path));
+
+    const upload = new (await import('@aws-sdk/lib-storage')).Upload({
+      client: this.client,
+      params: { Bucket: this.bucket, Key: key, Body: body, ContentType: file.mimetype },
+    });
+    await upload.done();
+  }
+
+  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<string> {
+    await Promise.all(
+      files.map((f) =>
+        this.client.send(
+          new PutObjectCommand({
+            Bucket: this.bucket,
+            Key: `models-3d/${modelId}/versions/${versionId}/${f.relativePath}`,
+            Body: f.buffer,
+          }),
+        ),
+      ),
+    );
+
+    const entryFile = files.find((f) => /\.(gltf|glb)$/i.test(f.relativePath));
+    if (!entryFile) throw new Error('No .gltf or .glb entry point found in archive');
+    return entryFile.relativePath;
+  }
+
+  public async deleteModelVersion(modelId: string, versionId: string): Promise<void> {
+    const prefix = `models-3d/${modelId}/versions/${versionId}/`;
+    let continuationToken: string | undefined;
+
+    do {
+      const list = await this.client.send(
+        new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: continuationToken }),
+      );
+      const objects = list.Contents ?? [];
+      if (objects.length > 0) {
+        await this.client.send(
+          new DeleteObjectsCommand({
+            Bucket: this.bucket,
+            Delete: { Objects: objects.map((o) => ({ Key: o.Key! })) },
+          }),
+        );
+      }
+      continuationToken = list.IsTruncated ? list.NextContinuationToken : undefined;
+    } while (continuationToken);
+  }
+
+  public async copyVersionToRoot(modelId: string, versionId: string, _entryFile: string | undefined): Promise<void> {
+    const prefix = `models-3d/${modelId}/versions/${versionId}/`;
+    let continuationToken: string | undefined;
+
+    do {
+      const list = await this.client.send(
+        new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: continuationToken }),
+      );
+      const objects = list.Contents ?? [];
+
+      await Promise.all(
+        objects.map((o) => {
+          const destKey = `models-3d/${modelId}/${basename(o.Key!)}`;
+          return this.client.send(
+            new CopyObjectCommand({
+              Bucket: this.bucket,
+              CopySource: `${this.bucket}/${o.Key!}`,
+              Key: destKey,
+            }),
+          );
+        }),
+      );
+
+      continuationToken = list.IsTruncated ? list.NextContinuationToken : undefined;
+    } while (continuationToken);
   }
 }

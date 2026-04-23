@@ -1,5 +1,5 @@
-import { mkdir, writeFile, unlink, rename, rm } from 'fs/promises';
-import { resolve, extname, dirname, sep } from 'path';
+import { mkdir, writeFile, unlink, rename, rm, copyFile, readdir } from 'fs/promises';
+import { resolve, extname, dirname, sep, basename } from 'path';
 import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@/modules/config/config.service';
 import { ExtractedFile, IFileStorageStrategy } from '@/modules/files/types';
@@ -111,5 +111,55 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
 
   public async getFileUrl(_relativePath: string): Promise<string | null> {
     return Promise.resolve(_relativePath);
+  }
+
+  public async saveModelVersion(modelId: string, versionId: string, file: Express.Multer.File): Promise<void> {
+    const dir = this.getVersionDirPath(modelId, versionId);
+    await mkdir(dir, { recursive: true });
+    await rename(file.path, resolve(dir, file.originalname));
+  }
+
+  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<string> {
+    const versionDir = this.getVersionDirPath(modelId, versionId);
+
+    for (const f of files) {
+      const target = resolve(versionDir, f.relativePath);
+      if (!target.startsWith(versionDir + sep)) {
+        throw new BadRequestException(`Invalid file path in archive: ${f.relativePath}`);
+      }
+    }
+
+    for (const f of files) {
+      const target = resolve(versionDir, f.relativePath);
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, f.buffer);
+    }
+
+    const entryFile = files.find((f) => /\.(gltf|glb)$/i.test(f.relativePath));
+    if (!entryFile) {
+      throw new BadRequestException('No .gltf or .glb entry point found in archive');
+    }
+    return entryFile.relativePath;
+  }
+
+  public async deleteModelVersion(modelId: string, versionId: string): Promise<void> {
+    await rm(this.getVersionDirPath(modelId, versionId), { recursive: true, force: true });
+  }
+
+  public async copyVersionToRoot(modelId: string, versionId: string, entryFile: string | undefined): Promise<void> {
+    const versionDir = this.getVersionDirPath(modelId, versionId);
+    const modelDir = this.get3DModelFilePath(modelId);
+
+    const entries = await readdir(versionDir);
+    for (const entry of entries) {
+      const src = resolve(versionDir, entry);
+      const dest = resolve(modelDir, basename(entry));
+      if (!dest.startsWith(modelDir + sep)) continue; // safety check
+      await copyFile(src, dest);
+    }
+  }
+
+  private getVersionDirPath(modelId: string, versionId: string): string {
+    return resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'versions', versionId);
   }
 }

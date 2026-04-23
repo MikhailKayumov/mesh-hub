@@ -28,4 +28,12 @@ export interface IFileStorageStrategy {
    * - S3FileStorageStrategy returns a pre-signed URL (307 redirect).
    */
   getFileUrl(relativePath: string): Promise<string | null>;
+  /** Save a single .glb/.gltf file for a specific model version. */
+  saveModelVersion(modelId: string, versionId: string, file: Express.Multer.File): Promise<void>;
+  /** Save extracted ZIP contents for a specific model version. Returns the entryFile relative path. */
+  saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<string>;
+  /** Delete all files associated with a specific model version. */
+  deleteModelVersion(modelId: string, versionId: string): Promise<void>;
+  /** Copy a version's files to the model root (used on activation). */
+  copyVersionToRoot(modelId: string, versionId: string, entryFile: string | undefined): Promise<void>;
 }

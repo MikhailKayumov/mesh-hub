@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { Model3DResponseDto } from '@/app/api/dto.ts';
+import { getModel3DVersionFileSrc } from '@/shared/utils/model3d.ts';
 import { sleep } from '@/shared/utils/sleep.ts';
 import { Viewer } from '../classes/Viewer';
 
@@ -13,6 +15,7 @@ export interface UseViewerProps {
 export function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps) {
   const placeRef = useRef<HTMLDivElement>(null);
   const [viewer, setViewer] = useState<Viewer | null>(null);
+  const [searchParams] = useSearchParams();
 
   // init viewer
   useEffect(() => {
@@ -35,12 +38,22 @@ export function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps)
   useEffect(() => {
     if (!viewer || !model) return;
 
+    const versionId = searchParams.get('versionId');
+
     const run = async () => {
-      if (viewer.model?.data.id === model.id) return;
+      if (viewer.model?.data?.id === model.id && !versionId) return;
 
       viewer.camera.enableLayer(1);
       viewer.world.destroy();
-      await viewer.loadModel(model);
+
+      if (versionId) {
+        const fileName = model.file.entryFile || model.file.name;
+        const url = getModel3DVersionFileSrc(model.id, versionId, fileName);
+        await viewer.loadFile(url);
+      } else {
+        await viewer.loadModel(model);
+      }
+
       await viewer.world.prepare(viewer.model?.sceneBoundingBox);
       await viewer.run();
 
@@ -55,7 +68,7 @@ export function useViewer({ model, onReady, onInit, onDestroy }: UseViewerProps)
     run();
 
     return () => {};
-  }, [viewer, model?.id]);
+  }, [viewer, model?.id, searchParams.get('versionId')]);
 
   return {
     placeRef,

@@ -165,6 +165,34 @@ export class Model3dController {
     return new StreamableFile(createReadStream(target));
   }
 
+  @Get('files/:modelId/versions/:versionId/*')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'max-age=2592000') // 30 days
+  @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
+  public async getModelVersionFile(
+    @Param('modelId', ParseUUIDPipe) modelId: string,
+    @Param('versionId', ParseUUIDPipe) versionId: string,
+    @Param('0') fileName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile | void> {
+    const model = await this.model3dService.getModel(modelId);
+
+    if (model.workspaceId) {
+      const workspace = await this.model3dService.getWorkspace(model.workspaceId);
+      const strategy = await this.filesService.getStrategyForOrg(workspace.orgId);
+      const url = await strategy.getFileUrl(`models-3d/${modelId}/versions/${versionId}/${fileName}`);
+      if (url) {
+        res.redirect(307, url);
+        return;
+      }
+    }
+
+    const base = resolve(process.cwd(), 'files', 'models-3d', modelId, 'versions', versionId);
+    const target = this.safeResolvePath(base, fileName);
+    return new StreamableFile(createReadStream(target));
+  }
+
   @Get('files/:modelId/*')
   @Public()
   @HttpCode(HttpStatus.OK)

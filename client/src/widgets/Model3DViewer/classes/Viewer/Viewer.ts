@@ -70,6 +70,15 @@ export class Viewer {
     Loader.cache.set(modelData.id, this.model);
   }
 
+  public async loadFile(url: string): Promise<void> {
+    this.world.destroy();
+    this.model = null;
+
+    const loadedModel = await Loader.load(url);
+    const processed = await this.processLoadedModel(loadedModel);
+    this.model = { data: null as any, ...processed };
+  }
+
   public async run() {
     this.renderer.run();
   }

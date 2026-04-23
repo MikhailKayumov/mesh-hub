@@ -405,3 +405,25 @@ export interface AnnotationUpdateRequestDto {
 export interface AnnotationReorderRequestDto {
   ids: string[];
 }
+
+/**
+ * Model Versions
+ */
+export interface ModelVersionUploaderDto {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+}
+
+export interface ModelVersionResponseDto {
+  id: string;
+  versionNumber: number;
+  fileName: string;
+  fileSize: number;
+  entryFile?: string | null;
+  changeNotes: string | null;
+  isActive: boolean;
+  uploader: ModelVersionUploaderDto;
+  createdAt: string;
+}

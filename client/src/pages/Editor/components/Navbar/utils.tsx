@@ -1,7 +1,8 @@
 import { Text } from '@mantine/core';
-import { IconBulb, IconCube, IconMapPin, IconMessageCircle, IconPhotoEdit } from '@tabler/icons-react';
+import { IconBulb, IconClockHour4, IconCube, IconMapPin, IconMessageCircle, IconPhotoEdit } from '@tabler/icons-react';
 import { AnnotationManager } from '@/widgets/AnnotationManager';
 import { ReviewPanel } from '@/widgets/ReviewPanel';
+import { VersionHistory } from '@/widgets/VersionHistory';
 import { RendererTab } from '@/pages/Editor/components/Navbar/components/RendererTab';
 import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
@@ -37,6 +38,11 @@ export const getTabsConfig = (viewer: Viewer | null, modelId?: string): TabsConf
       value: TabValues.Annotations,
       title: <IconMapPin className={classes['tab-icon']} />,
       content: <AnnotationManager modelId={modelId ?? ''} viewer={viewer} canEdit />,
+    },
+    {
+      value: TabValues.Versions,
+      title: <IconClockHour4 className={classes['tab-icon']} />,
+      content: <VersionHistory modelId={modelId ?? ''} canEdit viewer={viewer} />,
     },
   ];
 };

@@ -10,6 +10,7 @@ import { AnnotationManager } from '@/widgets/AnnotationManager';
 import { Model3DViewer } from '@/widgets/Model3DViewer';
 import type { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import { ReviewPanel } from '@/widgets/ReviewPanel';
+import { VersionHistory } from '@/widgets/VersionHistory';
 import { Model3DPageHeader } from './components/Header';
 import { Model3DPageInfo } from './components/Info';
 import { ReviewDrawerButtons } from './components/ReviewDrawerButtons';
@@ -23,6 +24,7 @@ export function Model3DPage() {
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [commentsOpened, { open: openComments, close: closeComments }] = useDisclosure(false);
   const [annotationsOpened, { open: openAnnotations, close: closeAnnotations }] = useDisclosure(false);
+  const [versionsOpened, { open: openVersions, close: closeVersions }] = useDisclosure(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export function Model3DPage() {
             visible={isModelLoading || isViewerLoading}
           />
           {!isViewerLoading && (
-            <ReviewDrawerButtons onComments={openComments} onAnnotations={openAnnotations} />
+            <ReviewDrawerButtons onComments={openComments} onAnnotations={openAnnotations} onVersions={openVersions} />
           )}
         </Box>
         <Model3DPageInfo />
@@ -85,6 +87,16 @@ export function Model3DPage() {
         {id && (
           <AnnotationManager modelId={id} viewer={viewer} canEdit={model3d?.isOwner ?? false} />
         )}
+      </Drawer>
+
+      <Drawer
+        opened={versionsOpened}
+        onClose={closeVersions}
+        title="История версий"
+        position="right"
+        size={400}
+      >
+        {id && <VersionHistory modelId={id} canEdit={model3d?.isOwner ?? false} viewer={viewer} />}
       </Drawer>
     </Model3DContextProvider>
   );

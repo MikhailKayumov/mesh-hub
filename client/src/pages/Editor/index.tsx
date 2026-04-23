@@ -31,7 +31,7 @@ export function EditorPage() {
     <Model3DContextProvider model={model3d}>
       <AppShell h="100%" padding="md" header={headerConfig} footer={footerConfig} navbar={navbarConfig}>
         <Header className={classes.header} viewer={viewer} />
-        <Navbar className={classes.navbar} viewer={viewer} />
+        <Navbar className={classes.navbar} viewer={viewer} modelId={id} />
         <Main model={model3d} onViewerReady={onViewerReady} />
         <Footer className={classes.footer} viewer={viewer} />
       </AppShell>

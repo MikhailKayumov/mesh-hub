@@ -124,6 +124,11 @@ export class CameraController extends EventTarget {
     this.control.smoothTime = 0.16;
   }
 
+  public flyTo(camX: number, camY: number, camZ: number, targetX: number, targetY: number, targetZ: number): void {
+    if (!this.control) return;
+    this.control.setLookAt(camX, camY, camZ, targetX, targetY, targetZ, true);
+  }
+
   private createControl() {
     if (this.control) {
       this.off();

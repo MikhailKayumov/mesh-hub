@@ -1,0 +1,32 @@
+.root {
+    padding: 12px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.comment {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--mantine-color-gray-2);
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.pending-input {
+    padding: 10px;
+    border-radius: var(--mantine-radius-sm);
+    border: 1px dashed var(--mantine-color-blue-4);
+    background-color: var(--mantine-color-blue-0);
+}
+
+[data-mantine-color-scheme='dark'] {
+    .comment {
+        border-bottom-color: var(--mantine-color-dark-4);
+    }
+
+    .pending-input {
+        background-color: var(--mantine-color-dark-6);
+        border-color: var(--mantine-color-blue-7);
+    }
+}

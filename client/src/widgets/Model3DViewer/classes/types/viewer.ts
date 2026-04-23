@@ -1,6 +1,8 @@
 import { type AnimationClip, type AnimationObjectGroup, type Box3, type Group } from 'three';
 import { type GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+export type ViewerMode = 'view' | 'comment' | 'annotate';
+
 export interface ViewerAnimations {
   clips: AnimationClip[];
   objectGroup: AnimationObjectGroup;

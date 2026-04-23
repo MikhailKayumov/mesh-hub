@@ -7,10 +7,12 @@ import {
   type Light,
   MathUtils,
   Mesh,
+  MeshBasicMaterial,
   Object3D,
   PlaneGeometry,
   Scene,
   ShadowMaterial,
+  SphereGeometry,
   Vector3,
 } from 'three';
 import { Destroyer } from '../Destroyer';
@@ -28,6 +30,7 @@ export class World extends EventTarget {
   public readonly models: Object3D[] = [];
   public readonly lights: Light[] = [];
   public readonly helpers: WorldHelpers = new WorldHelpers(); //
+  private markers: Map<string, Mesh> = new Map();
 
   public constructor(scene?: Scene) {
     super();
@@ -205,5 +208,38 @@ export class World extends EventTarget {
     this.scene.clear();
     this.scene.environment?.dispose();
     this.scene.overrideMaterial?.dispose();
+  }
+
+  // markers
+  public spawnMarker(id: string, pos: Vector3): void {
+    this.removeMarker(id);
+    const geo = new SphereGeometry(0.02, 8, 8);
+    const mat = new MeshBasicMaterial({ color: 0xffaa00 });
+    const mesh = new Mesh(geo, mat);
+    mesh.position.copy(pos);
+    mesh.userData.markerId = id;
+    this.scene.add(mesh);
+    this.markers.set(id, mesh);
+  }
+
+  public removeMarker(id: string): void {
+    const mesh = this.markers.get(id);
+    if (!mesh) return;
+    this.scene.remove(mesh);
+    mesh.geometry.dispose();
+    (mesh.material as MeshBasicMaterial).dispose();
+    this.markers.delete(id);
+  }
+
+  public clearMarkers(): void {
+    for (const id of [...this.markers.keys()]) {
+      this.removeMarker(id);
+    }
+  }
+
+  public highlightMarker(id: string | null): void {
+    this.markers.forEach((mesh, markerId) => {
+      (mesh.material as MeshBasicMaterial).color.set(markerId === id ? 0xff5500 : 0xffaa00);
+    });
   }
 }

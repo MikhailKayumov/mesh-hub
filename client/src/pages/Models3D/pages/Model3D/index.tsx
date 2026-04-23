@@ -1,13 +1,18 @@
-import { Box, LoadingOverlay, Paper } from '@mantine/core';
+import { Box, Drawer, LoadingOverlay, Paper } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useModel3D } from '@/entities/model-3d';
 import { Model3DContextProvider } from '@/shared/contexts/Model3DContext';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { buildAbsolutePath } from '@/shared/utils/router.ts';
+import { AnnotationManager } from '@/widgets/AnnotationManager';
 import { Model3DViewer } from '@/widgets/Model3DViewer';
+import type { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
+import { ReviewPanel } from '@/widgets/ReviewPanel';
 import { Model3DPageHeader } from './components/Header';
 import { Model3DPageInfo } from './components/Info';
+import { ReviewDrawerButtons } from './components/ReviewDrawerButtons';
 import classes from './Model3DPage.module.scss';
 
 // @refresh reset
@@ -15,6 +20,9 @@ export function Model3DPage() {
   const { id } = useParams<{ id: string }>();
   const { model3d, isModelLoading, model3dError } = useModel3D({ id });
   const [isViewerLoading, setIsViewerLoading] = useState(true);
+  const [viewer, setViewer] = useState<Viewer | null>(null);
+  const [commentsOpened, { open: openComments, close: closeComments }] = useDisclosure(false);
+  const [annotationsOpened, { open: openAnnotations, close: closeAnnotations }] = useDisclosure(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,15 +41,15 @@ export function Model3DPage() {
         <Box className={classes['viewer-wrapper']}>
           <Model3DViewer
             model={model3d}
-            onReady={(viewer) => {
-              if (!viewer?.model?.sceneBoundingBox) return;
+            onReady={(v) => {
+              if (!v?.model?.sceneBoundingBox) return;
 
-              const boundingBoxLength = viewer.model.sceneBoundingBox.min.manhattanDistanceTo(
-                viewer.model.sceneBoundingBox.max,
+              const boundingBoxLength = v.model.sceneBoundingBox.min.manhattanDistanceTo(
+                v.model.sceneBoundingBox.max,
               );
 
-              viewer.world.spawnGroundHelper(boundingBoxLength * 10, boundingBoxLength * 10, 0);
-
+              v.world.spawnGroundHelper(boundingBoxLength * 10, boundingBoxLength * 10, 0);
+              setViewer(v);
               setIsViewerLoading(false);
             }}
           />
@@ -50,9 +58,34 @@ export function Model3DPage() {
             className={classes['viewer-loader']}
             visible={isModelLoading || isViewerLoading}
           />
+          {!isViewerLoading && (
+            <ReviewDrawerButtons onComments={openComments} onAnnotations={openAnnotations} />
+          )}
         </Box>
         <Model3DPageInfo />
       </Paper>
+
+      <Drawer
+        opened={commentsOpened}
+        onClose={closeComments}
+        title="Комментарии"
+        position="right"
+        size={380}
+      >
+        {id && <ReviewPanel modelId={id} viewer={viewer} />}
+      </Drawer>
+
+      <Drawer
+        opened={annotationsOpened}
+        onClose={closeAnnotations}
+        title="Аннотации"
+        position="right"
+        size={380}
+      >
+        {id && (
+          <AnnotationManager modelId={id} viewer={viewer} canEdit={model3d?.isOwner ?? false} />
+        )}
+      </Drawer>
     </Model3DContextProvider>
   );
 }

@@ -20,7 +20,7 @@
 | STEP-10 | 3 | Embed Module Backend | DONE | |
 | STEP-11 | 3 | Embed Frontend | DONE | |
 | STEP-12 | 4 | Reviews + Annotations Backend | DONE | |
-| STEP-13 | 4 | Reviews Frontend + Viewer Extensions | TODO | |
+| STEP-13 | 4 | Reviews Frontend + Viewer Extensions | DONE | |
 | STEP-14 | 5 | Versions (Full Stack) | TODO | |
 | STEP-15 | 6 | Scenes Backend | TODO | |
 | STEP-16 | 6 | Scenes Frontend | TODO | |
@@ -42,6 +42,7 @@
 | STEP-10 | 2026-04-23 | Full embed module — EmbedProject CRUD, domain whitelist management, public viewer endpoint with ApiKeyGuard + origin validation, fire-and-forget view logging, 30-day analytics |
 | STEP-11 | 2026-04-23 | Embed frontend — logo upload backend (FsStrategy + S3Strategy + FilesService + EmbedService), embed API layer (embed.ts + dto.ts + tags + urls), EmbedViewer standalone page, EmbedProject management page (domains/branding/analytics), OrgDashboard Embed tab, @mantine/charts for analytics chart |
 | STEP-12 | 2026-04-23 | 2 entities + migration in model_3d schema; ReviewsModule (4 CRUD endpoints); AnnotationsModule (5 endpoints incl. reorder); workspace-level access control |
+| STEP-13 | 2026-04-23 | ReviewPanel + AnnotationManager widgets; viewer modes + raycasting + markers + flyTo; Editor + Model3D page integration |
 
 ## Known Issues / Decisions Made
 
@@ -657,3 +658,76 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - `cd server && npm run lint` — 0 errors, 0 warnings
 
 
+## STEP-13 SUMMARY
+
+### Data Layer
+
+**`client/src/app/api/tags.ts`**
+- Added `Comments` and `Annotations` cache tags
+
+**`client/src/app/api/dto.ts`**
+- 8 new types: `CommentAuthorDto`, `CommentResponseDto`, `CommentCreateRequestDto`, `CommentUpdateRequestDto`, `AnnotationResponseDto`, `AnnotationCreateRequestDto`, `AnnotationUpdateRequestDto`, `AnnotationReorderRequestDto`
+
+**`client/src/app/api/reviews.ts`** (new file)
+- `ReviewsApi` with 9 RTK Query hooks for comments (list, add, update, delete) and annotations (list, create, update, delete, reorder)
+- All endpoints use `Api.injectEndpoints({ overrideExisting: true })`; correct cache tag invalidation
+
+### Viewer Extensions
+
+**`client/src/widgets/Model3DViewer/classes/types/viewer.ts`**
+- Added `ViewerMode = 'view' | 'comment' | 'annotate'`
+
+**`client/src/widgets/Model3DViewer/classes/Camera/Camera.ts`** (CameraController)
+- Added `flyTo(camX, camY, camZ, targetX, targetY, targetZ)` -- delegates to `camera-controls.setLookAt` for animated camera fly
+
+**`client/src/widgets/Model3DViewer/classes/World/World.ts`**
+- Added `private markers: Map<string, Mesh>`
+- Added `spawnMarker(id, pos)` -- orange (0xffaa00) sphere at world position
+- Added `removeMarker(id)`, `clearMarkers()`, `highlightMarker(id|null)` -- 0xff5500 highlight, 0xffaa00 default
+
+**`client/src/widgets/Model3DViewer/classes/Viewer/Viewer.ts`**
+- Added `_mode: ViewerMode` + `setMode(mode)` -- updates cursor style; clears old pointer handler on reset to view
+- Added `onScenePointerDown(callback)` -- one-shot raycast handler; on mesh hit, fires callback with (worldPos, cameraPos) and auto-resets to view
+
+### Hooks
+
+**`client/src/widgets/Model3DViewer/hooks/useViewerReviews.ts`** (new file)
+- Bridge hook: fetches annotations, syncs markers on change via clearMarkers + spawnMarker loop
+- Exposes `startPlacement(mode)` -> calls `viewer.setMode` + `viewer.onScenePointerDown`; stores result in `pending: PendingPlacement|null`
+- Returns `{ pending, clearPending, startPlacement, annotations }`; consumed by `AnnotationManager`
+
+### Widgets
+
+**`client/src/widgets/ReviewPanel/`** (new widget)
+- `ReviewPanel.tsx` -- comment thread panel: place-comment button -> viewer mode -> inline input with pos; renders threaded CommentCard list with reply, resolve, delete actions
+- Props: `{ modelId: string, viewer: Viewer | null }`; auth-aware (own comments editable)
+
+**`client/src/widgets/AnnotationManager/`** (new widget)
+- `AnnotationManager.tsx` -- annotation CRUD + DnD reorder panel using @dnd-kit/sortable
+- Props: `{ modelId: string, viewer: Viewer | null, canEdit: boolean }`; uses `useViewerReviews` for marker sync
+- Add annotation -> startPlacement -> Modal for label/body -> createAnnotation; fly-to button -> flyTo + highlightMarker; drag handle for reorderAnnotations; delete button
+
+### Editor Page Integration
+
+- `Navbar/model.ts` -- TabValue extended with `comments | annotations`
+- `Navbar/constants.ts` -- TabValues.Comments and TabValues.Annotations added
+- `Navbar/utils.tsx` -- getTabsConfig signature changed to (viewer, modelId?); 2 new tabs added
+- `Navbar/index.tsx` -- NavbarProps extended with modelId?; useMemo passes modelId to getTabsConfig
+- `pages/Editor/index.tsx` -- Navbar now receives modelId={id}
+
+### Model3D Page Integration
+
+**`client/src/pages/Models3D/pages/Model3D/index.tsx`**
+- Added `viewer: Viewer | null` state; onReady now calls setViewer
+- Two Drawer components (right, size 380): Comments drawer with ReviewPanel; Annotations drawer with AnnotationManager (canEdit={model3d?.isOwner})
+- useDisclosure for both drawers
+
+**`client/src/pages/Models3D/pages/Model3D/components/ReviewDrawerButtons/`** (new component)
+- Two ActionIcon + Tooltip buttons (Comments / Annotations), overlaid top-right of viewer via position: absolute
+- Shown only after viewer finishes loading
+
+### Dependencies
+- @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities added to client package.json
+
+### Verification
+- npx tsc --noEmit in client/ -- 0 errors

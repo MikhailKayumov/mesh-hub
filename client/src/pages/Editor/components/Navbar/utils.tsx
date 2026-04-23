@@ -1,5 +1,7 @@
 import { Text } from '@mantine/core';
-import { IconBulb, IconCube, IconPhotoEdit } from '@tabler/icons-react';
+import { IconBulb, IconCube, IconMapPin, IconMessageCircle, IconPhotoEdit } from '@tabler/icons-react';
+import { AnnotationManager } from '@/widgets/AnnotationManager';
+import { ReviewPanel } from '@/widgets/ReviewPanel';
 import { RendererTab } from '@/pages/Editor/components/Navbar/components/RendererTab';
 import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
@@ -7,7 +9,7 @@ import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import { type TabsConfig } from './model.ts';
 import classes from './Navbar.module.scss';
 
-export const getTabsConfig = (viewer: Viewer | null): TabsConfig[] | undefined => {
+export const getTabsConfig = (viewer: Viewer | null, modelId?: string): TabsConfig[] | undefined => {
   if (!viewer) return;
 
   return [
@@ -25,6 +27,16 @@ export const getTabsConfig = (viewer: Viewer | null): TabsConfig[] | undefined =
       value: TabValues.Lights,
       title: <IconBulb className={classes['tab-icon']} />,
       content: <Text size="sm">Lights</Text>,
+    },
+    {
+      value: TabValues.Comments,
+      title: <IconMessageCircle className={classes['tab-icon']} />,
+      content: <ReviewPanel modelId={modelId ?? ''} viewer={viewer} />,
+    },
+    {
+      value: TabValues.Annotations,
+      title: <IconMapPin className={classes['tab-icon']} />,
+      content: <AnnotationManager modelId={modelId ?? ''} viewer={viewer} canEdit />,
     },
   ];
 };

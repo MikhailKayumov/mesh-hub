@@ -332,3 +332,76 @@ export interface ViewAnalyticsResponseDto {
   topOrigins: OriginViewDto[];
   totalViews: number;
 }
+
+/**
+ * Reviews & Annotations
+ */
+export interface CommentAuthorDto {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+}
+
+export interface CommentResponseDto {
+  id: string;
+  body: string;
+  pos: { x: number; y: number; z: number } | null;
+  resolved: boolean;
+  parentId: string | null;
+  author: CommentAuthorDto;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CommentCreateRequestDto {
+  body: string;
+  posX?: number;
+  posY?: number;
+  posZ?: number;
+  parentId?: string;
+}
+
+export interface CommentUpdateRequestDto {
+  body?: string;
+  resolved?: boolean;
+}
+
+export interface AnnotationResponseDto {
+  id: string;
+  label: string;
+  body?: string;
+  pos: { x: number; y: number; z: number };
+  cameraPos: { x: number; y: number; z: number } | null;
+  order: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AnnotationCreateRequestDto {
+  label: string;
+  body?: string;
+  posX: number;
+  posY: number;
+  posZ: number;
+  cameraPosX?: number;
+  cameraPosY?: number;
+  cameraPosZ?: number;
+  order?: number;
+}
+
+export interface AnnotationUpdateRequestDto {
+  label?: string;
+  body?: string;
+  posX?: number;
+  posY?: number;
+  posZ?: number;
+  cameraPosX?: number;
+  cameraPosY?: number;
+  cameraPosZ?: number;
+  order?: number;
+}
+
+export interface AnnotationReorderRequestDto {
+  ids: string[];
+}

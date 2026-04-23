@@ -4,4 +4,6 @@ export const TabValues: Record<Capitalize<TabValue>, TabValue> = {
   Renderer: 'renderer',
   Scene: 'scene',
   Lights: 'lights',
+  Comments: 'comments',
+  Annotations: 'annotations',
 } as const;

@@ -1,0 +1,45 @@
+.root {
+    padding: 12px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.card {
+    padding: 8px;
+    border-radius: var(--mantine-radius-sm);
+    border: 1px solid var(--mantine-color-gray-2);
+    background: var(--mantine-color-white);
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background: var(--mantine-color-gray-0);
+    }
+}
+
+.badge {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.drag-handle {
+    cursor: grab;
+    color: var(--mantine-color-gray-5);
+    display: flex;
+    align-items: center;
+    padding-top: 2px;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+[data-mantine-color-scheme='dark'] {
+    .card {
+        background: var(--mantine-color-dark-6);
+        border-color: var(--mantine-color-dark-4);
+
+        &:hover {
+            background: var(--mantine-color-dark-5);
+        }
+    }
+}

@@ -1,8 +1,8 @@
-import { AnimationObjectGroup, Box3, type Object3D, Vector3 } from 'three';
+import { AnimationObjectGroup, Box3, type Object3D, Raycaster, Vector2, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import type { Model3DResponseDto } from '@/app/api/dto.ts';
 import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
-import type { LoadedModel3D, ViewerModel3D } from '../types';
+import type { LoadedModel3D, ViewerMode, ViewerModel3D } from '../types';
 import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
 import { Renderer } from '../Renderer';
@@ -16,6 +16,9 @@ export class Viewer {
   public world: World;
   public stats: Stats | null = null;
   public model: ViewerModel3D<Model3DResponseDto> | null = null;
+
+  private _mode: ViewerMode = 'view';
+  private _pointerDownHandler: ((e: PointerEvent) => void) | null = null;
 
   public constructor(place?: HTMLDivElement) {
     this.place = place;
@@ -75,6 +78,51 @@ export class Viewer {
     this.world.destroy();
     this.camera.off();
     this.renderer.destroy();
+  }
+
+  public setMode(mode: ViewerMode): void {
+    this._mode = mode;
+    const canvas = this.renderer.getCanvas();
+    canvas.style.cursor = mode === 'view' ? '' : 'crosshair';
+    if (mode === 'view' && this._pointerDownHandler) {
+      canvas.removeEventListener('pointerdown', this._pointerDownHandler);
+      this._pointerDownHandler = null;
+    }
+  }
+
+  public onScenePointerDown(callback: (worldPos: Vector3, cameraPos: Vector3) => void): void {
+    const canvas = this.renderer.getCanvas();
+    if (this._pointerDownHandler) {
+      canvas.removeEventListener('pointerdown', this._pointerDownHandler);
+    }
+
+    this._pointerDownHandler = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      const raycaster = new Raycaster();
+      raycaster.setFromCamera(new Vector2(x, y), this.camera.camera);
+
+      const meshes: Object3D[] = [];
+      if (this.model) {
+        this.model.scene.traverse((o) => {
+          if (isMesh(o)) meshes.push(o);
+        });
+      }
+
+      const intersects = raycaster.intersectObjects(meshes, false);
+      if (intersects.length > 0) {
+        const hit = intersects[0].point;
+        const camPos = this.camera.camera.position.clone();
+        canvas.removeEventListener('pointerdown', this._pointerDownHandler!);
+        this._pointerDownHandler = null;
+        this.setMode('view');
+        callback(hit, camPos);
+      }
+    };
+
+    canvas.addEventListener('pointerdown', this._pointerDownHandler);
   }
 
   public setPlace(place: HTMLDivElement): this {

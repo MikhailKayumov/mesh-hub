@@ -14,6 +14,8 @@ export const ApiTags = {
   Workspace: 'Workspace',
   EmbedProjects: 'EmbedProjects',
   EmbedProject: 'EmbedProject',
+  Comments: 'Comments',
+  Annotations: 'Annotations',
 } as const;
 
 export type ApiTag = keyof typeof ApiTags;

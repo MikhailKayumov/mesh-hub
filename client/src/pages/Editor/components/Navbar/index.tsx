@@ -10,12 +10,13 @@ import { getTabsConfig } from './utils.tsx';
 export interface NavbarProps {
   className?: string;
   viewer: Viewer | null;
+  modelId?: string;
   defaultTab?: TabValue;
 }
 
-export function Navbar({ className, viewer, defaultTab = TabValues.Scene }: NavbarProps) {
+export function Navbar({ className, viewer, modelId, defaultTab = TabValues.Scene }: NavbarProps) {
   const [tabValue, setTabValue] = useState<TabValue | undefined | null>(undefined);
-  const config = useMemo(() => getTabsConfig(viewer), [viewer]);
+  const config = useMemo(() => getTabsConfig(viewer, modelId), [viewer, modelId]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setTabValue(defaultTab), [defaultTab]);

@@ -1,7 +1,13 @@
 import { extname } from 'path';
-import { Injectable, InternalServerErrorException, Logger, OnApplicationBootstrap, BadRequestException } from '@nestjs/common';
-import AdmZip from 'adm-zip';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnApplicationBootstrap,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import AdmZip from 'adm-zip';
 import { DataSource } from 'typeorm';
 import { OrgSubscriptionEntity, StorageBackend } from '@/database/entities/organizations/org-subscription.entity';
 import { ConfigService } from '@/modules/config/config.service';
@@ -27,9 +33,7 @@ export class FilesService implements OnApplicationBootstrap {
   }
 
   public async getStrategyForOrg(orgId: string): Promise<IFileStorageStrategy> {
-    const sub = await this.dataSource
-      .getRepository(OrgSubscriptionEntity)
-      .findOne({ where: { orgId } });
+    const sub = await this.dataSource.getRepository(OrgSubscriptionEntity).findOne({ where: { orgId } });
 
     if (sub?.storageBackend === StorageBackend.S3 && sub.storageConfigEncrypted) {
       try {
@@ -126,6 +130,6 @@ export class FilesService implements OnApplicationBootstrap {
       throw new BadRequestException('Archive contains multiple .gltf/.glb files — exactly one required');
     }
 
-    return this.strategy.save3DModelDirectory(modelId, extractedFiles);
+    return this.localStrategy.save3DModelDirectory(modelId, extractedFiles);
   }
 }

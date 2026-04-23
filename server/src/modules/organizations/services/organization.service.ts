@@ -125,7 +125,11 @@ export class OrganizationService {
     return org;
   }
 
-  public async updateStorageConfig(orgId: string, storageBackend: StorageBackend, storageConfigEncrypted: string | null): Promise<void> {
+  public async updateStorageConfig(
+    orgId: string,
+    storageBackend: StorageBackend,
+    storageConfigEncrypted: string | null,
+  ): Promise<void> {
     const sub = await this.orgSubscriptionRepository.findOne({ where: { orgId } });
     if (!sub) throw new NotFoundException('Subscription not found');
 

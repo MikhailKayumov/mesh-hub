@@ -8,6 +8,7 @@ export const DatabaseSchemas = {
   Models3D: 'model_3d',
   Organizations: 'organizations',
   Workspaces: 'workspaces',
+  Embed: 'embed',
 } as const;
 
 export const ResourcesSchemaTables = {
@@ -44,4 +45,11 @@ export const OrganizationsSchemaTables = {
 export const WorkspacesSchemaTables = {
   Workspace: 'workspace',
   WorkspaceMember: 'workspace_member',
+} as const;
+
+export const EmbedSchemaTables = {
+  ApiKey: 'api_key',
+  EmbedProject: 'embed_project',
+  EmbedDomainWhitelist: 'embed_domain_whitelist',
+  ModelViewLog: 'model_view_log',
 } as const;

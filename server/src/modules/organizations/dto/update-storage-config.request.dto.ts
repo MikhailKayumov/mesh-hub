@@ -1,5 +1,5 @@
-import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { StorageBackend } from '@/database/entities/organizations/org-subscription.entity';
 
 export class S3StorageConfigInputDto {

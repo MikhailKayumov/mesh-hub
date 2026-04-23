@@ -11,7 +11,7 @@ export class StorageQuotaService {
   public constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   public async getStorageUsed(orgId: string): Promise<number> {
-    const result = await this.dataSource.query(
+    const result = await this.dataSource.query<{ total: string }[]>(
       `
       SELECT COALESCE(SUM(f.size), 0)::bigint AS total
       FROM model_3d.model_3d m

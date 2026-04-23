@@ -1,13 +1,12 @@
 import { extname } from 'path';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { In } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { In, DataSource } from 'typeorm';
 import { ModelVisibility } from '@/constants';
 import { Model3dFileEntity } from '@/database/entities/models-3d/model-3d-file.entity';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
-import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
+import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { FilesService } from '@/modules/files/files.service';
 import { Model3dResponseDto } from '@/modules/models-3d/dto/model-3d.response.dto';
@@ -91,7 +90,11 @@ export class Model3dService {
     );
   }
 
-  public async upload3DModel(user: UserEntity, file: Express.Multer.File, workspaceId?: string): Promise<{ modelId: string }> {
+  public async upload3DModel(
+    user: UserEntity,
+    file: Express.Multer.File,
+    workspaceId?: string,
+  ): Promise<{ modelId: string }> {
     let savedModelId: string = '';
 
     if (workspaceId) {

@@ -16,7 +16,7 @@
 | STEP-6 | 1.5 | ZIP Support Frontend | DONE | |
 | STEP-7 | 2 | StorageQuota + OrgSubscription | DONE | |
 | STEP-8 | 2 | S3 File Strategy | DONE | |
-| STEP-9 | 3 | API Keys + Embed Entities | TODO | |
+| STEP-9 | 3 | API Keys + Embed Entities | DONE | |
 | STEP-10 | 3 | Embed Module Backend | TODO | |
 | STEP-11 | 3 | Embed Frontend | TODO | |
 | STEP-12 | 4 | Reviews + Annotations Backend | TODO | |
@@ -38,6 +38,7 @@
 | STEP-6 | 2026-04-22 | ZIP frontend — .zip added to accepted types, entryFile in DTOs, all call sites updated, UI hint in upload modal |
 | STEP-7 | 2026-04-22 | StorageQuotaModule, quota checks on upload, GET subscription endpoint, frontend QuotaBar wired to real data |
 | STEP-8 | 2026-04-22 | AWS SDK v3, AES-256-CBC encryption util, S3FileStorageStrategy, FilesService.getStrategyForOrg, presigned URL redirect, admin S3 config endpoint + frontend UI |
+| STEP-9 | 2026-04-23 | embed schema + 4 entities (ApiKey, EmbedProject, EmbedDomainWhitelist, ModelViewLog), InitEmbed migration, full api-keys module with ApiKeyGuard |
 
 ## Known Issues / Decisions Made
 
@@ -429,3 +430,42 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - `dto.ts`: added `S3StorageConfigDto` and `UpdateStorageConfigRequestDto`.
 - `organizations.ts`: added `updateOrgStorageConfig` mutation invalidating `ApiTags.OrgSubscription`.
 - `OrgDashboard`: new "Хранилище" tab visible to Owner only; `Select` for backend type; S3 credential fields shown when S3 selected; Save button calls `updateOrgStorageConfig` mutation.
+
+
+## STEP-9 SUMMARY
+
+### Constants — `server/src/database/constants.ts`
+- Added `Embed: 'embed'` to `DatabaseSchemas` — `init/index.ts` iterates this map, so the schema is created automatically on next `db:init` run.
+- Added `EmbedSchemaTables = { ApiKey, EmbedProject, EmbedDomainWhitelist, ModelViewLog }`.
+
+### Entities — `server/src/database/entities/embed/`
+- **`api-key.entity.ts`** — `GuidIdEntityBase`; columns: `name`, `prefix varchar(8)` (unique index), `keyHash text` (unique index), `lastUsedAt?`, `expiresAt?`, `revokedAt?`; ManyToOne → `OrganizationEntity`
+- **`embed-project.entity.ts`** — `GuidIdEntityBase`; columns: `name`, `brandingConfig json?`, `autoRotate boolean`; ManyToOne → `OrganizationEntity`; ManyToOne nullable → `Model3dEntity` (SET NULL on delete); exports `BrandingConfig` interface
+- **`embed-domain-whitelist.entity.ts`** — `IntIdBaseEntity`; column: `domain`; ManyToOne → `EmbedProjectEntity` (CASCADE); `@Index` on `embed_project_id`
+- **`model-view-log.entity.ts`** — `IntIdBaseEntity`; columns: `origin?`, `durationSeconds? int`; ManyToOne → `Model3dEntity` (CASCADE); ManyToOne nullable → `EmbedProjectEntity` (SET NULL)
+
+### Migration — `server/src/database/migrations/embed/1745370000000-InitEmbed.ts`
+- Creates 4 tables: `api_key`, `embed_project`, `embed_domain_whitelist`, `model_view_log`
+- FK constraints: `api_key.org_id → organizations.organization`, `embed_project.org_id → organizations.organization`, `embed_project.model_id → model_3d.model_3d` (SET NULL), `embed_domain_whitelist.embed_project_id → embed_project` (CASCADE), `model_view_log.model_id → model_3d.model_3d` (CASCADE), `model_view_log.embed_project_id → embed_project` (SET NULL)
+- Unique constraints: `api_key.prefix`, `api_key.key_hash`
+- Indexes: `IDX_embed_domain_whitelist_project_id`, composite `IDX_model_view_log_embed_project_created` on `(embed_project_id, created_at DESC)`
+- `down()` drops indexes → FKs → tables in dependency order
+
+### `api-keys` Module — `server/src/modules/api-keys/`
+- **`dto/api-key.create.request.dto.ts`** — `orgId` (@IsUUID), `name` (@IsNotEmpty, @MaxLength(100))
+- **`dto/api-key.response.dto.ts`** — `id`, `name`, `prefix`, `lastUsedAt?`, `expiresAt?`, `revokedAt?`, `rawKey?` (present only in create response)
+- **`repositories/api-key.repository.ts`** — `findByHash(keyHash)` (loads org relation) + `findByOrg(orgId)`
+- **`mappers/api-key.mapper.ts`** — static `toResponse(entity, rawKey?)`; never exposes `keyHash`
+- **`services/api-key.service.ts`** — `generate`: 32 random bytes → base64url, prefix = first 8 chars, rawKey = `prefix_random`, keyHash = SHA256(rawKey) hex, save, return with rawKey (shown once); `list`: findByOrg without rawKey; `revoke`: set revokedAt = now()
+- **`guards/api-key.guard.ts`** — reads `X-Api-Key` header → SHA256 → `findByHash` → checks (found, not revoked, not expired) → `request.apiKey = entity`; `lastUsedAt` update is fire-and-forget; identical `UnauthorizedException` for all failure cases (no timing leak)
+- **`controllers/api-key.controller.ts`** — prefix `/api-keys`; POST `/` → 201; GET `/?orgId=` → 200; DELETE `/:id?orgId=` → 200
+- **`api-keys.module.ts`** — `forFeature([ApiKeyEntity])`; exports `ApiKeyGuard`, `ApiKeyRepository` for use in STEP-10
+
+### Cross-cutting changes
+- **`server/src/app.module.ts`** — added `ApiKeysModule` import
+- **`server/src/types/index.d.ts`** — added `apiKey?: ApiKeyEntity | null` to `Express.Request`
+- **`server/src/modules/files/files.service.ts`** — fixed pre-existing bug: `this.strategy` → `this.localStrategy` in `extractAndSave3DModelDirectory()`
+
+### Verification
+- `npm run build` — 0 errors
+- `npm run lint` — 0 errors in STEP-9 files (remaining errors are pre-existing in STEP-8 files)

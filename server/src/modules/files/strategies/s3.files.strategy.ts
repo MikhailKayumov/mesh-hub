@@ -1,3 +1,4 @@
+import { createReadStream } from 'fs';
 import { Readable } from 'stream';
 import {
   S3Client,
@@ -5,10 +6,10 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   ListObjectsV2Command,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { ExtractedFile, IFileStorageStrategy, S3StorageConfig } from '@/modules/files/types';
 
 const PRESIGNED_URL_TTL_SECONDS = 3600;
@@ -48,7 +49,7 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
 
   public async save3DModel(modelId: string, file: Express.Multer.File): Promise<string> {
     const key = `models-3d/${modelId}/${file.originalname}`;
-    const body = file.buffer ? Readable.from(file.buffer) : Readable.from(require('fs').createReadStream(file.path));
+    const body = file.buffer ? Readable.from(file.buffer) : Readable.from(createReadStream(file.path));
 
     const upload = new Upload({
       client: this.client,

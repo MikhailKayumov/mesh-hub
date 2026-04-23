@@ -101,6 +101,6 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
   }
 
   public async getFileUrl(_relativePath: string): Promise<string | null> {
-    return null;
+    return Promise.resolve(_relativePath);
   }
 }

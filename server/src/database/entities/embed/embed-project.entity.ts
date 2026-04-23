@@ -1,8 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { DatabaseSchemas, EmbedSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { OrganizationEntity } from '@/database/entities/organizations/organization.entity';
+import { EmbedDomainWhitelistEntity } from './embed-domain-whitelist.entity';
 
 export interface BrandingConfig {
   logoUrl?: string;
@@ -34,4 +35,7 @@ export class EmbedProjectEntity extends GuidIdEntityBase {
   @ManyToOne(() => Model3dEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'model_id' })
   public model: Model3dEntity | null;
+
+  @OneToMany(() => EmbedDomainWhitelistEntity, (d) => d.embedProject, { cascade: false })
+  public domains: EmbedDomainWhitelistEntity[];
 }

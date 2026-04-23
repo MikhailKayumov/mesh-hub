@@ -10,6 +10,7 @@ import { ApiKeysModule } from '@/modules/api-keys/api-keys.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { ConfigModule } from '@/modules/config/config.module';
 import { ConfigService } from '@/modules/config/config.service';
+import { EmbedModule } from '@/modules/embed/embed.module';
 import { FileStorageModule } from '@/modules/files/files.module';
 import { Models3dModule } from '@/modules/models-3d/models-3d.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
@@ -39,6 +40,7 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
     OrganizationsModule,
     WorkspacesModule,
     ApiKeysModule,
+    EmbedModule,
   ],
   providers: [
     {

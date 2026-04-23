@@ -17,7 +17,7 @@
 | STEP-7 | 2 | StorageQuota + OrgSubscription | DONE | |
 | STEP-8 | 2 | S3 File Strategy | DONE | |
 | STEP-9 | 3 | API Keys + Embed Entities | DONE | |
-| STEP-10 | 3 | Embed Module Backend | TODO | |
+| STEP-10 | 3 | Embed Module Backend | DONE | |
 | STEP-11 | 3 | Embed Frontend | TODO | |
 | STEP-12 | 4 | Reviews + Annotations Backend | TODO | |
 | STEP-13 | 4 | Reviews Frontend + Viewer Extensions | TODO | |
@@ -39,6 +39,7 @@
 | STEP-7 | 2026-04-22 | StorageQuotaModule, quota checks on upload, GET subscription endpoint, frontend QuotaBar wired to real data |
 | STEP-8 | 2026-04-22 | AWS SDK v3, AES-256-CBC encryption util, S3FileStorageStrategy, FilesService.getStrategyForOrg, presigned URL redirect, admin S3 config endpoint + frontend UI |
 | STEP-9 | 2026-04-23 | embed schema + 4 entities (ApiKey, EmbedProject, EmbedDomainWhitelist, ModelViewLog), InitEmbed migration, full api-keys module with ApiKeyGuard |
+| STEP-10 | 2026-04-23 | Full embed module — EmbedProject CRUD, domain whitelist management, public viewer endpoint with ApiKeyGuard + origin validation, fire-and-forget view logging, 30-day analytics |
 
 ## Known Issues / Decisions Made
 
@@ -469,3 +470,58 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 ### Verification
 - `npm run build` — 0 errors
 - `npm run lint` — 0 errors in STEP-9 files (remaining errors are pre-existing in STEP-8 files)
+
+
+## STEP-10 SUMMARY
+
+### Entity patch — `server/src/database/entities/embed/embed-project.entity.ts`
+- Added `@OneToMany(() => EmbedDomainWhitelistEntity, (d) => d.embedProject) domains: EmbedDomainWhitelistEntity[]` relation (no cascade — whitelist entries managed independently)
+- Import changed from `{ Column, Entity, JoinColumn, ManyToOne }` to include `OneToMany`
+
+### DTOs — `server/src/modules/embed/dto/`
+- **`embed-project.create.request.dto.ts`** — `orgId` (@IsUUID), `name` (@IsNotEmpty, @MaxLength(100)), `modelId?` (@IsUUID, @IsOptional), `autoRotate?` (@IsBoolean, @IsOptional)
+- **`embed-project.update.request.dto.ts`** — all fields optional; includes nested `BrandingConfigDto` with `logoUrl?` (@IsUrl), `primaryColor?` (@Matches `#RRGGBB`), `showBadge` (@IsBoolean); validated with `@ValidateNested` + `@Type`
+- **`embed-project.response.dto.ts`** — `id, orgId, name, modelId, autoRotate, brandingConfig, allowedOrigins: string[], createdAt, updatedAt?`; `allowedOrigins` is derived from loaded `domains` relation
+- **`embed-viewer.response.dto.ts`** — `model: Model3dResponseDto, brandingConfig, autoRotate, allowedOrigins`; used by the public endpoint
+- **`view-analytics.response.dto.ts`** — `dailyViews: { date: string, count: number }[]`, `topOrigins: { origin: string, count: number }[]`, `totalViews: number`
+- **`domain.add.request.dto.ts`** — `domain` with `@Matches` regex enforcing hostname-only (no protocol, no path, optional port)
+
+### Repositories — `server/src/modules/embed/repositories/`
+- **`embed-project.repository.ts`** — `findByModel(modelId)` (with `domains` relation, newest first), `findByOrg(orgId)`, `findById(id)`; all load `domains` relation
+- **`embed-domain-whitelist.repository.ts`** — `hardDeleteByProjectAndDomain(projectId, domain)` — hard delete via QueryBuilder (no soft-delete for whitelist entries)
+- **`model-view-log.repository.ts`** — `createLog(projectId, modelId, origin?)` (fire-and-forget, errors only logged); `getDailyViews(projectId, days)` via raw QueryBuilder using `TO_CHAR(DATE(...), 'YYYY-MM-DD')`; `getTopOrigins(projectId, limit)` GROUP BY origin; `getTotalViews(projectId)` via `count()`
+
+### Mapper — `server/src/modules/embed/mappers/embed.mapper.ts`
+- Static class (not a NestJS provider): `toProjectResponse(project)`, `toViewerResponse(model, project)`, `toAnalyticsResponse(daily, origins, total)`
+- Raw SQL count strings cast to `Number()` in analytics methods
+
+### Service — `server/src/modules/embed/services/embed.service.ts`
+- Injects: `EmbedProjectRepository`, `EmbedDomainWhitelistRepository`, `ModelViewLogRepository`, `Model3dService`, `OrgMemberRepository`
+- **`getEmbedViewer`**: project lookup by modelId → 404; org mismatch with API key → 403; if Origin header present: `new URL(origin).hostname` extracted, empty whitelist → 403, hostname not found → 403; model loaded via `Model3dService.get3DModel`; view log written fire-and-forget
+- **`createProject`**, **`listProjects`**, **`updateProject`**: org membership checked via private `requireMembership(orgId, userId, minRole)` using `OrgMemberRoleWeights`
+- **`addDomain`** / **`removeDomain`**: membership ≥ editor required; add saves `EmbedDomainWhitelistEntity`; remove calls `hardDeleteByProjectAndDomain`
+- **`getAnalytics`**: membership ≥ viewer; 3 queries run concurrently with `Promise.all`
+
+### Controller — `server/src/modules/embed/controllers/embed.controller.ts`
+- Prefix `/embed`; `@ApiTags('embed')`
+- Route declaration order (critical for Express): all `/projects/*` routes declared **before** `/:modelId` to prevent "projects" being treated as a modelId UUID
+- `GET /:modelId` decorated with `@Public()` + `@UseGuards(ApiKeyGuard)`; `Request` imported as `import type` (required for `isolatedModules` + `emitDecoratorMetadata`)
+- `DELETE /projects/:id/domains/:domain` returns `@HttpCode(204)` (no body)
+
+### Module — `server/src/modules/embed/embed.module.ts`
+- `TypeOrmModule.forFeature([EmbedProjectEntity, EmbedDomainWhitelistEntity, ModelViewLogEntity])`
+- Imports: `ApiKeysModule` (provides `ApiKeyGuard` via DI), `Models3dModule` (provides `Model3dService`), `OrganizationsModule` (provides `OrgMemberRepository`)
+
+### App registration — `server/src/app.module.ts`
+- Added `EmbedModule` import
+
+### Verification
+- `npm run build` — 0 errors
+- `npm run lint` — 0 errors, 0 warnings
+
+### Decisions
+- Origin absent (server-side / Postman calls) → domain check skipped entirely — only browser-originated requests with an `Origin` header are validated
+- Empty domain whitelist = reject all origins — operator must configure at least one domain before the embed endpoint works in a browser
+- ApiKey authorization is org-scoped only — any active key for the org authorizes any embed project in that org (no key-to-project binding on MVP)
+- `updateProject` uses `'modelId' in dto` check to allow explicitly setting `modelId: null` (unlink model) vs. omitting the field entirely
+

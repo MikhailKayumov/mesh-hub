@@ -1,12 +1,12 @@
 import { Text } from '@mantine/core';
 import { IconBulb, IconClockHour4, IconCube, IconMapPin, IconMessageCircle, IconPhotoEdit } from '@tabler/icons-react';
-import { AnnotationManager } from '@/widgets/AnnotationManager';
-import { ReviewPanel } from '@/widgets/ReviewPanel';
-import { VersionHistory } from '@/widgets/VersionHistory';
 import { RendererTab } from '@/pages/Editor/components/Navbar/components/RendererTab';
 import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
+import { AnnotationManager } from '@/widgets/AnnotationManager';
 import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
+import { ReviewPanel } from '@/widgets/ReviewPanel';
+import { VersionHistory } from '@/widgets/VersionHistory';
 import { type TabsConfig } from './model.ts';
 import classes from './Navbar.module.scss';
 

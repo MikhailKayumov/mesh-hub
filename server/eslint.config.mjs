@@ -38,7 +38,14 @@ export default defineConfig(
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        2,
+        {
+          caughtErrors: 'none',
+          argsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-unsafe-argument': 'warn',
       '@typescript-eslint/require-await': 'warn',
       'import/order': [

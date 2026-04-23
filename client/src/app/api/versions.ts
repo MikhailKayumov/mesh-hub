@@ -40,9 +40,5 @@ export const VersionsApi = Api.injectEndpoints({
   }),
 });
 
-export const {
-  useModelVersionsQuery,
-  useUploadVersionMutation,
-  useActivateVersionMutation,
-  useDeleteVersionMutation,
-} = VersionsApi;
+export const { useModelVersionsQuery, useUploadVersionMutation, useActivateVersionMutation, useDeleteVersionMutation } =
+  VersionsApi;

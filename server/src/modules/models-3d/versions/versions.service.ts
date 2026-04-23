@@ -16,10 +16,10 @@ import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { FilesService } from '@/modules/files/files.service';
 import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.repository';
-import { ModelVersionMapper } from './model-version.mapper';
-import { ModelVersionRepository } from './model-version.repository';
 import { VersionResponseDto } from './dto/version.response.dto';
 import { VersionUploadRequestDto } from './dto/version.upload.request.dto';
+import { ModelVersionMapper } from './model-version.mapper';
+import { ModelVersionRepository } from './model-version.repository';
 
 @Injectable()
 export class VersionsService {
@@ -133,11 +133,7 @@ export class VersionsService {
     }
   }
 
-  public async activateVersion(
-    modelId: string,
-    versionId: string,
-    user: UserEntity,
-  ): Promise<VersionResponseDto> {
+  public async activateVersion(modelId: string, versionId: string, user: UserEntity): Promise<VersionResponseDto> {
     const model = await this.model3dRepository.findOne({
       where: { id: modelId },
       relations: { user: true, file: true },
@@ -187,11 +183,7 @@ export class VersionsService {
     return ModelVersionMapper.toResponse(full!);
   }
 
-  public async deleteVersion(
-    modelId: string,
-    versionId: string,
-    user: UserEntity,
-  ): Promise<void> {
+  public async deleteVersion(modelId: string, versionId: string, user: UserEntity): Promise<void> {
     const model = await this.model3dRepository.findOne({
       where: { id: modelId },
       relations: { user: true },
@@ -227,6 +219,6 @@ export class VersionsService {
   }
 
   private isUserIdEqual(model: Model3dEntity, user: UserEntity): boolean {
-    return (model as any).userId === user.id;
+    return model.user.id === user.id;
   }
 }

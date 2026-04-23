@@ -27,8 +27,8 @@ import { Roles } from '@/decorators/auth/auth.decorator';
 import { User } from '@/decorators/user/user.decorator';
 import { FileExtensionValidatorPipe } from '@/pipes/file-extension-validator.pipe';
 import { FileSizeValidator } from '@/pipes/file-size-validator.pipe';
-import { VersionUploadRequestDto } from './dto/version.upload.request.dto';
 import { VersionResponseDto } from './dto/version.response.dto';
+import { VersionUploadRequestDto } from './dto/version.upload.request.dto';
 import { VersionsService } from './versions.service';
 
 @Controller('models-3d/:modelId/versions')

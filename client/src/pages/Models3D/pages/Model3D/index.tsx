@@ -46,9 +46,7 @@ export function Model3DPage() {
             onReady={(v) => {
               if (!v?.model?.sceneBoundingBox) return;
 
-              const boundingBoxLength = v.model.sceneBoundingBox.min.manhattanDistanceTo(
-                v.model.sceneBoundingBox.max,
-              );
+              const boundingBoxLength = v.model.sceneBoundingBox.min.manhattanDistanceTo(v.model.sceneBoundingBox.max);
 
               v.world.spawnGroundHelper(boundingBoxLength * 10, boundingBoxLength * 10, 0);
               setViewer(v);
@@ -67,35 +65,15 @@ export function Model3DPage() {
         <Model3DPageInfo />
       </Paper>
 
-      <Drawer
-        opened={commentsOpened}
-        onClose={closeComments}
-        title="Комментарии"
-        position="right"
-        size={380}
-      >
+      <Drawer opened={commentsOpened} onClose={closeComments} title="Комментарии" position="right" size={380}>
         {id && <ReviewPanel modelId={id} viewer={viewer} />}
       </Drawer>
 
-      <Drawer
-        opened={annotationsOpened}
-        onClose={closeAnnotations}
-        title="Аннотации"
-        position="right"
-        size={380}
-      >
-        {id && (
-          <AnnotationManager modelId={id} viewer={viewer} canEdit={model3d?.isOwner ?? false} />
-        )}
+      <Drawer opened={annotationsOpened} onClose={closeAnnotations} title="Аннотации" position="right" size={380}>
+        {id && <AnnotationManager modelId={id} viewer={viewer} canEdit={model3d?.isOwner ?? false} />}
       </Drawer>
 
-      <Drawer
-        opened={versionsOpened}
-        onClose={closeVersions}
-        title="История версий"
-        position="right"
-        size={400}
-      >
+      <Drawer opened={versionsOpened} onClose={closeVersions} title="История версий" position="right" size={400}>
         {id && <VersionHistory modelId={id} canEdit={model3d?.isOwner ?? false} viewer={viewer} />}
       </Drawer>
     </Model3DContextProvider>

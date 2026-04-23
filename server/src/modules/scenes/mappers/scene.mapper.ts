@@ -1,0 +1,53 @@
+import { SceneLightEntity } from '@/database/entities/scenes/scene-light.entity';
+import { SceneObjectEntity } from '@/database/entities/scenes/scene-object.entity';
+import { SceneEntity } from '@/database/entities/scenes/scene.entity';
+import { SceneLightResponseDto, SceneObjectResponseDto, SceneResponseDto } from '../dto/scene.response.dto';
+
+export class SceneMapper {
+  public static toResponse(entity: SceneEntity): SceneResponseDto {
+    return {
+      id: entity.id,
+      workspaceId: entity.workspaceId,
+      name: entity.name,
+      description: entity.description,
+      config: entity.config,
+      thumbnailPath: entity.thumbnailPath,
+      objects: (entity.objects ?? []).map(SceneMapper.toObjectResponse),
+      lights: (entity.lights ?? []).map(SceneMapper.toLightResponse),
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt ?? null,
+    };
+  }
+
+  public static toObjectResponse(obj: SceneObjectEntity): SceneObjectResponseDto {
+    return {
+      id: obj.id,
+      modelId: obj.modelId,
+      posX: obj.posX,
+      posY: obj.posY,
+      posZ: obj.posZ,
+      rotX: obj.rotX,
+      rotY: obj.rotY,
+      rotZ: obj.rotZ,
+      scaleX: obj.scaleX,
+      scaleY: obj.scaleY,
+      scaleZ: obj.scaleZ,
+      order: obj.order,
+      createdAt: obj.createdAt,
+    };
+  }
+
+  public static toLightResponse(light: SceneLightEntity): SceneLightResponseDto {
+    return {
+      id: light.id,
+      type: light.type,
+      posX: light.posX,
+      posY: light.posY,
+      posZ: light.posZ,
+      color: light.color,
+      intensity: light.intensity,
+      castShadow: light.castShadow,
+      createdAt: light.createdAt,
+    };
+  }
+}

@@ -18,6 +18,7 @@ import { NotificationsModule } from '@/modules/notifications/notifications.modul
 import { OrganizationsModule } from '@/modules/organizations/organizations.module';
 import { ResourcesModule } from '@/modules/resources/resources.module';
 import { ReviewsModule } from '@/modules/reviews/reviews.module';
+import { ScenesModule } from '@/modules/scenes/scenes.module';
 import { UserModule } from '@/modules/user/user.module';
 import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
 
@@ -45,6 +46,7 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
     EmbedModule,
     ReviewsModule,
     AnnotationsModule,
+    ScenesModule,
   ],
   providers: [
     {

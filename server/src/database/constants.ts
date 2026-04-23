@@ -9,6 +9,7 @@ export const DatabaseSchemas = {
   Organizations: 'organizations',
   Workspaces: 'workspaces',
   Embed: 'embed',
+  Scenes: 'scenes',
 } as const;
 
 export const ResourcesSchemaTables = {
@@ -55,4 +56,10 @@ export const EmbedSchemaTables = {
   EmbedProject: 'embed_project',
   EmbedDomainWhitelist: 'embed_domain_whitelist',
   ModelViewLog: 'model_view_log',
+} as const;
+
+export const ScenesSchemaTables = {
+  Scene: 'scene',
+  SceneObject: 'scene_object',
+  SceneLight: 'scene_light',
 } as const;

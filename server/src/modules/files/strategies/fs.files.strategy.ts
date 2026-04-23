@@ -146,7 +146,7 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
     await rm(this.getVersionDirPath(modelId, versionId), { recursive: true, force: true });
   }
 
-  public async copyVersionToRoot(modelId: string, versionId: string, entryFile: string | undefined): Promise<void> {
+  public async copyVersionToRoot(modelId: string, versionId: string, _entryFile: string | undefined): Promise<void> {
     const versionDir = this.getVersionDirPath(modelId, versionId);
     const modelDir = this.get3DModelFilePath(modelId);
 
@@ -161,5 +161,24 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
 
   private getVersionDirPath(modelId: string, versionId: string): string {
     return resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'versions', versionId);
+  }
+
+  public async saveSceneHdri(sceneId: string, file: Express.Multer.File): Promise<void> {
+    const dir = this.getSceneDirPath(sceneId);
+    await mkdir(dir, { recursive: true });
+    const dest = resolve(dir, 'environment.hdr');
+    if (file.path) {
+      await rename(file.path, dest);
+    } else {
+      await writeFile(dest, file.buffer);
+    }
+  }
+
+  public async deleteSceneFiles(sceneId: string): Promise<void> {
+    await rm(this.getSceneDirPath(sceneId), { recursive: true, force: true });
+  }
+
+  private getSceneDirPath(sceneId: string): string {
+    return resolve(process.cwd(), 'files', 'scenes', sceneId);
   }
 }

@@ -1,5 +1,5 @@
-import { IsOptional, MaxLength } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, MaxLength } from 'class-validator';
 
 export class VersionUploadRequestDto {
   @ApiPropertyOptional({ description: 'Release notes for this version', maxLength: 500 })

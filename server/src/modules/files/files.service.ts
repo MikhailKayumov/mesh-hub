@@ -133,6 +133,21 @@ export class FilesService implements OnApplicationBootstrap {
     return strategy.copyVersionToRoot(modelId, versionId, entryFile);
   }
 
+  public async saveSceneHdri(orgId: string, sceneId: string, file: Express.Multer.File): Promise<void> {
+    const strategy = await this.getStrategyForOrg(orgId);
+    return strategy.saveSceneHdri(sceneId, file);
+  }
+
+  public async deleteSceneFiles(orgId: string, sceneId: string): Promise<void> {
+    const strategy = await this.getStrategyForOrg(orgId);
+    return strategy.deleteSceneFiles(sceneId);
+  }
+
+  public async getSceneHdriUrl(orgId: string, sceneId: string): Promise<string | null> {
+    const strategy = await this.getStrategyForOrg(orgId);
+    return strategy.getFileUrl(`scenes/${sceneId}/environment.hdr`);
+  }
+
   public async extractAndSave3DModelDirectory(modelId: string, zipFile: Express.Multer.File): Promise<string> {
     const ALLOWED_EXTENSIONS = new Set([
       '.gltf',

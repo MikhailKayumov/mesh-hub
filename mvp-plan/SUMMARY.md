@@ -22,7 +22,7 @@
 | STEP-12 | 4 | Reviews + Annotations Backend | DONE | |
 | STEP-13 | 4 | Reviews Frontend + Viewer Extensions | DONE | |
 | STEP-14 | 5 | Versions (Full Stack) | DONE | |
-| STEP-15 | 6 | Scenes Backend | TODO | |
+| STEP-15 | 6 | Scenes Backend | DONE | |
 | STEP-16 | 6 | Scenes Frontend | TODO | |
 
 ## Completed Steps Log
@@ -874,3 +874,110 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - `fileSize` stored as PostgreSQL `bigint`; mapper uses `Number()` cast (safe for MVP file sizes ≤ 3 GB)
 - `loadFile()` does not cache (unlike `loadModel()`) — preview is ephemeral; user can reload the main model via `useViewer` re-run
 
+
+## STEP-15 SUMMARY
+
+### Database — Schema & Tables
+
+**`server/src/database/constants.ts`**
+- Added `Scenes: 'scenes'` to `DatabaseSchemas`
+- Added `ScenesSchemaTables = { Scene: 'scene', SceneObject: 'scene_object', SceneLight: 'scene_light' }` constant object
+
+**`server/src/database/entities/scenes/`** (all new)
+- `scene-config.type.ts` — plain TS interfaces `SceneCameraBookmark { label, posX/Y/Z, targetX/Y/Z }` and `SceneConfig { backgroundColor, ambientLightIntensity, environmentHdriPath?, cameraBookmarks[] }`
+- `scene.entity.ts` — `name: varchar(100)`, `description: text?`, `config: jsonb?`, `thumbnailPath: text?`, `workspaceId: uuid NOT NULL FK → workspaces.workspace (CASCADE)`; OneToMany relations to SceneObjectEntity and SceneLightEntity
+- `scene-object.entity.ts` — 9 float columns (posX/Y/Z, rotX/Y/Z, scaleX/Y/Z defaults 0/0/0/0/0/0/1/1/1), `order: int (default 0)`, FK `sceneId → scenes.scene (CASCADE)`, FK `modelId → model_3d.model_3d`; `@Index(['sceneId'])`
+- `scene-light.entity.ts` — `type: enum LightType { directional | point | spot }`, `posX/Y/Z: float`, `color: varchar(7) default '#ffffff'`, `intensity: float default 1.0`, `castShadow: boolean default true`, FK `sceneId → scenes.scene (CASCADE)`
+
+**`server/src/database/migrations/scenes/1776940000000-InitScenes.ts`**
+- Creates `scenes` schema, `light_type` enum, tables `scene` / `scene_object` / `scene_light` with all FK constraints and index on `scene_object.scene_id`
+- `down()` drops index → tables → enum → schema in reverse order
+- Migration applied successfully to dev DB
+
+### Plan Limits — `server/src/constants/plan-limits.ts`
+- New file: `SCENE_LIMITS` record keyed by `PlanType` (starter/growth/enterprise)
+- starter: `{ maxObjects: 3, maxLights: 2, hdriEnabled: false }`
+- growth: `{ maxObjects: 15, maxLights: 10, hdriEnabled: true }`
+- enterprise: `{ maxObjects: Infinity, maxLights: Infinity, hdriEnabled: true }`
+
+### File Storage Extensions
+
+**`server/src/modules/files/types.ts`** — 2 new methods on `IFileStorageStrategy`:
+- `saveSceneHdri(sceneId, file)` — save HDRI file to `scenes/<sceneId>/environment.hdr`
+- `deleteSceneFiles(sceneId)` — remove entire `scenes/<sceneId>/` directory/prefix
+
+**`server/src/modules/files/strategies/fs.files.strategy.ts`**
+- `saveSceneHdri`: `mkdir` scene dir + `rename` temp file to `environment.hdr`
+- `deleteSceneFiles`: `rm -rf scenes/<sceneId>/`
+- Private `getSceneDirPath()` helper → `<cwd>/files/scenes/<sceneId>`
+
+**`server/src/modules/files/strategies/s3.files.strategy.ts`**
+- `saveSceneHdri`: `PutObjectCommand` uploads to `scenes/<sceneId>/environment.hdr`
+- `deleteSceneFiles`: `ListObjectsV2Command` + `DeleteObjectsCommand` bulk-removes `scenes/<sceneId>/` prefix
+
+**`server/src/modules/files/files.service.ts`** — 3 new methods:
+- `saveSceneHdri(orgId, sceneId, file)` — delegates to `getStrategyForOrg(orgId)`
+- `deleteSceneFiles(orgId, sceneId)` — delegates to `getStrategyForOrg(orgId)`
+- `getSceneHdriUrl(orgId, sceneId)` — calls `strategy.getFileUrl('scenes/<sceneId>/environment.hdr')`; returns local FS path or S3 presigned URL
+
+### `scenes` Module — `server/src/modules/scenes/`
+
+**Repositories**
+- `scene.repository.ts` — thin `Repository<SceneEntity>` wrapper
+- `scene-object.repository.ts` — adds `countByScene(sceneId)`
+- `scene-light.repository.ts` — adds `countByScene(sceneId)`
+
+**DTOs**
+- `scene.create.request.dto.ts` — `workspaceId (@IsUUID)`, `name (@MaxLength(100))`, `description?`
+- `scene.update.request.dto.ts` — `name?`, `description?`, `config?: SceneConfigUpdateDto` (nested validated with `@ValidateNested`)
+- `scene-object.upsert.dto.ts` — `modelId (@IsUUID)`, optional float pos/rot/scale, optional `order`
+- `scene-light.upsert.dto.ts` — `type (@IsEnum LightType)`, optional pos float, `color (@Matches /^#[0-9a-fA-F]{6}$/)`, `intensity`, `castShadow`
+- `scene.response.dto.ts` — `SceneResponseDto` with nested `SceneObjectResponseDto[]` and `SceneLightResponseDto[]`
+
+**Mapper** (`mappers/scene.mapper.ts`)
+- Static `SceneMapper.toResponse(entity)`, `toObjectResponse(obj)`, `toLightResponse(light)`
+
+**Service** (`services/scenes.service.ts`)
+- Scene CRUD: `createScene`, `listScenes`, `getScene`, `updateScene`, `deleteScene` (soft-delete + `deleteSceneFiles`)
+- Object management: `addObject`, `updateObject`, `removeObject` — enforces `SCENE_LIMITS[planType].maxObjects`
+- Light management: `addLight`, `updateLight`, `removeLight` — enforces `SCENE_LIMITS[planType].maxLights`
+- HDRI: `uploadHdri` (checks `hdriEnabled`; saves via `filesService.saveSceneHdri`); `getHdriFile` — returns `StreamableFile` (local FS) or `{ redirect: string }` (S3 presigned URL)
+- Thumbnail: `saveThumbnail` decodes base64 PNG, writes via strategy
+- Access control: `requireMember` checks workspace membership via `WorkspaceMemberRepository`
+- Plan resolution: `workspaceId → WorkspaceEntity.orgId → OrganizationEntity.planType → SCENE_LIMITS[planType]`
+
+**Controller** (`controllers/scenes.controller.ts`) — prefix `/scenes`, 14 routes:
+- `POST /scenes` — create scene
+- `GET /scenes` — list scenes for workspaceId (query param)
+- `GET /scenes/:id` — get scene with objects + lights
+- `PATCH /scenes/:id` — update scene metadata/config
+- `DELETE /scenes/:id` — soft-delete scene + cleanup files
+- `POST /scenes/:id/objects` — add object (enforces maxObjects)
+- `PATCH /scenes/:id/objects/:objectId` — update object transform/order
+- `DELETE /scenes/:id/objects/:objectId` — remove object
+- `POST /scenes/:id/lights` — add light (enforces maxLights)
+- `PATCH /scenes/:id/lights/:lightId` — update light
+- `DELETE /scenes/:id/lights/:lightId` — remove light
+- `POST /scenes/:id/hdri` — upload HDRI (multipart, @Public HDRI route needs auth, guarded by hdriEnabled)
+- `GET /scenes/:id/hdri` — stream or redirect HDRI file (`@Public()`)
+- `POST /scenes/:id/thumbnail` — save thumbnail from base64
+
+**Module** (`scenes.module.ts`)
+- `TypeOrmModule.forFeature([SceneEntity, SceneObjectEntity, SceneLightEntity])`
+- Imports: `WorkspacesModule`, `FileStorageModule`
+- Exports: `ScenesService`
+
+### App Registration
+- `ScenesModule` added to `app.module.ts` imports
+
+### Decisions
+- `SceneEntity.workspaceId` is NOT NULL — scenes always belong to a workspace (no personal scenes on MVP)
+- Plan type resolved via `workspace → org.planType` (not a separate `workspace.plan` column)
+- HDRI URL strategy: local FS → `StreamableFile` (controller reads path + streams); S3 → controller redirects 307 to presigned URL
+- `HDRI_MAX_SIZE_BYTES` constant defined inline in controller (50 MB) for multer `limits.fileSize`
+- Objects and lights are hard-deleted (not soft-deleted) on remove — no audit trail needed for scene geometry
+
+### Verification
+- `cd server && npm run build` — 0 errors
+- `cd server && npm run lint` — 0 errors (1 pre-existing warning in versions.service.ts, 2 pre-existing `_entryFile` warnings in file strategies)
+- `cd server && npm run migration:run` — `InitScenes1776940000000` applied successfully

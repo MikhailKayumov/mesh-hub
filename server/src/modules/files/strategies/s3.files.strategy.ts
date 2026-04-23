@@ -241,4 +241,35 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
       continuationToken = list.IsTruncated ? list.NextContinuationToken : undefined;
     } while (continuationToken);
   }
+
+  public async saveSceneHdri(sceneId: string, file: Express.Multer.File): Promise<void> {
+    const key = `scenes/${sceneId}/environment.hdr`;
+    const body = file.buffer ? Readable.from(file.buffer) : Readable.from(createReadStream(file.path));
+    const upload = new Upload({
+      client: this.client,
+      params: { Bucket: this.bucket, Key: key, Body: body, ContentType: 'application/octet-stream' },
+    });
+    await upload.done();
+  }
+
+  public async deleteSceneFiles(sceneId: string): Promise<void> {
+    const prefix = `scenes/${sceneId}/`;
+    let continuationToken: string | undefined;
+
+    do {
+      const list = await this.client.send(
+        new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: continuationToken }),
+      );
+      const objects = list.Contents ?? [];
+      if (objects.length > 0) {
+        await this.client.send(
+          new DeleteObjectsCommand({
+            Bucket: this.bucket,
+            Delete: { Objects: objects.map((o) => ({ Key: o.Key! })) },
+          }),
+        );
+      }
+      continuationToken = list.IsTruncated ? list.NextContinuationToken : undefined;
+    } while (continuationToken);
+  }
 }

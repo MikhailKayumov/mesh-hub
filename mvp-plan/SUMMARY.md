@@ -19,7 +19,7 @@
 | STEP-9 | 3 | API Keys + Embed Entities | DONE | |
 | STEP-10 | 3 | Embed Module Backend | DONE | |
 | STEP-11 | 3 | Embed Frontend | DONE | |
-| STEP-12 | 4 | Reviews + Annotations Backend | TODO | |
+| STEP-12 | 4 | Reviews + Annotations Backend | DONE | |
 | STEP-13 | 4 | Reviews Frontend + Viewer Extensions | TODO | |
 | STEP-14 | 5 | Versions (Full Stack) | TODO | |
 | STEP-15 | 6 | Scenes Backend | TODO | |
@@ -41,6 +41,7 @@
 | STEP-9 | 2026-04-23 | embed schema + 4 entities (ApiKey, EmbedProject, EmbedDomainWhitelist, ModelViewLog), InitEmbed migration, full api-keys module with ApiKeyGuard |
 | STEP-10 | 2026-04-23 | Full embed module — EmbedProject CRUD, domain whitelist management, public viewer endpoint with ApiKeyGuard + origin validation, fire-and-forget view logging, 30-day analytics |
 | STEP-11 | 2026-04-23 | Embed frontend — logo upload backend (FsStrategy + S3Strategy + FilesService + EmbedService), embed API layer (embed.ts + dto.ts + tags + urls), EmbedViewer standalone page, EmbedProject management page (domains/branding/analytics), OrgDashboard Embed tab, @mantine/charts for analytics chart |
+| STEP-12 | 2026-04-23 | 2 entities + migration in model_3d schema; ReviewsModule (4 CRUD endpoints); AnnotationsModule (5 endpoints incl. reorder); workspace-level access control |
 
 ## Known Issues / Decisions Made
 
@@ -52,6 +53,8 @@
 | 2026-04-22 | `EmbedProject` has no FK to `ApiKey` — any org key authorizes embed requests |
 | 2026-04-22 | `StorageQuotaModule` is a standalone module imported by both Orgs and Models3d |
 | 2026-04-22 | Embed iframe postMessage validates `event.origin` against domain whitelist |
+| 2026-04-23 | Annotation writes on personal models (no workspaceId) fall back to model-owner check instead of workspace membership |
+| 2026-04-23 | No pagination for comments on MVP — flat list returned (expected < 100 per model) |
 
 
 ## STEP-0 SUMMARY
@@ -610,4 +613,47 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - `cd server && npm run lint` — 0 errors, 0 warnings
 - `cd client && npm run tscheck` — 0 errors
 - `cd client && npx eslint src/pages/EmbedProject/ src/pages/EmbedViewer/ src/app/api/embed.ts src/app/router/index.tsx src/pages/OrgDashboard/OrgDashboard.tsx` — 0 errors
+
+## STEP-12 SUMMARY
+
+### Constants — `server/src/database/constants.ts`
+- Added `ModelComment: 'model_comment'` and `ModelAnnotation: 'model_annotation'` to `Models3DSchemaTables`
+
+### Entities — `server/src/database/entities/models-3d/`
+
+**`model-comment.entity.ts`** — `body: text`, `posX/Y/Z: float8 nullable`, `resolved: boolean (default false)`, `parentId: uuid nullable`; relations: `@ManyToOne → Model3dEntity`, `@ManyToOne → UserEntity (eager)`, `@ManyToOne → ModelCommentEntity` (self-ref, nullable); `@Index` on `modelId`
+
+**`model-annotation.entity.ts`** — `label: varchar(50)`, `body: text nullable`, `posX/Y/Z: float8`, `cameraPosX/Y/Z: float8 nullable`, `order: int (default 0)`; relation: `@ManyToOne → Model3dEntity`; `@Index` on `modelId`
+
+### Migration — `server/src/database/migrations/models-3d/1776929000000-AddReviewsAndAnnotations.ts`
+- Creates `model_3d.model_comment` with FK → `model_3d`, `users.user`, self-ref `parent_id`; index on `model_id`
+- Creates `model_3d.model_annotation` with FK → `model_3d`; index on `model_id`
+- `down()` drops in reverse order
+
+### `reviews` Module — `server/src/modules/reviews/`
+- **DTOs**: `CommentCreateRequestDto`, `CommentUpdateRequestDto`, `CommentResponseDto`
+- **Repository**: `ModelCommentRepository` — `findByModelId()` (loads author+userMeta), `findById()`, `findChildrenOf()`
+- **Mapper**: `CommentMapper.toResponse()` — maps `posX/Y/Z` to `pos: {x,y,z}|null`, includes `author` with avatar
+- **Service**: `getComments()` / `addComment()` check model visibility — public: open; non-public: requires auth + workspace membership (or model ownership for personal models); `updateComment()` / `deleteComment()` require authorship or workspace `editor` role; delete cascades soft-delete to children
+- **Controller**: `GET /models-3d/:modelId/comments` — `@Public()` + `@OptionalUser()`; `POST/PATCH/DELETE` — `@Roles([User])`
+
+### `annotations` Module — `server/src/modules/annotations/`
+- **DTOs**: `AnnotationCreateRequestDto`, `AnnotationUpdateRequestDto`, `AnnotationResponseDto`, `AnnotationReorderRequestDto`
+- **Repository**: `ModelAnnotationRepository` — `findByModelId()` ordered by `order ASC, createdAt ASC`
+- **Service**: `getAnnotations()` — `@Public()`, only existence check (404); write operations require workspace `editor` role (or model ownership on personal models); `reorderAnnotations()` bulk-updates `order` field by array index
+- **Controller**: `GET` — `@Public()`; `POST/PATCH/DELETE` — `@Roles([User])`; `PUT /reorder` — `@Roles([User])`
+
+### App Registration
+- `ReviewsModule` and `AnnotationsModule` added to `app.module.ts` imports
+
+### Decisions
+- `WorkspacesModule` already exported `WorkspaceMemberRepository` — no change needed
+- Personal model (no `workspaceId`) annotation/comment writes fall back to model-owner check
+- Comments returned as flat list — frontend threads by `parentId`
+- No pagination for comments on MVP
+
+### Verification
+- `cd server && npm run build` — 0 errors
+- `cd server && npm run lint` — 0 errors, 0 warnings
+
 

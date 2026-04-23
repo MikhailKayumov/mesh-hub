@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtAuthGuard } from '@/guards/auth/jwt-auth.guard';
 import { ThrottlerBehindProxyGuard } from '@/guards/throttler-behind-proxy.guard';
 import { CookiesInterceptor } from '@/interceptors/cookies.interceptor';
+import { AnnotationsModule } from '@/modules/annotations/annotations.module';
 import { ApiKeysModule } from '@/modules/api-keys/api-keys.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { ConfigModule } from '@/modules/config/config.module';
@@ -16,6 +17,7 @@ import { Models3dModule } from '@/modules/models-3d/models-3d.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { OrganizationsModule } from '@/modules/organizations/organizations.module';
 import { ResourcesModule } from '@/modules/resources/resources.module';
+import { ReviewsModule } from '@/modules/reviews/reviews.module';
 import { UserModule } from '@/modules/user/user.module';
 import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
 
@@ -41,6 +43,8 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
     WorkspacesModule,
     ApiKeysModule,
     EmbedModule,
+    ReviewsModule,
+    AnnotationsModule,
   ],
   providers: [
     {

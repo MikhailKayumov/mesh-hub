@@ -33,6 +33,8 @@ export const Models3DSchemaTables = {
   Model3D: 'model_3d',
   Model3DFile: 'model_3d_file',
   Model3DCategories: 'model_3d_categories',
+  ModelComment: 'model_comment',
+  ModelAnnotation: 'model_annotation',
 } as const;
 
 export const OrganizationsSchemaTables = {

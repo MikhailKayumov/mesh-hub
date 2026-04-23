@@ -15,6 +15,31 @@ Always read the relevant sub-system AGENTS file before touching code in that wor
 
 ---
 
+## Copilot Customization Map
+
+Use these files together; avoid duplicating large lists across documents.
+
+| File | Purpose |
+|---|---|
+| [`.github/copilot-instructions.md`](.github/copilot-instructions.md) | Repository-wide Copilot rules and path-specific instruction index |
+| [`.github/instructions/`](.github/instructions/) | Path-specific instruction files with `applyTo` targeting |
+| [`.github/agents/README.md`](.github/agents/README.md) | Installed custom agents catalog and usage examples |
+| [`.github/skills/README.md`](.github/skills/README.md) | Installed skills catalog and slash-command quick start |
+
+## Customization Precedence
+
+1. Architecture and domain constraints in this AGENTS file and subsystem AGENTS files are the source of truth.
+2. Repository-wide and path-specific Copilot instructions provide operational guidance.
+3. Agents and skills are task accelerators and must not override architecture invariants or established conventions.
+
+## Maintenance Rule
+
+- When adding or removing agents, update `.github/agents/README.md`.
+- When adding or removing skills, update `.github/skills/README.md`.
+- Keep discoverability links in `README.md` and `.github/copilot-instructions.md` in sync with current catalogs.
+
+---
+
 ## Monorepo Layout
 
 ```

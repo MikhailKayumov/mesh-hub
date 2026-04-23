@@ -2,6 +2,10 @@
 
 A full-stack web platform for uploading, browsing, and interactively viewing 3D models (`.glb` / GLTF format) in the browser.
 
+Custom Copilot agents for this repository are listed in [.github/agents/README.md](.github/agents/README.md).
+Custom Copilot instructions are defined in [.github/copilot-instructions.md](.github/copilot-instructions.md) and [.github/instructions](.github/instructions).
+Custom Copilot skills are indexed in [.github/skills/README.md](.github/skills/README.md).
+
 ---
 
 ## Repository Structure

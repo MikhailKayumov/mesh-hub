@@ -32,6 +32,11 @@ export const RouterPaths = {
   OrgCreate: 'create',
   WorkspaceSeg: 'workspace',
   WorkspaceId: ':workspaceId',
+
+  // embed
+  Embed: 'embed',
+  EmbedModelId: ':modelId',
+  EmbedProjectId: ':projectId',
 } as const;
 
 export type RouterPathName = keyof typeof RouterPaths;

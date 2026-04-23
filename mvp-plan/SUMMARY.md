@@ -18,7 +18,7 @@
 | STEP-8 | 2 | S3 File Strategy | DONE | |
 | STEP-9 | 3 | API Keys + Embed Entities | DONE | |
 | STEP-10 | 3 | Embed Module Backend | DONE | |
-| STEP-11 | 3 | Embed Frontend | TODO | |
+| STEP-11 | 3 | Embed Frontend | DONE | |
 | STEP-12 | 4 | Reviews + Annotations Backend | TODO | |
 | STEP-13 | 4 | Reviews Frontend + Viewer Extensions | TODO | |
 | STEP-14 | 5 | Versions (Full Stack) | TODO | |
@@ -40,6 +40,7 @@
 | STEP-8 | 2026-04-22 | AWS SDK v3, AES-256-CBC encryption util, S3FileStorageStrategy, FilesService.getStrategyForOrg, presigned URL redirect, admin S3 config endpoint + frontend UI |
 | STEP-9 | 2026-04-23 | embed schema + 4 entities (ApiKey, EmbedProject, EmbedDomainWhitelist, ModelViewLog), InitEmbed migration, full api-keys module with ApiKeyGuard |
 | STEP-10 | 2026-04-23 | Full embed module — EmbedProject CRUD, domain whitelist management, public viewer endpoint with ApiKeyGuard + origin validation, fire-and-forget view logging, 30-day analytics |
+| STEP-11 | 2026-04-23 | Embed frontend — logo upload backend (FsStrategy + S3Strategy + FilesService + EmbedService), embed API layer (embed.ts + dto.ts + tags + urls), EmbedViewer standalone page, EmbedProject management page (domains/branding/analytics), OrgDashboard Embed tab, @mantine/charts for analytics chart |
 
 ## Known Issues / Decisions Made
 
@@ -524,4 +525,89 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - Empty domain whitelist = reject all origins — operator must configure at least one domain before the embed endpoint works in a browser
 - ApiKey authorization is org-scoped only — any active key for the org authorizes any embed project in that org (no key-to-project binding on MVP)
 - `updateProject` uses `'modelId' in dto` check to allow explicitly setting `modelId: null` (unlink model) vs. omitting the field entirely
+
+## STEP-11 SUMMARY
+
+### Backend — Logo Upload
+
+**`server/src/modules/files/types.ts`**
+- Added `saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string>` to `IFileStorageStrategy`
+
+**`server/src/modules/config/config.service.ts`**
+- Added `embed: resolve(root, 'embed')` to `fsConfig.folders` — initialised automatically by `FsFileStorageStrategy.init()`
+
+**`server/src/modules/files/strategies/fs.files.strategy.ts`**
+- Added `saveEmbedLogo()`: creates `files/embed/<projectId>/` directory, writes `logo<ext>`, returns relative path `<projectId>/logo<ext>`
+- Added private helper follows same pattern as `getAvatarFilePath`
+
+**`server/src/modules/files/strategies/s3.files.strategy.ts`**
+- Added `saveEmbedLogo()`: uploads to S3 key `embed/<projectId>/logo<ext>`, returns key
+- Added `import { extname } from 'path'` (was missing in S3 strategy)
+
+**`server/src/modules/files/files.service.ts`**
+- Added `saveEmbedLogo(projectId, file)` delegating to `localStrategy` (always local, same as avatars/thumbnails)
+
+**`server/src/modules/embed/services/embed.service.ts`**
+- Injected `FilesService`
+- Added `uploadProjectLogo(projectId, user, file)`: saves logo, sets `brandingConfig.logoUrl = /api/embed/projects/:id/logo`, saves, re-fetches, maps
+- Added `streamProjectLogo(projectId, res)`: reads `files/embed/<projectId>/logo*`, returns `StreamableFile`
+- Added `import { createReadStream } from 'fs'`, `import { readdir } from 'fs/promises'`, `import { join } from 'path'`, `import { StreamableFile } from '@nestjs/common'`, `import type { Response } from 'express'`
+
+**`server/src/modules/embed/controllers/embed.controller.ts`**
+- Added `POST /projects/:id/logo` — multipart file upload, returns `EmbedProjectResponseDto`
+- Added `GET /projects/:id/logo` — `@Public()`, `@Header('Cache-Control', 'max-age=3600')`, returns `StreamableFile`
+- Added imports: `FileInterceptor`, `Header`, `Res`, `StreamableFile`, `UploadedFile`, `UseInterceptors`, `ApiBody`, `ApiConsumes`
+
+### Frontend — API Layer
+
+**`client/src/app/api/dto.ts`**
+- Added 8 new interfaces: `BrandingConfigDto`, `EmbedProjectResponseDto`, `EmbedProjectCreateRequestDto`, `EmbedProjectUpdateRequestDto`, `EmbedViewerResponseDto`, `DailyViewDto`, `OriginViewDto`, `ViewAnalyticsResponseDto`
+
+**`client/src/app/api/tags.ts`**
+- Added `EmbedProjects: 'EmbedProjects'` and `EmbedProject: 'EmbedProject'`
+
+**`client/src/app/api/urls.ts`**
+- Added `Embed: 'embed'`
+
+**`client/src/app/api/embed.ts`** (new)
+- 8 endpoints: `embedViewer`, `embedProjects`, `createEmbedProject`, `updateEmbedProject`, `addEmbedDomain`, `removeEmbedDomain`, `embedAnalytics`, `uploadEmbedLogo`
+- `embedViewer` passes `X-Api-Key` header directly (public endpoint, no cookie auth)
+
+### Frontend — Router
+
+**`client/src/shared/router/paths.ts`**
+- Added `Embed`, `EmbedModelId`, `EmbedProjectId`
+
+**`client/src/app/router/index.tsx`**
+- Added standalone `embed/:modelId` route → `EmbedViewerPage`
+- Added org-scoped `:orgId/embed/:projectId` route inside `BasePage` → `EmbedProjectPage`
+
+### Frontend — Pages
+
+**`client/src/pages/EmbedViewer/`** (new)
+- Reads `modelId` from params, `apiKey` from search params
+- Calls `useEmbedViewerQuery`, renders `Model3DViewer` full-screen
+- Shows "Powered by MeshHub" badge if `brandingConfig.showBadge`
+- Error/loading states handled
+
+**`client/src/pages/EmbedProject/`** (new)
+- Fetches project from `useEmbedProjectsQuery` (by id filter)
+- 3 tabs: Домены (add/remove), Брендинг (logo upload, showBadge, primaryColor), Аналитика (total views + `@mantine/charts` BarChart + top origins)
+
+### Frontend — OrgDashboard
+
+**`client/src/pages/OrgDashboard/OrgDashboard.tsx`**
+- Added "Embed" tab with project list (cards navigating to EmbedProject page)
+- Added "Создать embed-проект" modal with `useCreateEmbedProjectMutation`
+
+### Dependencies
+
+**`@mantine/charts` + `recharts`**
+- Installed for analytics `BarChart` component in EmbedProjectPage
+
+### Verification
+- `cd server && npm run build` — 0 errors
+- `cd server && npm run lint` — 0 errors, 0 warnings
+- `cd client && npm run tscheck` — 0 errors
+- `cd client && npx eslint src/pages/EmbedProject/ src/pages/EmbedViewer/ src/app/api/embed.ts src/app/router/index.tsx src/pages/OrgDashboard/OrgDashboard.tsx` — 0 errors
 

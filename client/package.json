@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@mantine/carousel": "9.1.0",
+    "@mantine/charts": "^9.1.0",
     "@mantine/core": "9.1.0",
     "@mantine/dates": "9.1.0",
     "@mantine/dropzone": "9.1.0",
@@ -47,6 +48,7 @@
     "react-imask": "7.6.1",
     "react-redux": "9.2.0",
     "react-router-dom": "7.14.2",
+    "recharts": "^3.8.1",
     "redux-persist": "6.0.0",
     "three": "0.184.0",
     "ua-parser-js": "2.0.9",

@@ -21,6 +21,7 @@ export interface IFileStorageStrategy {
   save3DModelThumbnailFromBase64(id: string, thumbnail: string): Promise<string>;
   delete3DModel(id: string, silent: boolean): Promise<void>;
   save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string>;
+  saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string>;
   /**
    * Returns a URL that can be used to access the file.
    * - FsFileStorageStrategy returns `null` (file is served locally).

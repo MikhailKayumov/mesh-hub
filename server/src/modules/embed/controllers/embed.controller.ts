@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Headers,
   HttpCode,
   HttpStatus,
@@ -12,10 +13,15 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  StreamableFile,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import { UserRoles } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
@@ -98,6 +104,35 @@ export class EmbedController {
     @User() user: UserEntity,
   ): Promise<ViewAnalyticsResponseDto> {
     return this.embedService.getAnalytics(id, user);
+  }
+
+  // ---- Logo upload / serve (must be before /:modelId) ----
+
+  @Post('projects/:id/logo')
+  @Roles([UserRoles.User])
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
+  @ApiOkResponse({ type: EmbedProjectResponseDto })
+  public uploadLogo(
+    @Param('id', ParseUUIDPipe) id: string,
+    @User() user: UserEntity,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<EmbedProjectResponseDto> {
+    return this.embedService.uploadProjectLogo(id, user, file);
+  }
+
+  @Get('projects/:id/logo')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'max-age=3600')
+  @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
+  public getProjectLogo(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    return this.embedService.streamProjectLogo(id, res);
   }
 
   // ---- Public embed viewer endpoint (must be last to avoid routing collision) ----

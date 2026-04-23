@@ -19,8 +19,9 @@ import {
 } from '@mantine/core';
 import { IconDots, IconTrash, IconUserEdit } from '@tabler/icons-react';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { OrgMemberRole, StorageBackend } from '@/app/api/dto.ts';
+import { useEmbedProjectsQuery, useCreateEmbedProjectMutation } from '@/app/api/embed.ts';
 import {
     useOrganizationQuery,
     useOrgMembersQuery,
@@ -52,18 +53,21 @@ const INVITABLE_ROLES = [
 
 export function OrgDashboardPage() {
     const { orgId } = useParams<{ orgId: string }>();
+    const navigate = useNavigate();
     const { data: currentUser } = useCurrentUserQuery();
 
     const { data: org, isLoading: orgLoading } = useOrganizationQuery(orgId ?? '', { skip: !orgId });
     const { data: membersPage, isLoading: membersLoading } = useOrgMembersQuery({ id: orgId ?? '' }, { skip: !orgId });
     const { data: workspaces, isLoading: wsLoading } = useMyWorkspacesQuery({ orgId: orgId ?? '' }, { skip: !orgId });
     const { data: subscriptionDetail } = useGetOrgSubscriptionQuery(orgId ?? '', { skip: !orgId });
+    const { data: embedProjects, isLoading: embedLoading } = useEmbedProjectsQuery(orgId ?? '', { skip: !orgId });
 
     const [inviteOrgMember, { isLoading: inviting }] = useInviteOrgMemberMutation();
     const [changeOrgMemberRole] = useChangeOrgMemberRoleMutation();
     const [removeOrgMember] = useRemoveOrgMemberMutation();
     const [createWorkspace, { isLoading: creatingWs }] = useCreateWorkspaceMutation();
     const [updateStorageConfig, { isLoading: savingStorage }] = useUpdateOrgStorageConfigMutation();
+    const [createEmbedProject, { isLoading: creatingEmbed }] = useCreateEmbedProjectMutation();
 
     // Invite modal state
     const [inviteOpen, setInviteOpen] = useState(false);
@@ -74,6 +78,10 @@ export function OrgDashboardPage() {
     const [wsModalOpen, setWsModalOpen] = useState(false);
     const [wsName, setWsName] = useState('');
 
+    // Create embed project modal state
+    const [embedModalOpen, setEmbedModalOpen] = useState(false);
+    const [embedName, setEmbedName] = useState('');
+
     // Storage config state
     const [storageBackend, setStorageBackend] = useState<StorageBackend>(StorageBackend.Local);
     const [s3Region, setS3Region] = useState('');
@@ -82,9 +90,7 @@ export function OrgDashboardPage() {
     const [s3SecretKey, setS3SecretKey] = useState('');
     const [s3Endpoint, setS3Endpoint] = useState('');
 
-    const isOwner = (membersPage?.data ?? []).some(
-        (m) => m.userId === currentUser?.id && m.role === OrgMemberRole.Owner,
-    );
+    const isOwner = (membersPage?.data ?? []).some((m) => m.userId === currentUser?.id && m.role === OrgMemberRole.Owner);
 
     async function handleInvite() {
         if (!orgId || !inviteEmail.trim()) return;
@@ -99,6 +105,13 @@ export function OrgDashboardPage() {
         await createWorkspace({ name: wsName.trim(), orgId });
         setWsModalOpen(false);
         setWsName('');
+    }
+
+    async function handleCreateEmbedProject() {
+        if (!orgId || !embedName.trim()) return;
+        await createEmbedProject({ orgId, name: embedName.trim() });
+        setEmbedModalOpen(false);
+        setEmbedName('');
     }
 
     async function handleSaveStorageConfig() {
@@ -168,6 +181,7 @@ export function OrgDashboardPage() {
                 <Tabs.List>
                     <Tabs.Tab value="members">Участники</Tabs.Tab>
                     <Tabs.Tab value="workspaces">Рабочие пространства</Tabs.Tab>
+                    <Tabs.Tab value="embed">Embed</Tabs.Tab>
                     {isOwner && <Tabs.Tab value="storage">Хранилище</Tabs.Tab>}
                 </Tabs.List>
 
@@ -287,6 +301,45 @@ export function OrgDashboardPage() {
                     </Stack>
                 </Tabs.Panel>
 
+                {/* Embed projects tab */}
+                <Tabs.Panel value="embed" pt="md">
+                    <Stack gap="sm">
+                        <Group justify="flex-end">
+                            <Button size="sm" onClick={() => setEmbedModalOpen(true)}>
+                                Создать embed-проект
+                            </Button>
+                        </Group>
+                        {embedLoading ? (
+                            <Center>
+                                <Loader size="sm" />
+                            </Center>
+                        ) : (embedProjects ?? []).length === 0 ? (
+                            <Center py="xl">
+                                <Text c="dimmed">Нет embed-проектов</Text>
+                            </Center>
+                        ) : (
+                            <Group gap="md">
+                                {(embedProjects ?? []).map((ep) => (
+                                    <Card
+                                        key={ep.id}
+                                        p="md"
+                                        withBorder
+                                        style={{ cursor: 'pointer', minWidth: 200 }}
+                                        onClick={() =>
+                                            navigate(buildAbsolutePath([RouterPaths.Org, orgId ?? '', RouterPaths.Embed, ep.id]))
+                                        }
+                                    >
+                                        <Text fw={600}>{ep.name}</Text>
+                                        <Text size="xs" c="dimmed">
+                                            {ep.allowedOrigins.length} доменов
+                                        </Text>
+                                    </Card>
+                                ))}
+                            </Group>
+                        )}
+                    </Stack>
+                </Tabs.Panel>
+
                 {/* Storage settings tab — Owner only */}
                 {isOwner && (
                     <Tabs.Panel value="storage" pt="md">
@@ -303,11 +356,35 @@ export function OrgDashboardPage() {
                             />
                             {storageBackend === StorageBackend.S3 && (
                                 <>
-                                    <TextInput label="Регион" placeholder="us-east-1" value={s3Region} onChange={(e) => setS3Region(e.currentTarget.value)} />
-                                    <TextInput label="Бакет" placeholder="my-bucket" value={s3Bucket} onChange={(e) => setS3Bucket(e.currentTarget.value)} />
-                                    <TextInput label="Access Key ID" value={s3AccessKey} onChange={(e) => setS3AccessKey(e.currentTarget.value)} />
-                                    <TextInput label="Secret Access Key" type="password" value={s3SecretKey} onChange={(e) => setS3SecretKey(e.currentTarget.value)} />
-                                    <TextInput label="Эндпоинт (опционально)" placeholder="https://s3.example.com" value={s3Endpoint} onChange={(e) => setS3Endpoint(e.currentTarget.value)} />
+                                    <TextInput
+                                        label="Регион"
+                                        placeholder="us-east-1"
+                                        value={s3Region}
+                                        onChange={(e) => setS3Region(e.currentTarget.value)}
+                                    />
+                                    <TextInput
+                                        label="Бакет"
+                                        placeholder="my-bucket"
+                                        value={s3Bucket}
+                                        onChange={(e) => setS3Bucket(e.currentTarget.value)}
+                                    />
+                                    <TextInput
+                                        label="Access Key ID"
+                                        value={s3AccessKey}
+                                        onChange={(e) => setS3AccessKey(e.currentTarget.value)}
+                                    />
+                                    <TextInput
+                                        label="Secret Access Key"
+                                        type="password"
+                                        value={s3SecretKey}
+                                        onChange={(e) => setS3SecretKey(e.currentTarget.value)}
+                                    />
+                                    <TextInput
+                                        label="Эндпоинт (опционально)"
+                                        placeholder="https://s3.example.com"
+                                        value={s3Endpoint}
+                                        onChange={(e) => setS3Endpoint(e.currentTarget.value)}
+                                    />
                                 </>
                             )}
                             <Button onClick={handleSaveStorageConfig} loading={savingStorage} mt="xs">
@@ -349,6 +426,20 @@ export function OrgDashboardPage() {
                         onChange={(e) => setWsName(e.currentTarget.value)}
                     />
                     <Button onClick={handleCreateWorkspace} loading={creatingWs}>
+                        Создать
+                    </Button>
+                </Stack>
+            </Modal>
+            {/* Create embed project modal */}
+            <Modal opened={embedModalOpen} onClose={() => setEmbedModalOpen(false)} title="Создать embed-проект">
+                <Stack gap="sm">
+                    <TextInput
+                        label="Название"
+                        placeholder="My Embed"
+                        value={embedName}
+                        onChange={(e) => setEmbedName(e.currentTarget.value)}
+                    />
+                    <Button onClick={handleCreateEmbedProject} loading={creatingEmbed}>
                         Создать
                     </Button>
                 </Stack>

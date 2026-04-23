@@ -88,6 +88,15 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
     return entryFile.relativePath;
   }
 
+  public async saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string> {
+    const ext = extname(file.originalname);
+    const fileName = `logo${ext}`;
+    const dir = resolve(process.cwd(), this.configService.fsConfig.folders.embed, projectId);
+    await mkdir(dir, { recursive: true });
+    await writeFile(resolve(dir, fileName), file.buffer);
+    return `${projectId}/${fileName}`;
+  }
+
   private getAvatarFilePath(path: string): string {
     return resolve(process.cwd(), this.configService.fsConfig.folders.avatars, path);
   }

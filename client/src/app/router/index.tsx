@@ -102,6 +102,12 @@ const routes: RouteObject[] = [
               Component: (await import('@/pages/OrgDashboard/WorkspaceDashboard')).WorkspaceDashboardPage,
             }),
           },
+          {
+            path: `${RouterPaths.OrgId}/${RouterPaths.Embed}/${RouterPaths.EmbedProjectId}`,
+            lazy: async () => ({
+              Component: (await import('@/pages/EmbedProject')).EmbedProjectPage,
+            }),
+          },
         ],
       },
     ],
@@ -116,6 +122,15 @@ const routes: RouteObject[] = [
       {
         path: RouterPaths.Id,
         lazy: async () => ({ Component: (await import('@/pages/Editor')).EditorPage }),
+      },
+    ],
+  },
+  {
+    path: RouterPaths.Embed,
+    children: [
+      {
+        path: RouterPaths.EmbedModelId,
+        lazy: async () => ({ Component: (await import('@/pages/EmbedViewer')).EmbedViewerPage }),
       },
     ],
   },

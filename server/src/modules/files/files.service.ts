@@ -78,6 +78,10 @@ export class FilesService implements OnApplicationBootstrap {
     return this.localStrategy.save3DModelDirectory(modelId, files);
   }
 
+  public async saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string> {
+    return this.localStrategy.saveEmbedLogo(projectId, file);
+  }
+
   public async extractAndSave3DModelDirectory(modelId: string, zipFile: Express.Multer.File): Promise<string> {
     const ALLOWED_EXTENSIONS = new Set([
       '.gltf',

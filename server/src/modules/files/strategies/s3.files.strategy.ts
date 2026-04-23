@@ -1,4 +1,5 @@
 import { createReadStream } from 'fs';
+import { extname } from 'path';
 import { Readable } from 'stream';
 import {
   S3Client,
@@ -82,6 +83,20 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
       throw new Error('No .gltf or .glb entry point found in archive');
     }
     return entryFile.relativePath;
+  }
+
+  public async saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string> {
+    const ext = extname(file.originalname);
+    const key = `embed/${projectId}/logo${ext}`;
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      }),
+    );
+    return key;
   }
 
   public async save3DModelThumbnailFromBase64(modelId: string, thumbnail: string): Promise<string> {

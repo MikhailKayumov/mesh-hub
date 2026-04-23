@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { createReadStream } from 'fs';
+import { readdir } from 'fs/promises';
+import { join } from 'path';
+import { ForbiddenException, Injectable, NotFoundException, StreamableFile } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiKeyEntity } from '@/database/entities/embed/api-key.entity';
 import { OrgMemberRole, OrgMemberRoleWeights } from '@/database/entities/organizations/org-member.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
@@ -12,6 +16,7 @@ import { EmbedMapper } from '@/modules/embed/mappers/embed.mapper';
 import { EmbedDomainWhitelistRepository } from '@/modules/embed/repositories/embed-domain-whitelist.repository';
 import { EmbedProjectRepository } from '@/modules/embed/repositories/embed-project.repository';
 import { ModelViewLogRepository } from '@/modules/embed/repositories/model-view-log.repository';
+import { FilesService } from '@/modules/files/files.service';
 import { Model3dService } from '@/modules/models-3d/services/model-3d.service';
 import { OrgMemberRepository } from '@/modules/organizations/repositories/org-member.repository';
 
@@ -23,6 +28,7 @@ export class EmbedService {
     private readonly viewLogRepository: ModelViewLogRepository,
     private readonly model3dService: Model3dService,
     private readonly orgMemberRepository: OrgMemberRepository,
+    private readonly filesService: FilesService,
   ) {}
 
   public async getEmbedViewer(
@@ -158,6 +164,44 @@ export class EmbedService {
     ]);
 
     return EmbedMapper.toAnalyticsResponse(dailyViews, topOrigins, totalViews);
+  }
+
+  public async uploadProjectLogo(
+    projectId: string,
+    user: UserEntity,
+    file: Express.Multer.File,
+  ): Promise<EmbedProjectResponseDto> {
+    const project = await this.embedProjectRepository.findById(projectId);
+    if (!project) {
+      throw new NotFoundException('Embed project not found');
+    }
+
+    await this.requireMembership(project.orgId, user.id, OrgMemberRole.Editor);
+
+    await this.filesService.saveEmbedLogo(projectId, file);
+
+    const logoUrl = `/api/embed/projects/${projectId}/logo`;
+    project.brandingConfig = { ...(project.brandingConfig ?? { showBadge: true }), logoUrl };
+    await this.embedProjectRepository.save(project);
+
+    const updated = await this.embedProjectRepository.findById(projectId);
+    return EmbedMapper.toProjectResponse(updated!);
+  }
+
+  public async streamProjectLogo(projectId: string, res: Response): Promise<StreamableFile> {
+    const logoDir = join(process.cwd(), 'files', 'embed', projectId);
+    let files: string[];
+    try {
+      files = await readdir(logoDir);
+    } catch {
+      throw new NotFoundException('Logo not found');
+    }
+    const logoFile = files.find((f) => f.startsWith('logo'));
+    if (!logoFile) {
+      throw new NotFoundException('Logo not found');
+    }
+    res.set({ 'Content-Disposition': `inline; filename="${logoFile}"` });
+    return new StreamableFile(createReadStream(join(logoDir, logoFile)));
   }
 
   private async requireMembership(orgId: string, userId: string, minRole: OrgMemberRole): Promise<void> {

@@ -274,3 +274,61 @@ export interface ValidationHttpException<Property = string> {
   error: 'Bad Request';
   data: { property: Property; errors: string[] }[];
 }
+
+/**
+ * Embed
+ */
+export interface BrandingConfigDto {
+  logoUrl?: string;
+  primaryColor?: string;
+  showBadge: boolean;
+}
+
+export interface EmbedProjectResponseDto {
+  id: string;
+  orgId: string;
+  name: string;
+  modelId: string | null;
+  autoRotate: boolean;
+  brandingConfig: BrandingConfigDto | null;
+  allowedOrigins: string[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface EmbedProjectCreateRequestDto {
+  orgId: string;
+  name: string;
+  modelId?: string;
+  autoRotate?: boolean;
+}
+
+export interface EmbedProjectUpdateRequestDto {
+  name?: string;
+  modelId?: string | null;
+  autoRotate?: boolean;
+  brandingConfig?: BrandingConfigDto;
+}
+
+export interface EmbedViewerResponseDto {
+  model: Model3DResponseDto;
+  brandingConfig: BrandingConfigDto | null;
+  autoRotate: boolean;
+  allowedOrigins: string[];
+}
+
+export interface DailyViewDto {
+  date: string;
+  count: number;
+}
+
+export interface OriginViewDto {
+  origin: string;
+  count: number;
+}
+
+export interface ViewAnalyticsResponseDto {
+  dailyViews: DailyViewDto[];
+  topOrigins: OriginViewDto[];
+  totalViews: number;
+}

@@ -150,6 +150,7 @@ export class ConfigService {
       folders: {
         avatars: resolve(root, 'avatars'),
         models: resolve(root, 'models-3d'),
+        embed: resolve(root, 'embed'),
       },
     };
   }

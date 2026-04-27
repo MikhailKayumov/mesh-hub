@@ -252,6 +252,18 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
     await upload.done();
   }
 
+  public async saveSceneThumbnail(sceneId: string, buffer: Buffer): Promise<void> {
+    const key = `scenes/${sceneId}/thumbnail.png`;
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: 'image/png',
+      }),
+    );
+  }
+
   public async deleteSceneFiles(sceneId: string): Promise<void> {
     const prefix = `scenes/${sceneId}/`;
     let continuationToken: string | undefined;

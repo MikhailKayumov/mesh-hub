@@ -1,9 +1,7 @@
 import type {
   SceneCreateRequestDto,
   SceneListItemResponseDto,
-  SceneLightResponseDto,
   SceneLightUpsertDto,
-  SceneObjectResponseDto,
   SceneObjectUpsertDto,
   SceneResponseDto,
   SceneUpdateRequestDto,
@@ -42,10 +40,7 @@ export const ScenesApi = Api.injectEndpoints({
     }),
 
     updateScene: build.mutation<SceneResponseDto, { sceneId: string; body: SceneUpdateRequestDto }>({
-      invalidatesTags: (_result, _error, { sceneId }) => [
-        { type: ApiTags.Scene, id: sceneId },
-        ApiTags.Scenes,
-      ],
+      invalidatesTags: (_result, _error, { sceneId }) => [{ type: ApiTags.Scene, id: sceneId }, ApiTags.Scenes],
       query: ({ sceneId, body }) => ({
         method: 'PATCH',
         url: `${ApiUrls.Scenes}/${sceneId}`,
@@ -61,7 +56,7 @@ export const ScenesApi = Api.injectEndpoints({
       }),
     }),
 
-    addSceneObject: build.mutation<SceneObjectResponseDto, { sceneId: string; body: SceneObjectUpsertDto }>({
+    addSceneObject: build.mutation<SceneResponseDto, { sceneId: string; body: SceneObjectUpsertDto }>({
       invalidatesTags: (_result, _error, { sceneId }) => [{ type: ApiTags.Scene, id: sceneId }],
       query: ({ sceneId, body }) => ({
         method: 'POST',
@@ -71,7 +66,7 @@ export const ScenesApi = Api.injectEndpoints({
     }),
 
     updateSceneObject: build.mutation<
-      SceneObjectResponseDto,
+      SceneResponseDto,
       { sceneId: string; objectId: string; body: Partial<SceneObjectUpsertDto> }
     >({
       invalidatesTags: (_result, _error, { sceneId }) => [{ type: ApiTags.Scene, id: sceneId }],
@@ -90,7 +85,7 @@ export const ScenesApi = Api.injectEndpoints({
       }),
     }),
 
-    addSceneLight: build.mutation<SceneLightResponseDto, { sceneId: string; body: SceneLightUpsertDto }>({
+    addSceneLight: build.mutation<SceneResponseDto, { sceneId: string; body: SceneLightUpsertDto }>({
       invalidatesTags: (_result, _error, { sceneId }) => [{ type: ApiTags.Scene, id: sceneId }],
       query: ({ sceneId, body }) => ({
         method: 'POST',
@@ -100,7 +95,7 @@ export const ScenesApi = Api.injectEndpoints({
     }),
 
     updateSceneLight: build.mutation<
-      SceneLightResponseDto,
+      SceneResponseDto,
       { sceneId: string; lightId: string; body: Partial<SceneLightUpsertDto> }
     >({
       invalidatesTags: (_result, _error, { sceneId }) => [{ type: ApiTags.Scene, id: sceneId }],
@@ -128,15 +123,12 @@ export const ScenesApi = Api.injectEndpoints({
       }),
     }),
 
-    uploadSceneThumbnail: build.mutation<void, { sceneId: string; base64: string }>({
-      invalidatesTags: (_result, _error, { sceneId }) => [
-        { type: ApiTags.Scene, id: sceneId },
-        ApiTags.Scenes,
-      ],
-      query: ({ sceneId, base64 }) => ({
+    uploadSceneThumbnail: build.mutation<SceneResponseDto, { sceneId: string; thumbnail: string }>({
+      invalidatesTags: (_result, _error, { sceneId }) => [{ type: ApiTags.Scene, id: sceneId }, ApiTags.Scenes],
+      query: ({ sceneId, thumbnail }) => ({
         method: 'POST',
         url: `${ApiUrls.Scenes}/${sceneId}/thumbnail`,
-        body: { base64 },
+        body: { thumbnail },
       }),
     }),
   }),

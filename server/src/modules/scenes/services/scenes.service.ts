@@ -13,7 +13,7 @@ import { WorkspaceMemberRepository } from '@/modules/workspaces/repositories/wor
 import { SceneLightUpsertDto } from '../dto/scene-light.upsert.dto';
 import { SceneObjectUpsertDto } from '../dto/scene-object.upsert.dto';
 import { SceneCreateRequestDto } from '../dto/scene.create.request.dto';
-import { SceneResponseDto } from '../dto/scene.response.dto';
+import { SceneListItemResponseDto, SceneResponseDto } from '../dto/scene.response.dto';
 import { SceneUpdateRequestDto } from '../dto/scene.update.request.dto';
 import { SceneMapper } from '../mappers/scene.mapper';
 import { SceneLightRepository } from '../repositories/scene-light.repository';
@@ -48,15 +48,15 @@ export class ScenesService {
     return SceneMapper.toResponse(saved);
   }
 
-  public async listScenes(workspaceId: string, user: UserEntity): Promise<SceneResponseDto[]> {
+  public async listScenes(workspaceId: string, user: UserEntity): Promise<SceneListItemResponseDto[]> {
     await this.requireMember(workspaceId, user.id);
 
     const scenes = await this.sceneRepository.find({
       where: { workspaceId },
-      relations: { objects: true, lights: true },
+      relations: { objects: true },
       order: { createdAt: 'DESC' },
     });
-    return scenes.map(SceneMapper.toResponse);
+    return scenes.map(SceneMapper.toListItemResponse);
   }
 
   public async getScene(sceneId: string, user: UserEntity): Promise<SceneResponseDto> {
@@ -246,13 +246,9 @@ export class ScenesService {
     await this.requireMember(scene.workspaceId, user.id);
 
     const base64Data = thumbnail.replace(/^data:image\/png;base64,/, '');
-    const orgId = await this.resolveOrgId(scene.workspaceId);
-    const strategy = await this.filesService.getStrategyForOrg(orgId);
-
-    // Build a pseudo-multer file and delegate via strategy or save directly
     const buffer = Buffer.from(base64Data, 'base64');
-    const pseudoFile = { buffer, originalname: 'thumbnail.png', mimetype: 'image/png' } as Express.Multer.File;
-    await strategy.saveSceneHdri(sceneId + '/thumbnail', pseudoFile);
+    const orgId = await this.resolveOrgId(scene.workspaceId);
+    await this.filesService.saveSceneThumbnail(orgId, sceneId, buffer);
 
     scene.thumbnailPath = `scenes/${sceneId}/thumbnail.png`;
     await this.sceneRepository.save(scene);
@@ -272,7 +268,7 @@ export class ScenesService {
   private async loadSceneWithRelations(sceneId: string): Promise<SceneEntity> {
     const scene = await this.sceneRepository.findOne({
       where: { id: sceneId },
-      relations: { objects: true, lights: true },
+      relations: { objects: { model: { file: true } }, lights: true },
     });
     if (!scene) throw new NotFoundException('Scene not found');
     return scene;

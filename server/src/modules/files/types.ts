@@ -38,6 +38,8 @@ export interface IFileStorageStrategy {
   copyVersionToRoot(modelId: string, versionId: string, entryFile: string | undefined): Promise<void>;
   /** Save HDRI environment file for a scene. Stored as scenes/<sceneId>/environment.hdr */
   saveSceneHdri(sceneId: string, file: Express.Multer.File): Promise<void>;
+  /** Save a PNG thumbnail for a scene. Stored as scenes/<sceneId>/thumbnail.png */
+  saveSceneThumbnail(sceneId: string, buffer: Buffer): Promise<void>;
   /** Delete all files associated with a scene (HDRI, thumbnail, etc.). */
   deleteSceneFiles(sceneId: string): Promise<void>;
 }

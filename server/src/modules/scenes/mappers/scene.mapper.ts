@@ -1,7 +1,12 @@
 import { SceneLightEntity } from '@/database/entities/scenes/scene-light.entity';
 import { SceneObjectEntity } from '@/database/entities/scenes/scene-object.entity';
 import { SceneEntity } from '@/database/entities/scenes/scene.entity';
-import { SceneLightResponseDto, SceneObjectResponseDto, SceneResponseDto } from '../dto/scene.response.dto';
+import {
+  SceneListItemResponseDto,
+  SceneLightResponseDto,
+  SceneObjectResponseDto,
+  SceneResponseDto,
+} from '../dto/scene.response.dto';
 
 export class SceneMapper {
   public static toResponse(entity: SceneEntity): SceneResponseDto {
@@ -19,10 +24,26 @@ export class SceneMapper {
     };
   }
 
+  public static toListItemResponse(entity: SceneEntity): SceneListItemResponseDto {
+    return {
+      id: entity.id,
+      workspaceId: entity.workspaceId,
+      name: entity.name,
+      description: entity.description,
+      thumbnailPath: entity.thumbnailPath,
+      objectCount: (entity.objects ?? []).length,
+      createdAt: entity.createdAt,
+    };
+  }
+
   public static toObjectResponse(obj: SceneObjectEntity): SceneObjectResponseDto {
     return {
       id: obj.id,
-      modelId: obj.modelId,
+      model: {
+        id: obj.model.id,
+        name: obj.model.name,
+        file: { entryFile: obj.model.file.entryFile },
+      },
       posX: obj.posX,
       posY: obj.posY,
       posZ: obj.posZ,

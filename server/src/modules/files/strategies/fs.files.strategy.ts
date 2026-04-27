@@ -174,6 +174,12 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
     }
   }
 
+  public async saveSceneThumbnail(sceneId: string, buffer: Buffer): Promise<void> {
+    const dir = this.getSceneDirPath(sceneId);
+    await mkdir(dir, { recursive: true });
+    await writeFile(resolve(dir, 'thumbnail.png'), buffer);
+  }
+
   public async deleteSceneFiles(sceneId: string): Promise<void> {
     await rm(this.getSceneDirPath(sceneId), { recursive: true, force: true });
   }

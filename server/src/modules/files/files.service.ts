@@ -138,6 +138,11 @@ export class FilesService implements OnApplicationBootstrap {
     return strategy.saveSceneHdri(sceneId, file);
   }
 
+  public async saveSceneThumbnail(orgId: string, sceneId: string, buffer: Buffer): Promise<void> {
+    const strategy = await this.getStrategyForOrg(orgId);
+    return strategy.saveSceneThumbnail(sceneId, buffer);
+  }
+
   public async deleteSceneFiles(orgId: string, sceneId: string): Promise<void> {
     const strategy = await this.getStrategyForOrg(orgId);
     return strategy.deleteSceneFiles(sceneId);

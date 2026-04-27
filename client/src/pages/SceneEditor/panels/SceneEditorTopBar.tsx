@@ -19,7 +19,7 @@ export function SceneEditorTopBar({ scene, captureScreenshot }: Props) {
     const handleCapture = async () => {
         const base64 = captureScreenshot();
         if (!base64) return;
-        await uploadThumbnail({ sceneId: scene.id, base64 }).unwrap().catch(() => { });
+        await uploadThumbnail({ sceneId: scene.id, thumbnail: base64 }).unwrap().catch(() => { });
     };
 
     return (

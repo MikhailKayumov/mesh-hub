@@ -34,7 +34,7 @@ import { User } from '@/decorators/user/user.decorator';
 import { SceneLightUpsertDto } from '../dto/scene-light.upsert.dto';
 import { SceneObjectUpsertDto } from '../dto/scene-object.upsert.dto';
 import { SceneCreateRequestDto } from '../dto/scene.create.request.dto';
-import { SceneResponseDto } from '../dto/scene.response.dto';
+import { SceneListItemResponseDto, SceneResponseDto } from '../dto/scene.response.dto';
 import { SceneUpdateRequestDto } from '../dto/scene.update.request.dto';
 import { ScenesService } from '../services/scenes.service';
 
@@ -56,11 +56,11 @@ export class ScenesController {
   @Get()
   @Roles([UserRoles.User])
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: [SceneResponseDto] })
+  @ApiOkResponse({ type: [SceneListItemResponseDto] })
   public async listScenes(
     @User() user: UserEntity,
     @Query('workspaceId', ParseUUIDPipe) workspaceId: string,
-  ): Promise<SceneResponseDto[]> {
+  ): Promise<SceneListItemResponseDto[]> {
     return this.scenesService.listScenes(workspaceId, user);
   }
 

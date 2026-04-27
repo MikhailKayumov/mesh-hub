@@ -2,12 +2,28 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SceneConfig } from '@/database/entities/scenes/scene-config.type';
 import { LightType } from '@/database/entities/scenes/scene-light.entity';
 
-export class SceneObjectResponseDto {
+export class SceneObjectFileDto {
+  @ApiProperty({ nullable: true })
+  public entryFile?: string;
+}
+
+export class SceneObjectModelDto {
   @ApiProperty()
   public id: string;
 
   @ApiProperty()
-  public modelId: string;
+  public name: string;
+
+  @ApiProperty({ type: SceneObjectFileDto })
+  public file: SceneObjectFileDto;
+}
+
+export class SceneObjectResponseDto {
+  @ApiProperty()
+  public id: string;
+
+  @ApiProperty({ type: SceneObjectModelDto })
+  public model: SceneObjectModelDto;
 
   @ApiProperty()
   public posX: number;
@@ -102,4 +118,27 @@ export class SceneResponseDto {
 
   @ApiProperty({ nullable: true })
   public updatedAt: Date | null;
+}
+
+export class SceneListItemResponseDto {
+  @ApiProperty()
+  public id: string;
+
+  @ApiProperty()
+  public workspaceId: string;
+
+  @ApiProperty()
+  public name: string;
+
+  @ApiProperty({ nullable: true })
+  public description: string | null;
+
+  @ApiProperty({ nullable: true })
+  public thumbnailPath: string | null;
+
+  @ApiProperty()
+  public objectCount: number;
+
+  @ApiProperty()
+  public createdAt: Date;
 }

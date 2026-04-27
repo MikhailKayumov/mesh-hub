@@ -446,6 +446,16 @@ export interface SceneLightResponseDto {
   updatedAt?: string;
 }
 
+export interface SceneObjectModelFileDto {
+  entryFile: string;
+}
+
+export interface SceneObjectModelDto {
+  id: string;
+  name: string;
+  file: SceneObjectModelFileDto;
+}
+
 export interface SceneObjectResponseDto {
   id: string;
   posX: number;
@@ -458,7 +468,7 @@ export interface SceneObjectResponseDto {
   scaleY: number;
   scaleZ: number;
   order: number;
-  model: Model3DResponseDto;
+  model: SceneObjectModelDto;
   createdAt: string;
   updatedAt?: string;
 }

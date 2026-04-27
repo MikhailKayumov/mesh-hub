@@ -6,7 +6,6 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -157,23 +156,25 @@ export class Model3dController {
   @Get('files/:modelId/thumbnail')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Header('Cache-Control', 'max-age=31536000') // 1 year
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
-  public getModels3DThumbnailFile(@Param('modelId', ParseUUIDPipe) modelId: string): StreamableFile {
+  public getModels3DThumbnailFile(
+    @Param('modelId', ParseUUIDPipe) modelId: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
     const base = resolve(process.cwd(), 'files', 'models-3d', modelId);
     const target = this.safeResolvePath(base, 'thumbnail.png');
+    res.setHeader('Cache-Control', 'max-age=31536000'); // 1 year — only on success
     return new StreamableFile(createReadStream(target));
   }
 
-  @Get('files/:modelId/versions/:versionId/*')
+  @Get('files/:modelId/versions/:versionId/*splat')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Header('Cache-Control', 'max-age=2592000') // 30 days
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
   public async getModelVersionFile(
     @Param('modelId', ParseUUIDPipe) modelId: string,
     @Param('versionId', ParseUUIDPipe) versionId: string,
-    @Param('0') fileName: string,
+    @Param('splat') fileName: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile | void> {
     const model = await this.model3dService.getModel(modelId);
@@ -190,17 +191,17 @@ export class Model3dController {
 
     const base = resolve(process.cwd(), 'files', 'models-3d', modelId, 'versions', versionId);
     const target = this.safeResolvePath(base, fileName);
+    res.setHeader('Cache-Control', 'max-age=2592000'); // 30 days — only on success
     return new StreamableFile(createReadStream(target));
   }
 
-  @Get('files/:modelId/*')
+  @Get('files/:modelId/*splat')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Header('Cache-Control', 'max-age=2592000') // 30 days
   @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
   public async getModels3DFile(
     @Param('modelId', ParseUUIDPipe) modelId: string,
-    @Param('0') fileName: string,
+    @Param('splat') fileName: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile | void> {
     const model = await this.model3dService.getModel(modelId);
@@ -217,6 +218,7 @@ export class Model3dController {
 
     const base = resolve(process.cwd(), 'files', 'models-3d', modelId);
     const target = this.safeResolvePath(base, fileName);
+    res.setHeader('Cache-Control', 'max-age=2592000'); // 30 days — only on success
     return new StreamableFile(createReadStream(target));
   }
 

@@ -1,5 +1,5 @@
 import { Button, Group, Modal, Stack, Textarea, TextInput } from '@mantine/core';
-import { useForm, zodResolver } from '@mantine/form';
+import { useForm, schemaResolver } from '@mantine/form';
 import { z } from 'zod/v4';
 import { useCreateSceneMutation } from '@/app/api/scenes.ts';
 
@@ -22,7 +22,7 @@ export function CreateSceneModal({ workspaceId, opened, onClose, onCreated }: Pr
 
     const form = useForm<FormValues>({
         initialValues: { name: '', description: '' },
-        validate: zodResolver(schema),
+        validate: schemaResolver(schema),
     });
 
     const handleSubmit = async (values: FormValues) => {

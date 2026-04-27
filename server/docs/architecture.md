@@ -43,17 +43,32 @@ HTTP Response
 AppModule
 ├── ConfigModule (global)          ← all modules inject ConfigService
 ├── NotificationsModule (global)   ← email gateway
-├── FileStorageModule (global)     ← file I/O strategy
+├── FileStorageModule (global)     ← file I/O strategy (local or S3)
 ├── ResourcesModule (global)       ← categories & CG software
 ├── TypeOrmModule (root)           ← single DB connection
 ├── ThrottlerModule (root)
 ├── ScheduleModule (root)          ← cron jobs
+├── StorageQuotaModule             ← quota checks, service-only
 ├── UserModule
 │   └── uses: FileStorageModule, NotificationsModule
 ├── AuthModule
 │   └── uses: UserModule, ConfigModule
-└── Models3dModule
-    └── uses: FileStorageModule, ResourcesModule
+├── Models3dModule
+│   └── uses: FileStorageModule, ResourcesModule
+├── ReviewsModule          ← comments + annotations
+│   └── uses: Models3dModule
+├── VersionsModule
+│   └── uses: FileStorageModule, Models3dModule
+├── OrganizationsModule
+│   └── uses: NotificationsModule, StorageQuotaModule
+├── WorkspacesModule
+│   └── uses: OrganizationsModule
+├── ApiKeysModule
+│   └── uses: OrganizationsModule
+├── EmbedModule
+│   └── uses: FileStorageModule, ApiKeysModule
+└── ScenesModule
+    └── uses: FileStorageModule, WorkspacesModule
 ```
 
 ---
@@ -107,7 +122,12 @@ Mappers are plain TypeScript classes (not NestJS providers) with methods such as
 
 ### Strategy Pattern (File Storage)
 
-`FileStorageModule` provides `FileStorageService` backed by a pluggable `IFileStorageStrategy`. The current implementation is `FsFilesStrategy` (local filesystem). To add a new backend (e.g., AWS S3), implement `IFileStorageStrategy` and inject it as the strategy provider.
+`FileStorageModule` provides `FileStorageService` backed by a pluggable `IFileStorageStrategy`.
+
+- **`FsFileStorageStrategy`** — default; stores files on the local filesystem under `server/files/`.
+- **`S3FileStorageStrategy`** — AWS S3 SDK v3; credentials and bucket config stored per-org in `org_subscription.s3_config`, encrypted with AES-256-CBC.
+
+`FilesService.getStrategyForOrg(orgId)` returns the correct strategy for an organization at runtime. File controllers pass `orgId` to the service to ensure org-scoped storage routing.
 
 ### Pagination Pattern
 
@@ -125,14 +145,18 @@ Sessions are persisted in the `auth.session` database table. A JWT access token 
 
 ## Database Schema Layout
 
-Four PostgreSQL schemas are used to organize tables:
+Eight PostgreSQL schemas are used to organize tables:
 
 | Schema | Tables |
 |---|---|
 | `auth` | `session` |
 | `users` | `user`, `user_meta`, `role`, `user_role` (join), `user_reset_password` |
 | `resources` | `cg_soft`, `category` |
-| `model_3d` | `model_3d`, `model_3d_file`, `model_3d_categories` (join) |
+| `model_3d` | `model_3d`, `model_3d_file`, `model_3d_categories` (join), `model_comment`, `model_annotation`, `model_version` |
+| `organizations` | `organization`, `org_member`, `org_subscription`, `org_invite` |
+| `workspaces` | `workspace`, `workspace_member` |
+| `embed` | `api_key`, `embed_project`, `embed_domain_whitelist`, `model_view_log` |
+| `scenes` | `scene`, `scene_object`, `scene_light` |
 
 All schema and table names are defined as constants in `src/database/constants.ts`.
 
@@ -164,13 +188,22 @@ All schema and table names are defined as constants in `src/database/constants.t
 server/files/
 ├── avatars/
 │   └── <userId>.<ext>          # e.g., abc123.jpg
-└── models-3d/
-    └── <modelId>/
-        ├── <filename>.<ext>    # .glb or .gltf
-        └── thumbnail.png       # optional
+├── models-3d/
+│   └── <modelId>/
+│       ├── <filename>.<ext>    # .glb or .gltf
+│       └── thumbnail.png       # optional
+├── scenes/
+│   └── <sceneId>/
+│       ├── hdri.hdr            # optional HDRI (max 20 MB)
+│       └── thumbnail.png       # optional
+└── embed/
+    └── logos/
+        └── <projectId>.<ext>   # embed project logo (max 1 MB)
 ```
 
 Temp uploads are stored in `files/models-3d/temp/` before being moved to the model's directory.
+
+In S3 mode the same key structure is used inside the org's S3 bucket.
 
 ---
 

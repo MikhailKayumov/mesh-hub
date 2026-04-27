@@ -17,14 +17,21 @@ src/
 │   └── store/            # configureStore (RTK Query + user slice)
 ├── entities/             # Layer: entities
 │   ├── model-3d/         # Model entity hooks (e.g. useModel3D)
+│   ├── organization/     # Organization Redux slice + selectors
 │   └── user/             # User Redux slice + store selectors
 ├── pages/                # Layer: pages
 │   ├── Auth/             # Auth layout + Login, Register, ResetPassword, NewPassword
 │   ├── Base/             # Root shell layout (wraps most routes)
 │   ├── Editor/           # Full-screen 3D model editor (standalone shell)
+│   ├── EmbedProject/     # Embed project settings page (org dashboard sub-page)
+│   ├── EmbedViewer/      # Public embed 3D viewer (API key–gated)
 │   ├── Error/            # Error display page
 │   ├── Main/             # Public model catalogue homepage
 │   ├── Models3D/         # Model list + single model detail page
+│   ├── OrgCreate/        # Create organization wizard
+│   ├── OrgDashboard/     # Organization dashboard (members, workspaces, embed, settings)
+│   ├── SceneEditor/      # Full-screen multi-object scene editor
+│   ├── Scenes/           # Scenes list (workspace-scoped)
 │   ├── User/             # User area layout + Profile, Settings, DevSandbox
 │   └── UserModels3D/     # Current user's uploaded models
 ├── shared/               # Layer: shared
@@ -37,6 +44,7 @@ src/
 │   ├── types/            # Global TypeScript types
 │   └── utils/            # Pure utility functions (date, sleep, model3d, …)
 └── widgets/              # Layer: widgets
+    ├── AnnotationManager/
     ├── Avatar/
     ├── BaseErrorBoundary/
     ├── ChangeAvatarModal/
@@ -52,10 +60,14 @@ src/
     ├── Model3DViewer/     # Three.js viewer widget (classes + React integration)
     ├── Models3DList/
     ├── NumberInputSlider/
+    ├── OrgSwitcher/
     ├── PhoneInput/
+    ├── QuotaBar/
+    ├── ReviewPanel/
     ├── SessionTable/
     ├── Upload3DModelModal/
     ├── UserSidebar/
+    ├── VersionHistory/
     └── WysiwygEditor/
 ```
 

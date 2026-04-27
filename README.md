@@ -229,9 +229,16 @@ All REST endpoints are prefixed with `/api`. Full reference: [`server/docs/api.m
 |---|---|---|
 | Auth | `/api/auth` | `POST signup`, `POST login`, `POST logout`, `POST refresh`, session CRUD |
 | User | `/api/user` | `GET/PATCH current`, avatar upload, password change, password reset |
-| 3D Models | `/api/models-3d` | CRUD, file upload, thumbnail save |
+| 3D Models | `/api/models-3d` | CRUD, file upload, thumbnail save, versions |
 | Resources | `/api/resources` | Categories list, CG software list |
-| Files | `/api/user/avatar/:fileName`, `/api/models-3d/files/:modelId/:fileName` | Static file serving |
+| Reviews | `/api/models-3d/:id/comments` | Model comments CRUD |
+| Annotations | `/api/models-3d/:id/annotations` | Model annotations CRUD + reorder |
+| Organizations | `/api/organizations` | Org CRUD, member management, invites, subscription |
+| Workspaces | `/api/workspaces` | Workspace CRUD, member management |
+| API Keys | `/api/api-keys` | Key generation, listing, revocation |
+| Embed | `/api/embed` | Embed projects, domains whitelist, analytics, logo, viewer |
+| Scenes | `/api/scenes` | Scene CRUD, objects, lights, HDRI, thumbnail |
+| Files | `/api/user/avatar/:fileName`, `/api/models-3d/files/:modelId/:fileName`, `/api/embed/projects/:id/logo`, `/api/scenes/:id/hdri` | Static file serving |
 
 Authentication is cookie-based (HttpOnly JWT). Swagger UI with full schema is available at `/swagger`.
 
@@ -239,7 +246,7 @@ Authentication is cookie-based (HttpOnly JWT). Swagger UI with full schema is av
 
 ## Database Schema
 
-PostgreSQL database `meshhub` uses four schemas:
+PostgreSQL database `meshhub` uses eight schemas:
 
 ```
 auth
@@ -249,7 +256,7 @@ users
 ├── user
 ├── user_meta
 ├── role
-├── user_role          (M:M join)
+├── user_role               (M:M join)
 └── user_reset_password
 
 resources
@@ -259,7 +266,31 @@ resources
 model_3d
 ├── model_3d
 ├── model_3d_file
-└── model_3d_categories  (M:M join)
+├── model_3d_categories     (M:M join)
+├── model_comment
+├── model_annotation
+└── model_version
+
+organizations
+├── organization
+├── org_member
+├── org_subscription
+└── org_invite
+
+workspaces
+├── workspace
+└── workspace_member
+
+embed
+├── api_key
+├── embed_project
+├── embed_domain_whitelist
+└── model_view_log
+
+scenes
+├── scene
+├── scene_object
+└── scene_light
 ```
 
 TypeORM migrations live in `server/src/database/migrations/`.
@@ -269,13 +300,18 @@ Full entity reference: [`server/docs/database.md`](server/docs/database.md)
 
 ## File Storage
 
-Uploaded files are stored under `server/files/` (mounted as `./data/files/` in Docker):
+Uploaded files are stored under `server/files/` (mounted as `./data/files/` in Docker). A pluggable strategy pattern allows swapping the local filesystem backend for AWS S3 (per-organization).
 
 | Type | Path | Size Limit | Formats |
 |---|---|---|---|
 | Avatars | `files/avatars/<userId>.<ext>` | 1 MB | PNG, JPEG, GIF, SVG, WebP, AVIF |
-| 3D Models | `files/models-3d/<modelId>/<filename>` | 3 GB | `.glb`, `.gltf` |
-| Thumbnails | `files/models-3d/<modelId>/thumbnail.png` | — | PNG |
+| 3D Models | `files/models-3d/<modelId>/<filename>` | 3 GB | `.glb`, `.gltf` (GLTF ZIPs extracted) |
+| Model Thumbnails | `files/models-3d/<modelId>/thumbnail.png` | — | PNG |
+| Scene HDRI | `files/scenes/<sceneId>/hdri.hdr` | 20 MB | `.hdr` |
+| Scene Thumbnails | `files/scenes/<sceneId>/thumbnail.png` | — | PNG |
+| Embed Logos | `files/embed/logos/<projectId>.<ext>` | 1 MB | PNG, JPEG, WebP |
+
+Full reference: [`server/docs/file-storage.md`](server/docs/file-storage.md)
 
 ---
 
@@ -311,6 +347,12 @@ Full architecture reference: [`client/docs/architecture.md`](client/docs/archite
 | `/user/models-3d` | Current user's uploads |
 | `/user/profile` | User profile |
 | `/user/settings` | Account settings |
+| `/org/create` | Create new organization |
+| `/org/:orgId` | Organization dashboard |
+| `/org/:orgId/embed/:projectId` | Embed project settings |
+| `/embed/viewer/:modelId` | Public embed viewer (API key–gated) |
+| `/scenes` | Scenes list (workspace-scoped) |
+| `/scenes/:sceneId` | Full-screen scene editor |
 
 ### 3D Viewer
 

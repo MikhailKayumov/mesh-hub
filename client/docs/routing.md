@@ -34,6 +34,16 @@ export const RouterPaths = {
 
   // editor
   Editor:             'editor',
+
+  // organization
+  Org:                'org',
+  OrgCreate:          'create',
+
+  // embed
+  Embed:              'embed',
+
+  // scenes
+  Scenes:             'scenes',
 } as const;
 ```
 
@@ -68,6 +78,16 @@ export const RouterPaths = {
 ├── /  (index)              → <Navigate to="/" />
 └── /:id                    → EditorPage (lazy)
 
+/org                        (NO BasePage shell for org dashboard)
+├── /create                 → OrgCreatePage (lazy)
+└── /:id                    → OrgDashboardPage (lazy)
+    └── /embed/:projectId   → EmbedProjectPage (lazy)
+
+/embed/:modelId             → EmbedViewerPage (lazy, Public, API key–gated)
+
+/scenes                     (BasePage shell)
+└── /:id                    → SceneEditorPage (lazy)
+
 :code?/*                    → ErrorPage  (catch-all)
 ```
 
@@ -92,6 +112,11 @@ export const RouterPaths = {
 | `/models-3d/:id` | `Model3DPage` | `BasePage` → `Models3DPage` | Yes |
 | `/editor` | redirect → `/` | — (no shell) | — |
 | `/editor/:id` | `EditorPage` | — (no shell) | Yes |
+| `/org/create` | `OrgCreatePage` | — (no shell) | Yes |
+| `/org/:id` | `OrgDashboardPage` | — (no shell) | Yes |
+| `/org/:id/embed/:projectId` | `EmbedProjectPage` | — (no shell) | Yes |
+| `/embed/:modelId` | `EmbedViewerPage` | — (no shell, public) | Yes |
+| `/scenes/:id` | `SceneEditorPage` | `BasePage` | Yes |
 | `/*` | `ErrorPage` | — | No |
 
 ---

@@ -2,7 +2,12 @@
 
 ## Overview
 
-File storage is abstracted behind an `IFileStorageStrategy` interface. The current implementation (`FsFilesStrategy`) stores files on the local filesystem under `server/files/`. The `FileStorageModule` is a global module — inject `FileStorageService` in any module without additional imports.
+File storage is abstracted behind an `IFileStorageStrategy` interface with two implementations:
+
+- **`FsFileStorageStrategy`** — default; stores files on the local filesystem under `server/files/`.
+- **`S3FileStorageStrategy`** — AWS S3 SDK v3; stores files in a per-organization S3 bucket.
+
+The active strategy is selected at runtime via `FilesService.getStrategyForOrg(orgId)`. The `FileStorageModule` is a global module — inject `FileStorageService` in any module without additional imports.
 
 ---
 
@@ -13,12 +18,19 @@ server/files/
 ├── avatars/
 │   └── <userId>.<ext>              # e.g., 9e4f1a2b-3c4d.jpg
 │                                    # one file per user, overwritten on update
-└── models-3d/
-    ├── temp/                        # temporary upload location (multer)
-    │   └── <originalname>           # cleaned up after processing
-    └── <modelId>/                   # one directory per model
-        ├── <filename>.<ext>         # the 3D model file (.glb or .gltf)
-        └── thumbnail.png            # optional thumbnail (always PNG)
+├── models-3d/
+│   ├── temp/                        # temporary upload location (multer)
+│   │   └── <originalname>           # cleaned up after processing
+│   └── <modelId>/                   # one directory per model
+│       ├── <filename>.<ext>         # the 3D model file (.glb or .gltf)
+│       └── thumbnail.png            # optional thumbnail (always PNG)
+├── scenes/
+│   └── <sceneId>/
+│       ├── hdri.hdr                 # optional HDRI environment map (max 20 MB)
+│       └── thumbnail.png            # optional scene screenshot
+└── embed/
+    └── logos/
+        └── <projectId>.<ext>        # embed project logo (max 1 MB)
 ```
 
 ---
@@ -50,6 +62,32 @@ server/files/
 | Format | PNG (converted from base64) |
 | Naming | Always `thumbnail.png` |
 | Storage path | `files/models-3d/<modelId>/thumbnail.png` |
+
+### Scene HDRI
+
+| Property | Value |
+|---|---|
+| Max size | 20 MB |
+| Allowed extensions | `.hdr` |
+| Naming | Always `hdri.hdr` |
+| Storage path | `files/scenes/<sceneId>/hdri.hdr` |
+
+### Scene Thumbnails
+
+| Property | Value |
+|---|---|
+| Format | PNG (converted from base64) |
+| Naming | Always `thumbnail.png` |
+| Storage path | `files/scenes/<sceneId>/thumbnail.png` |
+
+### Embed Logos
+
+| Property | Value |
+|---|---|
+| Max size | 1 MB |
+| Allowed MIME types | `image/png`, `image/jpeg`, `image/webp` |
+| Naming | `<projectId>.<original extension>` |
+| Storage path | `files/embed/logos/` |
 
 ---
 
@@ -135,14 +173,31 @@ interface IFileStorageStrategy {
   save3DModel(modelId: string, tempPath: string, fileName: string): Promise<void>;
   save3DModelThumbnailFromBase64(modelId: string, base64: string): Promise<void>;
   delete3DModel(modelId: string): Promise<void>;
+  saveSceneHdri(sceneId: string, file: Express.Multer.File): Promise<string>;
+  saveSceneThumbnail(sceneId: string, base64: string): Promise<void>;
+  deleteScene(sceneId: string): Promise<void>;
+  saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string>;
+  removeEmbedLogo(projectId: string, fileName: string): Promise<void>;
   deleteFile(filePath: string): Promise<void>;
 }
 ```
 
-To add a new storage backend (e.g., S3):
+To add a new storage backend:
 1. Create a new class implementing `IFileStorageStrategy`
 2. Register it as the strategy provider in `FileStorageModule`
 3. No changes needed in controllers or services
+
+---
+
+## S3 Strategy
+
+`src/modules/files/strategies/s3-file-storage.strategy.ts`
+
+- Uses AWS SDK v3 (`@aws-sdk/client-s3`).
+- S3 credentials and bucket config are stored in `org_subscription.s3_config` as an AES-256-CBC encrypted JSON blob.
+- `OrgSubscriptionService.getDecryptedS3Config(orgId)` decrypts the config at runtime.
+- Files are stored under the same key structure as the local filesystem (e.g., `models-3d/<modelId>/<filename>`).
+- Public file serving goes through signed URLs or a proxy endpoint.
 
 ---
 
@@ -157,6 +212,12 @@ To add a new storage backend (e.g., S3):
 | `save3DModel(modelId, tempPath, fileName)` | Moves model file from temp to model directory |
 | `save3DModelThumbnailFromBase64(modelId, base64)` | Saves thumbnail PNG from base64 string |
 | `delete3DModel(modelId)` | Recursively deletes the entire model directory |
+| `saveSceneHdri(sceneId, file)` | Saves HDRI file for a scene; returns stored path |
+| `saveSceneThumbnail(sceneId, base64)` | Saves scene thumbnail PNG from base64 |
+| `deleteScene(sceneId)` | Recursively deletes the entire scene directory |
+| `saveEmbedLogo(projectId, file)` | Saves embed project logo; returns stored filename |
+| `removeEmbedLogo(projectId, fileName)` | Deletes embed logo file |
+| `getStrategyForOrg(orgId)` | Returns the correct strategy (local or S3) for an org |
 | `deleteFile(path)` | Generic file deletion (errors silently caught) |
 
 ---
@@ -191,4 +252,5 @@ Pipes in `src/pipes/` validate uploaded files before they reach the service. On 
 
 - File storage root is determined by `ConfigService` (defaults to `server/files/` relative to process working directory).
 - When deploying with Docker, the `files/` directory should be mounted as a volume to persist data across container restarts.
-- There is no CDN or presigned URL support in the current implementation — files are served directly by the NestJS process via `res.sendFile()` / `res.download()`.
+- In S3 mode, files are stored in the org's S3 bucket. File serving is handled via signed URLs or proxy endpoints in the respective controllers.
+- There is no CDN support in local mode — files are served directly by the NestJS process via `res.sendFile()` / `res.download()`.

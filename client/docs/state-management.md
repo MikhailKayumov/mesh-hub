@@ -97,6 +97,33 @@ RTK Query manages all server data. The base `Api` instance is created in `src/ap
 
 See [`api.md`](api.md) for the full endpoint reference.
 
+### Cache Tags
+
+All tags are defined in `src/app/api/tags.ts`:
+
+| Tag | Value | Purpose |
+|---|---|---|
+| `Reset` | `'Reset'` | Hard-reset sentinel: all queries providing it refetch |
+| `CurrentUser` | `'CurrentUser'` | Authenticated user profile |
+| `CGSoft` | `'CGSoft'` | CG software reference list |
+| `Categories` | `'Categories'` | Model category list |
+| `Get3DModels` | `'Get3DModels'` | Public paginated model list |
+| `Get3DModel` | `'Get3DModels'` | Per-model tag `{ type, id }` (same value) |
+| `CurrentUser3DModels` | `'CurrentUser3DModels'` | Current user model list |
+| `CurrentUser3DModel` | `'CurrentUser3DModel'` | (reserved) |
+| `Organization` | `'Organization'` | Single org record |
+| `OrgMembers` | `'OrgMembers'` | Org member list |
+| `OrgSubscription` | `'OrgSubscription'` | Subscription + storage config |
+| `Workspaces` | `'Workspaces'` | Workspace list |
+| `Workspace` | `'Workspace'` | Single workspace |
+| `EmbedProjects` | `'EmbedProjects'` | Embed project list |
+| `EmbedProject` | `'EmbedProject'` | Single embed project |
+| `Comments` | `'Comments'` | Model comment list |
+| `Annotations` | `'Annotations'` | Model annotation list |
+| `ModelVersions` | `'ModelVersions'` | Model version list |
+| `Scenes` | `'Scenes'` | Scene list |
+| `Scene` | `'Scene'` | Single scene record |
+
 ### `setupListeners`
 
 ```ts

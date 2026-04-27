@@ -199,3 +199,43 @@ Rich text editor built on **Tiptap** with the `@mantine/tiptap` toolbar integrat
 
 **Extensions enabled:** `StarterKit`, `Underline`, `Link`, `Superscript`, `Subscript`, `Highlight`, `TextAlign`, `Placeholder`.
 
+---
+
+### `OrgSwitcher`
+
+**Path:** `src/widgets/OrgSwitcher/`
+
+Organization selector dropdown. Displays the user's organizations and allows switching the active org context. Used in the main `Header` widget. Triggers `useMyOrganizationsQuery` and navigates to the selected org dashboard.
+
+---
+
+### `QuotaBar`
+
+**Path:** `src/widgets/QuotaBar/`
+
+Visual progress bar that shows storage quota usage for an organization. Fetches subscription data via `useGetOrgSubscriptionQuery` and renders used/total storage in human-readable form (`formatBytes`). Used in the Org Dashboard sidebar.
+
+---
+
+### `ReviewPanel`
+
+**Path:** `src/widgets/ReviewPanel/`
+
+Composite panel for model reviews: lists comments with ratings (stars) and 3D annotation entries. Provides forms for adding/editing comments. Uses `useModelCommentsQuery`, `useAddCommentMutation`, `useModelAnnotationsQuery`, and related hooks. Displayed on the Model detail page and in the Editor sidebar.
+
+---
+
+### `AnnotationManager`
+
+**Path:** `src/widgets/AnnotationManager/`
+
+Manages 3D annotation points for a model. Integrates with the `Viewer` via `setSelectedObject` to highlight the annotation position in the scene. Supports creating, editing, deleting, and reordering annotations via drag-and-drop. Uses `useModelAnnotationsQuery`, `useCreateAnnotationMutation`, `useReorderAnnotationsMutation`, and related hooks.
+
+---
+
+### `VersionHistory`
+
+**Path:** `src/widgets/VersionHistory/`
+
+Displays the upload history (model versions) for a 3D model. Shows version number, upload date, file size, and active status. Allows uploading a new version (`useUploadVersionMutation`), activating a specific version (`useActivateVersionMutation`), and deleting a version (`useDeleteVersionMutation`). Used in the Editor sidebar.
+

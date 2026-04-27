@@ -47,10 +47,10 @@ mesh-hub/
 ├── client/               # React 19 SPA — Feature-Sliced Design
 │   ├── src/
 │   │   ├── app/          # Bootstrap, store, RTK Query base, router
-│   │   ├── entities/     # Domain hooks + Redux slices (user, model-3d)
+│   │   ├── entities/     # Domain hooks + Redux slices (user, model-3d, organization)
 │   │   ├── pages/        # Route-level components (lazy loaded)
 │   │   ├── shared/       # Cross-cutting utilities, theme, constants
-│   │   └── widgets/      # Composite reusable UI blocks (19 widgets)
+│   │   └── widgets/      # Composite reusable UI blocks (25 widgets)
 │   ├── nginx/            # Nginx config for the production container
 │   ├── Dockerfile        # Multi-stage: Node build → Nginx serve
 │   └── AGENTS.md
@@ -90,11 +90,11 @@ mesh-hub/
 |---|---|
 | Framework | NestJS 11 on Express |
 | Language | TypeScript 6 |
-| ORM | TypeORM 0.3 (4 schemas, snake_case naming strategy) |
+| ORM | TypeORM 0.3 (8 schemas, snake_case naming strategy) |
 | Database | PostgreSQL 18 |
 | Auth | JWT HS512, HttpOnly cookie, DB-persisted sessions |
 | Password hash | PBKDF2, sha512, 64-byte output, per-user salt |
-| File upload | Multer (multipart), stored on local filesystem |
+| File upload | Multer (multipart); `IFileStorageStrategy` — `FsFileStorageStrategy` (local) or `S3FileStorageStrategy` (AWS S3 v3, per-org) | — |
 | Email | `@nestjs-modules/mailer` + Nodemailer (Yandex SMTP) |
 | Queue | Bull (Redis) via `@nestjs/bull` |
 | Rate limiting | `@nestjs/throttler` (real IP via X-Forwarded-For) |
@@ -228,6 +228,26 @@ resources.category      — model categories
 model_3d.model_3d       — model record (title, description, visibility, owner)
 model_3d.model_3d_file  — uploaded file metadata (filename, size, MIME)
 model_3d.model_3d_categories — M:M join with categories
+model_3d.model_comment  — threaded comments on a model
+model_3d.model_annotation — 3D annotation points (world-space position + text)
+model_3d.model_version  — versioned model file uploads (one active at a time)
+
+organizations.organization  — org record (name, slug, owner)
+organizations.org_member    — member records with role (owner/admin/viewer)
+organizations.org_subscription — plan (starter/growth/enterprise), storage config, S3 settings (AES-256-CBC encrypted)
+organizations.org_invite    — pending email invites with token
+
+workspaces.workspace        — workspace scoped under an org
+workspaces.workspace_member — M:N join between workspace and org members
+
+embed.api_key               — hashed API keys for embed viewer access (scoped to org)
+embed.embed_project         — embed project (model, domain whitelist, logo, customization)
+embed.embed_domain_whitelist — allowed domains for an embed project
+embed.model_view_log        — analytics log entry per embed viewer load
+
+scenes.scene        — scene record (name, workspace, HDRI path, camera bookmark)
+scenes.scene_object — an object placed in the scene (model ref, position, rotation, scale)
+scenes.scene_light  — a light in the scene (type, color, intensity, position)
 ```
 
 **Base classes** (`src/database/entities/base.ts`):
@@ -244,12 +264,21 @@ Schema and table name constants are in `src/database/constants.ts`. Always refer
 server/files/          (dev)   |   ./data/files/   (Docker production volume)
 ├── avatars/
 │   └── <userId>.<ext>                 # overwritten on avatar update
-└── models-3d/
-    ├── temp/                          # multer upload target; cleaned after move
-    └── <modelId>/
-        ├── <filename>.glb/.gltf       # the 3D model file
-        └── thumbnail.png              # optional screenshot (always PNG)
+├── models-3d/
+│   ├── temp/                          # multer upload target; cleaned after move
+│   └── <modelId>/
+│       ├── <filename>.glb/.gltf       # the 3D model file
+│       └── thumbnail.png              # optional screenshot (always PNG)
+├── scenes/
+│   └── <sceneId>/
+│       ├── hdri.hdr                   # optional HDRI environment map (max 20 MB)
+│       └── thumbnail.png             # optional scene screenshot
+└── embed/
+    └── logos/
+        └── <projectId>.<ext>          # embed project logo (max 1 MB)
 ```
+
+> **S3 mode:** when an org has `S3FileStorageStrategy` configured, all files are stored in the org's S3 bucket under the same key structure. The strategy is selected per-org by `FilesService.getStrategyForOrg(orgId)`.
 
 Limits:
 
@@ -269,9 +298,17 @@ Global prefix: `/api` (configurable via `APP_GLOBAL_PREFIX`).
 |---|---|---|
 | Auth | `/auth` | signup, login, logout, refresh, session management |
 | User | `/user` | profile CRUD, avatar upload, password change/reset |
-| 3D Models | `/models-3d` | model CRUD, file upload, thumbnail |
+| 3D Models | `/models-3d` | model CRUD, file upload, thumbnail, versions |
 | Resources | `/resources` | categories + CG software reference lists |
-| Files (static) | `/user/avatar`, `/models-3d/files` | direct file serving |
+| Reviews | `/models-3d/:id/comments` | threaded comments per model |
+| Annotations | `/models-3d/:id/annotations` | 3D annotation points per model; reorder endpoint |
+| Organizations | `/organizations` | org CRUD, member invites/roles, subscription/storage config |
+| Workspaces | `/workspaces` | workspace CRUD, member management (scoped to org) |
+| API Keys | `/api-keys` | key generation (returns raw key once), listing, revocation |
+| Embed | `/embed` | embed projects, domain whitelist, analytics, logo upload, public viewer |
+| Scenes | `/scenes` | scene CRUD, objects, lights, HDRI upload, thumbnail |
+| Storage Quota | — | service-only (no controller); provides quota checks for org |
+| Files (static) | `/user/avatar`, `/models-3d/files`, `/embed/projects/:id/logo`, `/scenes/:id/hdri` | direct file serving |
 
 Default auth: **all endpoints are authenticated** via `JwtAuthGuard` (global).
 Use `@Public()` to opt out. Use `@Roles(UserRoles.Admin)` to require a role.
@@ -312,6 +349,18 @@ ApiTags = {
   Get3DModel:          'Get3DModels',        // ⚠ same value — intentional
   CurrentUser3DModels: 'CurrentUser3DModels',
   CurrentUser3DModel:  'CurrentUser3DModel',
+  Organization:        'Organization',
+  OrgMembers:          'OrgMembers',
+  OrgSubscription:     'OrgSubscription',
+  Workspaces:          'Workspaces',
+  Workspace:           'Workspace',
+  EmbedProjects:       'EmbedProjects',
+  EmbedProject:        'EmbedProject',
+  Comments:            'Comments',
+  Annotations:         'Annotations',
+  ModelVersions:       'ModelVersions',
+  Scenes:              'Scenes',
+  Scene:               'Scene',
 }
 ```
 

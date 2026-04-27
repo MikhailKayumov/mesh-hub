@@ -116,6 +116,11 @@ The top-level orchestrator. Owns and initialises all sub-systems.
 | `run` | `(): Promise<void>` | Starts the animation loop via `renderer.run()` |
 | `destroy` | `(): void` | Destroys world, detaches camera controls, destroys renderer |
 | `setPlace` | `(place: HTMLDivElement): this` | Moves the renderer canvas to a new DOM container; re-attaches Stats dom |
+| `loadScene` | `(scene: SceneResponseDto): Promise<void>` | Clears the current world and loads all objects + lights from a scene DTO. Each `SceneObjectResponseDto` is loaded via `loadModel` with its transform applied. Each `SceneLightResponseDto` is added via `addLight`. |
+| `setSelectedObject` | `(id: string \| null): void` | Highlights the scene object with the given ID by enabling a selection layer / outline effect. Pass `null` to clear the selection. |
+| `addLight` | `(config: AddSceneLightDto): void` | Adds a `Three.js` light to the world using the provided config (`type`, `color`, `intensity`, `position`). Supported types: `'point'`, `'directional'`, `'spot'`, `'ambient'`. |
+| `clearScene` | `(): void` | Removes all scene objects and lights added via `loadScene` / `addLight`, leaving the base world intact. |
+| `loadHdri` | `(url: string): Promise<void>` | Loads an HDRI image from `url` via `RGBELoader` and sets it as the scene environment map and background. |
 
 ### Model Processing (private)
 

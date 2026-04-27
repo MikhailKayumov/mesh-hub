@@ -298,6 +298,301 @@ Route prefix: `/resources`
 
 ---
 
+## ReviewsModule
+
+**Path**: `src/modules/reviews/`
+
+### Purpose
+Handles model comments (`model_comment`) and 3D annotations (`model_annotation`) — nested under `/models-3d/:modelId/`.
+
+### Controller — `ReviewsController`
+
+Route prefix: `/models-3d/:modelId/comments`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/` | Public | Paginated comments for a model |
+| POST | `/` | JWT | Create comment |
+| PATCH | `/:commentId` | JWT (owner) | Update own comment |
+| DELETE | `/:commentId` | JWT (owner) | Delete own comment |
+
+### Controller — `AnnotationsController`
+
+Route prefix: `/models-3d/:modelId/annotations`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/` | Public | All annotations for a model |
+| POST | `/` | JWT | Create annotation |
+| PATCH | `/:id` | JWT (owner) | Update annotation |
+| DELETE | `/:id` | JWT (owner) | Delete annotation |
+| PUT | `/reorder` | JWT | Reorder annotations (pass ordered ID array) |
+
+### DTOs
+
+| DTO | Fields |
+|---|---|
+| `ModelCommentResponseDto` | `id`, `text`, `rating`, `createdAt`, `author` |
+| `CreateCommentDto` | `text`, `rating` |
+| `ModelAnnotationResponseDto` | `id`, `label`, `text`, `position`, `order` |
+| `CreateAnnotationDto` | `label`, `text`, `position` (`{x,y,z}`) |
+
+---
+
+## VersionsModule
+
+**Path**: `src/modules/versions/`
+
+### Purpose
+Manages versioned model file uploads for `model_version`. Each model can have multiple file versions; exactly one is active (displayed) at a time.
+
+### Controller — `VersionsController`
+
+Route prefix: `/models-3d/:modelId/versions`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/` | JWT | List all versions |
+| POST | `/` | JWT | Upload new version (multipart) |
+| PATCH | `/:versionId/activate` | JWT | Set version as active |
+| DELETE | `/:versionId` | JWT | Delete version |
+
+### DTOs
+
+| DTO | Fields |
+|---|---|
+| `ModelVersionResponseDto` | `id`, `versionNumber`, `isActive`, `filename`, `size`, `createdAt` |
+
+---
+
+## OrganizationsModule
+
+**Path**: `src/modules/organizations/`
+
+### Purpose
+Organization management: CRUD, member invites, role management, subscription/storage config.
+
+### Controller — `OrganizationsController`
+
+Route prefix: `/organizations`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/` | JWT | Create organization |
+| GET | `/current` | JWT | Orgs the user is a member of |
+| POST | `/invite/accept` | Public | Accept invite by token |
+| GET | `/:id` | JWT (member) | Get org details |
+| PATCH | `/:id` | JWT (owner/admin) | Update org |
+| GET | `/:id/members` | JWT (member) | List members |
+| POST | `/:id/invite` | JWT (owner/admin) | Invite by email |
+| PATCH | `/:id/members/:userId` | JWT (owner/admin) | Change member role |
+| DELETE | `/:id/members/:userId` | JWT (owner/admin) | Remove member |
+| GET | `/:id/subscription` | JWT (owner/admin) | Get subscription + storage config |
+| PATCH | `/:id/subscription/storage` | JWT (owner) | Update S3 / storage config |
+
+### Repositories
+
+| Repository | Key Methods |
+|---|---|
+| `OrganizationRepository` | CRUD, `findByOwner`, `findByMember` |
+| `OrgMemberRepository` | `findByOrg`, `findByUserAndOrg`, `upsert` |
+| `OrgSubscriptionRepository` | `findByOrg`, `updateStorageConfig` |
+| `OrgInviteRepository` | `createInvite`, `findByToken`, `deleteByToken` |
+
+### DTOs
+
+| DTO | Fields |
+|---|---|
+| `OrgResponseDto` | `id`, `name`, `slug`, `ownerId`, `createdAt` |
+| `OrgMemberResponseDto` | `userId`, `role`, `joinedAt`, `user` |
+| `OrgSubscriptionResponseDto` | `plan`, `storageLimit`, `storageUsed`, `s3Enabled` |
+| `CreateOrgDto` | `name`, `slug` |
+| `InviteOrgMemberDto` | `email`, `role` |
+
+---
+
+## WorkspacesModule
+
+**Path**: `src/modules/workspaces/`
+
+### Purpose
+Workspace management scoped under an organization. Workspaces group scenes and are accessible to a subset of org members.
+
+### Controller — `WorkspacesController`
+
+Route prefix: `/workspaces`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/` | JWT | Create workspace |
+| GET | `/` | JWT | List workspaces (filter by `orgId`) |
+| GET | `/:id` | JWT (member) | Get workspace details |
+| PATCH | `/:id` | JWT (admin) | Update workspace |
+| DELETE | `/:id` | JWT (admin) | Delete workspace |
+| POST | `/:id/members` | JWT (admin) | Add member |
+| DELETE | `/:id/members/:userId` | JWT (admin) | Remove member |
+
+### DTOs
+
+| DTO | Fields |
+|---|---|
+| `WorkspaceResponseDto` | `id`, `name`, `orgId`, `memberCount`, `createdAt` |
+| `CreateWorkspaceDto` | `name`, `orgId` |
+
+---
+
+## ApiKeysModule
+
+**Path**: `src/modules/api-keys/`
+
+### Purpose
+Generates and manages hashed API keys scoped to organizations. Keys are used by the embed viewer to authenticate requests.
+
+### Controller — `ApiKeysController`
+
+Route prefix: `/api-keys`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/` | JWT | Generate new API key |
+| GET | `/` | JWT | List keys for org (`orgId` query) |
+| DELETE | `/:id` | JWT | Revoke key (`orgId` query) |
+
+### Notes
+- Raw key returned **once** on creation only. Stored as SHA-256 hash.
+- Validation via `ApiKeyGuard` checks `X-Api-Key` header or `apiKey` query param against stored hashes.
+
+---
+
+## EmbedModule
+
+**Path**: `src/modules/embed/`
+
+### Purpose
+Manage embed projects (public 3D viewer configurations), domain whitelist, logo upload, analytics, and the public viewer endpoint.
+
+### Controller — `EmbedController`
+
+Route prefix: `/embed`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/projects` | JWT | Create embed project |
+| GET | `/projects` | JWT | List projects (`orgId` filter) |
+| PATCH | `/projects/:id` | JWT | Update project settings |
+| POST | `/projects/:id/domains` | JWT | Add allowed domain |
+| DELETE | `/projects/:id/domains/:domain` | JWT | Remove allowed domain |
+| GET | `/projects/:id/analytics` | JWT | Paginated view log |
+| POST | `/projects/:id/logo` | JWT | Upload logo |
+| GET | `/projects/:id/logo` | Public | Serve logo file |
+| GET | `/:modelId` | Public + ApiKeyGuard | Embed viewer payload |
+
+### Repositories
+
+| Repository | Key Methods |
+|---|---|
+| `EmbedProjectRepository` | CRUD, `findByOrg` |
+| `ApiKeyRepository` | `findByOrgAndHash`, `verifyKey` |
+| `ModelViewLogRepository` | `createLog`, `findByProject` (paginated) |
+
+### DTOs
+
+| DTO | Fields |
+|---|---|
+| `EmbedProjectResponseDto` | `id`, `name`, `modelId`, `orgId`, `domains[]`, `logo` |
+| `EmbedViewerResponseDto` | full model + project config for the public viewer |
+| `CreateEmbedProjectDto` | `name`, `modelId`, `orgId` |
+
+---
+
+## ScenesModule
+
+**Path**: `src/modules/scenes/`
+
+### Purpose
+Full scene management: scene CRUD, 3D object placement, light configuration, HDRI upload, and thumbnail saving.
+
+### Controller — `ScenesController`
+
+Route prefix: `/scenes`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/` | JWT | Create scene |
+| GET | `/` | JWT | List scenes (`workspaceId` filter) |
+| GET | `/:id` | JWT | Get full scene (objects + lights) |
+| PATCH | `/:id` | JWT | Update scene metadata |
+| DELETE | `/:id` | JWT | Delete scene |
+| POST | `/:id/objects` | JWT | Add object to scene |
+| PATCH | `/:id/objects/:objId` | JWT | Update object transform |
+| DELETE | `/:id/objects/:objId` | JWT | Remove object |
+| POST | `/:id/lights` | JWT | Add light |
+| PATCH | `/:id/lights/:lightId` | JWT | Update light |
+| DELETE | `/:id/lights/:lightId` | JWT | Remove light |
+| POST | `/:id/hdri` | JWT | Upload HDRI (max 20 MB) |
+| GET | `/:id/hdri` | Public | Serve HDRI file |
+| POST | `/:id/thumbnail` | JWT | Save thumbnail (base64 PNG) |
+
+### Repositories
+
+| Repository | Key Methods |
+|---|---|
+| `SceneRepository` | CRUD, `findByWorkspace`, `loadWithRelations` |
+| `SceneObjectRepository` | `addObject`, `updateObject`, `removeObject` |
+| `SceneLightRepository` | `addLight`, `updateLight`, `removeLight` |
+
+### DTOs
+
+| DTO | Fields |
+|---|---|
+| `SceneListItemResponseDto` | `id`, `name`, `objectCount`, `createdAt`, `updatedAt` |
+| `SceneResponseDto` | `id`, `name`, `hdriPath`, `objects[]`, `lights[]`, `cameraBookmark` |
+| `SceneObjectResponseDto` | `id`, `position`, `rotation`, `scale`, `model` (nested with file info) |
+| `SceneLightResponseDto` | `id`, `type`, `color`, `intensity`, `position` |
+| `CreateSceneDto` | `name`, `workspaceId` |
+| `AddSceneObjectDto` | `modelId`, `position`, `rotation`, `scale` |
+| `AddSceneLightDto` | `type`, `color`, `intensity`, `position` |
+| `SaveSceneThumbnailDto` | `thumbnail` (base64 PNG) |
+
+---
+
+## StorageQuotaModule
+
+**Path**: `src/modules/storage-quota/`
+**Scope**: Exported service, no controller.
+
+### Purpose
+Tracks and enforces per-organization storage quotas. Used by file upload flows before saving files.
+
+### StorageQuotaService
+
+| Method | Description |
+|---|---|
+| `getUsedStorage(orgId)` | Sum of all file sizes for the org |
+| `checkQuota(orgId, fileSize)` | Throws if `used + fileSize > limit` |
+| `updateQuota(orgId, delta)` | Increments/decrements `storage_used` in `org_subscription` |
+
+---
+
+## FileStorageModule
+
+**Path**: `src/modules/files/`
+**Scope**: Global
+
+### Purpose
+Provides `FileStorageService` backed by a pluggable `IFileStorageStrategy`. Strategy is resolved per-org at runtime via `getStrategyForOrg(orgId)`.
+
+### Strategies
+
+| Strategy | Class | When Used |
+|---|---|---|
+| Local filesystem | `FsFileStorageStrategy` | Default; no S3 config |
+| AWS S3 | `S3FileStorageStrategy` | Org has `s3_enabled = true` in `org_subscription` |
+
+See [`file-storage.md`](file-storage.md) for full interface and lifecycle documentation.
+
+---
+
 ## NotificationsModule
 
 **Path**: `src/modules/notifications/`

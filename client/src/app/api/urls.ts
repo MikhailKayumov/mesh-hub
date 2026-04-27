@@ -27,6 +27,8 @@ export const ApiUrls = {
   Workspaces: 'workspaces',
   // embed
   Embed: 'embed',
+  // scenes
+  Scenes: 'scenes',
 } as const;
 
 export type ApiUrl = keyof typeof ApiUrls;

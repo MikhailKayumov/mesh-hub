@@ -1,6 +1,6 @@
 import { AnimationObjectGroup, Box3, type Object3D, Raycaster, Vector2, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
-import type { Model3DResponseDto } from '@/app/api/dto.ts';
+import type { Model3DResponseDto, SceneResponseDto } from '@/app/api/dto.ts';
 import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
 import type { LoadedModel3D, ViewerMode, ViewerModel3D } from '../types';
 import { CameraController } from '../Camera';
@@ -132,6 +132,58 @@ export class Viewer {
     };
 
     canvas.addEventListener('pointerdown', this._pointerDownHandler);
+  }
+
+  public async loadScene(scene: SceneResponseDto): Promise<void> {
+    Loader.resizeCache(20);
+    this.world.clearScene();
+    this.renderer.setSettings({ clearColor: scene.config.backgroundColor });
+    this.world.setAmbientLight(scene.config.ambientLightIntensity);
+
+    await Promise.allSettled(
+      scene.objects.map(async (obj) => {
+        const loaded = await Loader.load(getModel3DFileSrc(obj.model.id, obj.model.file.entryFile));
+        const object = loaded.scene;
+        object.position.set(obj.posX, obj.posY, obj.posZ);
+        object.rotation.set(obj.rotX, obj.rotY, obj.rotZ);
+        object.scale.set(obj.scaleX, obj.scaleY, obj.scaleZ);
+        object.userData.sceneObjectId = obj.id;
+        object.userData.isSceneObject = true;
+        await this.world.spawn(object);
+      }),
+    );
+
+    for (const light of scene.lights) {
+      this.world.addLight(light);
+    }
+
+    if (scene.config.environmentHdriPath) {
+      await this.world.loadHdri(scene.config.environmentHdriPath);
+    }
+
+    const [bookmark] = scene.config.cameraBookmarks;
+    if (bookmark) {
+      this.camera.flyTo(
+        bookmark.posX,
+        bookmark.posY,
+        bookmark.posZ,
+        bookmark.targetX,
+        bookmark.targetY,
+        bookmark.targetZ,
+      );
+    }
+
+    await this.renderer.render();
+  }
+
+  public setSelectedObject(sceneObjectId: string | null): void {
+    this.world.clearHighlight();
+    if (!sceneObjectId) return;
+    let target: import('three').Object3D | undefined;
+    this.world.scene.traverse((obj) => {
+      if (obj.userData.sceneObjectId === sceneObjectId) target = obj;
+    });
+    if (target) this.world.highlightObject(target);
   }
 
   public setPlace(place: HTMLDivElement): this {

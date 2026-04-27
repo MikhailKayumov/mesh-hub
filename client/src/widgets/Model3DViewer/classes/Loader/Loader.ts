@@ -8,6 +8,10 @@ export class Loader {
     gltf: new GLTFLoader(),
   };
 
+  public static resizeCache(maxItems: number): void {
+    Loader.cache.maxSize = maxItems;
+  }
+
   public static async load(filepath: string): Promise<LoadedModel3D> {
     const { scene, animations, parser, ...rest } = await this.loaders.gltf.loadAsync(filepath);
 

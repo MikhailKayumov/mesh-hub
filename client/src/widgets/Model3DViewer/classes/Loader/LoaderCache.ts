@@ -3,7 +3,7 @@ import { type ViewerModel3D } from '../types';
 import { isImageBitmapSource, isTexture } from '../utils';
 
 export class LoaderCache {
-  private readonly maxSize: number;
+  public maxSize: number;
 
   private readonly store: Map<string, ViewerModel3D>;
 

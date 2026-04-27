@@ -1,8 +1,10 @@
 import {
+  AmbientLight,
   AxesHelper,
-  type Box3,
+  Box3,
   Box3Helper,
   Color,
+  DirectionalLight,
   GridHelper,
   type Light,
   MathUtils,
@@ -10,13 +12,16 @@ import {
   MeshBasicMaterial,
   Object3D,
   PlaneGeometry,
+  PointLight,
   Scene,
   ShadowMaterial,
   SphereGeometry,
+  SpotLight,
   Vector3,
 } from 'three';
 import { Destroyer } from '../Destroyer';
 import { buildAmbientLight, buildDirectionalLight } from '../Lights';
+import type { SceneLightResponseDto } from '@/app/api/dto.ts';
 import { type WorldEventListener, type WorldObject3D, type WorldObjects3D, type WorldSpawnOptions } from '../types';
 import { isLight, isObject3D } from '../utils';
 import { DEFAULT_LAYER, type WorldEvent, WorldEventNames } from './constants.ts';
@@ -241,5 +246,77 @@ export class World extends EventTarget {
     this.markers.forEach((mesh, markerId) => {
       (mesh.material as MeshBasicMaterial).color.set(markerId === id ? 0xff5500 : 0xffaa00);
     });
+  }
+
+  // scene management
+  public clearScene(): void {
+    const toRemove: Object3D[] = [];
+    this.scene.traverse((obj) => {
+      if (obj.userData.isSceneObject || obj.userData.isLight || obj.userData.isHighlight) {
+        toRemove.push(obj);
+      }
+    });
+    for (const obj of toRemove) {
+      Destroyer.destroyObject(obj);
+      this.scene.remove(obj);
+    }
+    // clear tracked lights array
+    this.lights.length = 0;
+  }
+
+  public setAmbientLight(intensity: number): void {
+    this.scene.traverse((obj) => {
+      if (obj instanceof AmbientLight) {
+        obj.intensity = intensity;
+      }
+    });
+  }
+
+  public addLight(dto: SceneLightResponseDto): Light {
+    let light: Light;
+    if (dto.type === 'directional') {
+      light = new DirectionalLight(dto.color, dto.intensity);
+    } else if (dto.type === 'spot') {
+      light = new SpotLight(dto.color, dto.intensity);
+    } else {
+      light = new PointLight(dto.color, dto.intensity);
+    }
+    light.position.set(dto.posX, dto.posY, dto.posZ);
+    light.castShadow = dto.castShadow;
+    light.userData.isLight = true;
+    light.userData.lightId = dto.id;
+    this.scene.add(light);
+    this.lights.push(light);
+    return light;
+  }
+
+  public async loadHdri(url: string): Promise<void> {
+    const { RGBELoader } = await import('three/examples/jsm/loaders/RGBELoader.js');
+    const { EquirectangularReflectionMapping } = await import('three');
+    const loader = new RGBELoader();
+    const texture = await loader.loadAsync(url);
+    texture.mapping = EquirectangularReflectionMapping;
+    this.scene.environment = texture;
+    this.scene.background = texture;
+  }
+
+  public highlightObject(object: Object3D): void {
+    const box = new Box3Helper(new Box3().setFromObject(object), 0xff9900);
+    box.userData.isHighlight = true;
+    this.scene.add(box);
+  }
+
+  public clearHighlight(): void {
+    const toRemove: Object3D[] = [];
+    this.scene.traverse((obj) => {
+      if (obj.userData.isHighlight) toRemove.push(obj);
+    });
+    for (const obj of toRemove) {
+      if (obj instanceof Box3Helper) {
+        obj.geometry.dispose();
+        (obj.material as MeshBasicMaterial).dispose();
+      }
+      this.scene.remove(obj);
+    }
   }
 }

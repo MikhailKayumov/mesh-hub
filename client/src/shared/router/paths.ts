@@ -37,6 +37,10 @@ export const RouterPaths = {
   Embed: 'embed',
   EmbedModelId: ':modelId',
   EmbedProjectId: ':projectId',
+
+  // scenes
+  Scenes: 'scenes',
+  SceneId: ':sceneId',
 } as const;
 
 export type RouterPathName = keyof typeof RouterPaths;

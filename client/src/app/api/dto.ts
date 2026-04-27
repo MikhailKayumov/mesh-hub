@@ -407,6 +407,121 @@ export interface AnnotationReorderRequestDto {
 }
 
 /**
+ * Scenes
+ */
+export const SceneLightType = {
+  Directional: 'directional',
+  Point: 'point',
+  Spot: 'spot',
+} as const;
+export type SceneLightType = (typeof SceneLightType)[keyof typeof SceneLightType];
+
+export interface SceneCameraBookmarkDto {
+  label: string;
+  posX: number;
+  posY: number;
+  posZ: number;
+  targetX: number;
+  targetY: number;
+  targetZ: number;
+}
+
+export interface SceneConfigDto {
+  backgroundColor: string;
+  ambientLightIntensity: number;
+  environmentHdriPath?: string;
+  cameraBookmarks: SceneCameraBookmarkDto[];
+}
+
+export interface SceneLightResponseDto {
+  id: string;
+  type: SceneLightType;
+  posX: number;
+  posY: number;
+  posZ: number;
+  color: string;
+  intensity: number;
+  castShadow: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SceneObjectResponseDto {
+  id: string;
+  posX: number;
+  posY: number;
+  posZ: number;
+  rotX: number;
+  rotY: number;
+  rotZ: number;
+  scaleX: number;
+  scaleY: number;
+  scaleZ: number;
+  order: number;
+  model: Model3DResponseDto;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SceneResponseDto {
+  id: string;
+  name: string;
+  description?: string;
+  config: SceneConfigDto;
+  thumbnailPath?: string;
+  objects: SceneObjectResponseDto[];
+  lights: SceneLightResponseDto[];
+  workspaceId: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SceneListItemResponseDto {
+  id: string;
+  name: string;
+  description?: string;
+  thumbnailPath?: string;
+  objectCount: number;
+  workspaceId: string;
+  createdAt: string;
+}
+
+export interface SceneCreateRequestDto {
+  name: string;
+  description?: string;
+  workspaceId: string;
+}
+
+export interface SceneUpdateRequestDto {
+  name?: string;
+  description?: string;
+  config?: Partial<SceneConfigDto>;
+}
+
+export interface SceneObjectUpsertDto {
+  modelId: string;
+  posX?: number;
+  posY?: number;
+  posZ?: number;
+  rotX?: number;
+  rotY?: number;
+  rotZ?: number;
+  scaleX?: number;
+  scaleY?: number;
+  scaleZ?: number;
+}
+
+export interface SceneLightUpsertDto {
+  type?: SceneLightType;
+  posX?: number;
+  posY?: number;
+  posZ?: number;
+  color?: string;
+  intensity?: number;
+  castShadow?: boolean;
+}
+
+/**
  * Model Versions
  */
 export interface ModelVersionUploaderDto {

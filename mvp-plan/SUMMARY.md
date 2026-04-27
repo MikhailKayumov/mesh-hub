@@ -23,7 +23,7 @@
 | STEP-13 | 4 | Reviews Frontend + Viewer Extensions | DONE | |
 | STEP-14 | 5 | Versions (Full Stack) | DONE | |
 | STEP-15 | 6 | Scenes Backend | DONE | |
-| STEP-16 | 6 | Scenes Frontend | TODO | |
+| STEP-16 | 6 | Scenes Frontend | DONE | |
 
 ## Completed Steps Log
 
@@ -44,6 +44,7 @@
 | STEP-12 | 2026-04-23 | 2 entities + migration in model_3d schema; ReviewsModule (4 CRUD endpoints); AnnotationsModule (5 endpoints incl. reorder); workspace-level access control |
 | STEP-13 | 2026-04-23 | ReviewPanel + AnnotationManager widgets; viewer modes + raycasting + markers + flyTo; Editor + Model3D page integration |
 | STEP-14 | 2026-04-23 | ModelVersionEntity + migration, file storage extensions, VersionsModule backend, VersionHistory widget, Editor/Model3DPage integration, useViewer versionId support |
+| STEP-16 | 2026-04-23 | Scenes frontend — RTK Query API layer (13 endpoints), Viewer extensions (loadScene, setSelectedObject, World clearScene/addLight/loadHdri/highlight), ScenesPage list + CreateSceneModal, SceneEditorPage with AppShell + panel components, WorkspaceDashboard navigation |
 
 ## Known Issues / Decisions Made
 
@@ -981,3 +982,51 @@ client/src/widgets/Header/index.tsx - Added {session && <OrgSwitcher />} between
 - `cd server && npm run build` — 0 errors
 - `cd server && npm run lint` — 0 errors (1 pre-existing warning in versions.service.ts, 2 pre-existing `_entryFile` warnings in file strategies)
 - `cd server && npm run migration:run` — `InitScenes1776940000000` applied successfully
+
+
+## STEP-16 SUMMARY
+
+### API Layer (`client/src/app/api/`)
+
+- **`dto.ts`** — 10 new interfaces/types: `SceneLightType` (const + type), `SceneCameraBookmarkDto`, `SceneConfigDto`, `SceneLightResponseDto`, `SceneObjectResponseDto`, `SceneResponseDto`, `SceneListItemResponseDto`, `SceneCreateRequestDto`, `SceneUpdateRequestDto`, `SceneObjectUpsertDto`, `SceneLightUpsertDto`
+- **`tags.ts`** — Added `Scenes: 'Scenes'` and `Scene: 'Scene'`
+- **`urls.ts`** — Added `Scenes: 'scenes'`
+- **`scenes.ts`** (new) — `ScenesApi` with 13 endpoints: `scenes` (list by workspaceId), `scene` (by id), `createScene`, `updateScene`, `deleteScene`, `addSceneObject`, `updateSceneObject`, `removeSceneObject`, `addSceneLight`, `updateSceneLight`, `removeSceneLight`, `uploadSceneHdri`, `uploadSceneThumbnail`
+
+### Routing (`client/src/`)
+
+- **`shared/router/paths.ts`** — Added `Scenes: 'scenes'` and `SceneId: ':sceneId'`
+- **`app/router/index.tsx`** — Two new lazy routes: `/org/:orgId/workspace/:workspaceId/scenes` → `ScenesPage`; `/org/:orgId/workspace/:workspaceId/scenes/:sceneId` → `SceneEditorPage`
+
+### Viewer Extensions
+
+- **`LoaderCache.ts`** — `maxSize` changed from `private readonly` to `public` to allow runtime resizing
+- **`Loader.ts`** — Added `public static resizeCache(maxItems: number)` static method
+- **`World.ts`** — Added imports for `AmbientLight`, `DirectionalLight`, `PointLight`, `SpotLight`; import `SceneLightResponseDto`; 6 new methods: `clearScene()`, `setAmbientLight(intensity)`, `addLight(dto)`, `loadHdri(url)` (async, dynamic import `RGBELoader`), `highlightObject(object)`, `clearHighlight()`
+- **`Viewer.ts`** — Import `SceneResponseDto`; added `loadScene(scene)` (resizes cache to 20, clears scene, sets background color, ambient light, loads all objects via `Promise.allSettled`, adds lights, optional HDRI, applies first camera bookmark via `camera.flyTo`); added `setSelectedObject(id|null)` (clears highlight, traverses scene for matching `userData.sceneObjectId`)
+
+### Pages
+
+**`client/src/pages/Scenes/`** (new)
+- `ScenesPage.tsx` — Card grid of scenes (thumbnail/name/description/objectCount), "New Scene" button, navigates to editor on card click
+- `CreateSceneModal.tsx` — Modal with name + description fields; Zod v4 validation; `useCreateSceneMutation`; navigates to new scene on success
+
+**`client/src/pages/SceneEditor/`** (new)
+- `useSceneViewer.ts` hook — Creates `new Viewer(container)`, manages lifecycle via `useEffect`, loads scene when data arrives; exposes `containerRef`, `isSceneLoading`, `selectedObjectId`, `selectObject()`, `captureScreenshot()`
+- `SceneEditorPage.tsx` — AppShell (header 52px, navbar 260px, aside 280px); fetches scene via `useScenesQuery`; canvas div via `containerRef`; loading overlay during scene load
+- `SceneEditorPage.module.scss` — Full-height layout (100dvh), canvas fill, loading overlay styles
+- `SceneEditorTopBar.tsx` — Breadcrumb (Scenes → scene name) + back arrow + camera capture button (saves screenshot as thumbnail via `uploadSceneThumbnail`)
+- `SceneObjectsPanel.tsx` — Scrollable list of scene objects; selection highlight on click; delete via `useRemoveSceneObjectMutation`
+- `ScenePropertiesPanel.tsx` — Transform editor (pos/rot/scale) for selected object; debounced (400ms) updates via `useUpdateSceneObjectMutation`
+
+### Navigation
+
+- **`WorkspaceDashboard.tsx`** — Added "Scenes" button navigating to `/org/:orgId/workspace/:workspaceId/scenes`
+
+### Decisions
+
+- `SceneEditorPage` uses direct `new Viewer()` instantiation (not `Model3DViewer` widget) — widget requires a `model` prop and auto-loads; scene loading needs manual control via `loadScene()`
+- `Loader.cache` resized to 20 items before scene load to accommodate multiple scene objects; restored implicitly on next viewer lifecycle
+- HDRI loading uses dynamic import of `RGBELoader` to avoid bundling it into the main chunk
+- Object highlight uses `Box3Helper` rendered at scene level (not attached to object) for reliable bounds even with complex hierarchies
+- `Box3` imported as a value (not `type`) in `World.ts` to allow `new Box3()` instantiation in `highlightObject`

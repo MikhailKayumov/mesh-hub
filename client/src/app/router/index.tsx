@@ -103,6 +103,18 @@ const routes: RouteObject[] = [
             }),
           },
           {
+            path: `${RouterPaths.OrgId}/${RouterPaths.WorkspaceSeg}/${RouterPaths.WorkspaceId}/${RouterPaths.Scenes}`,
+            lazy: async () => ({
+              Component: (await import('@/pages/Scenes')).ScenesPage,
+            }),
+          },
+          {
+            path: `${RouterPaths.OrgId}/${RouterPaths.WorkspaceSeg}/${RouterPaths.WorkspaceId}/${RouterPaths.Scenes}/${RouterPaths.SceneId}`,
+            lazy: async () => ({
+              Component: (await import('@/pages/SceneEditor')).SceneEditorPage,
+            }),
+          },
+          {
             path: `${RouterPaths.OrgId}/${RouterPaths.Embed}/${RouterPaths.EmbedProjectId}`,
             lazy: async () => ({
               Component: (await import('@/pages/EmbedProject')).EmbedProjectPage,

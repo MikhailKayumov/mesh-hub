@@ -47,14 +47,6 @@ export const Models3dApi = Api.injectEndpoints({
         params,
       }),
     }),
-    upload3DModel: build.mutation<{ modelId: string }, FormData>({
-      invalidatesTags: [ApiTags.CurrentUser3DModels, ApiTags.Get3DModels],
-      query: (body) => ({
-        method: 'POST',
-        url: ApiUrls.Upload3DModel,
-        body,
-      }),
-    }),
     delete3DModel: build.mutation<void, string>({
       invalidatesTags: [ApiTags.CurrentUser3DModels, ApiTags.Get3DModels],
       query: (id) => ({
@@ -77,7 +69,6 @@ export const Models3dApi = Api.injectEndpoints({
 });
 
 export const {
-  useUpload3DModelMutation,
   useCurrentUser3DModelsQuery,
   useUpdateModel3DMutation,
   useDelete3DModelMutation,

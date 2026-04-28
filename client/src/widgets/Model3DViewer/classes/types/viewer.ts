@@ -1,4 +1,4 @@
-import { type AnimationClip, type AnimationObjectGroup, type Box3, type Group } from 'three';
+import { type AnimationClip, type AnimationObjectGroup, type Box3, type Object3D } from 'three';
 import { type GLTFParser } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export type ViewerMode = 'view' | 'comment' | 'annotate';
@@ -9,7 +9,7 @@ export interface ViewerAnimations {
 }
 
 export interface LoadedModel3D {
-  scene: Group;
+  scene: Object3D;
   animations?: AnimationClip[];
   associations?: GLTFParser['associations'];
 }

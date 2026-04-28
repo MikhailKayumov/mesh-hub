@@ -103,6 +103,7 @@ export interface Model3DFileResponseDto {
   entryFile: string;
   size: number;
   extension: string;
+  originalFormat?: string;
 }
 
 export interface CategoryResponse {

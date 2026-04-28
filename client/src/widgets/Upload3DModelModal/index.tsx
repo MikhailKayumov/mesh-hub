@@ -1,7 +1,7 @@
-import { Button, Group, Modal, rem, Stack, Text, Tooltip } from '@mantine/core';
+import { Alert, Button, Group, Modal, Progress, rem, Stack, Text, Tooltip } from '@mantine/core';
 import { Dropzone } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
-import { IconCubePlus, IconUpload } from '@tabler/icons-react';
+import { IconCubePlus, IconInfoCircle, IconUpload } from '@tabler/icons-react';
 import { type FileRejection } from 'react-dropzone-esm';
 import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
 import { formatBytes } from '@/shared/utils/format-bytes.ts';
@@ -10,12 +10,14 @@ import classes from './Upload3DModelModal.module.scss';
 import { useUpload3DModal } from './useUpload3DModal.ts';
 import { validate3DModelFile } from './validate3DModelFile.ts';
 
+const PROGRESS_THRESHOLD_BYTES = 10 * 1024 * 1024;
+
 const onReject = (fileRejections: FileRejection[]) => {
   const msg = fileRejections?.[0]?.errors?.[0]?.message;
 
   notifications.show({
     title: 'Ошибка',
-    message: msg || 'Неверный формат файла или его размер превышает 100МБ.',
+    message: msg || 'Проверьте формат и размер файла.',
     color: 'red',
     autoClose: 10000,
   });
@@ -23,7 +25,11 @@ const onReject = (fileRejections: FileRejection[]) => {
 
 export function Upload3DModelModal() {
   const { isDark } = useCurrentColorScheme();
-  const { opened, model, isLoading, open, close, setModel, onUpload } = useUpload3DModal();
+  const { opened, model, isLoading, uploadProgress, error, open, close, setModel, onUpload } = useUpload3DModal();
+
+  const showProgress =
+    !!model && model.size > PROGRESS_THRESHOLD_BYTES && uploadProgress > 0 && uploadProgress < 100 && !error;
+  const showObjTip = !!model && model.name.toLowerCase().endsWith('.obj');
 
   return (
     <>
@@ -46,28 +52,11 @@ export function Upload3DModelModal() {
           preventDropOnDocument={true}
           disabled={isLoading}
           multiple={false}
+          accept={ACCEPTED_3D_MODEL_FILE_TYPES}
           onDrop={(files) => setModel(files[0])}
           onReject={onReject}
           validator={validate3DModelFile}
           className={classes.dropzone}
-          // todo: not remove, next iteration make progress
-          // loaderProps={{
-          //   children: (
-          //     <Group gap={2}>
-          //       <RingProgress
-          //         size={120}
-          //         thickness={8}
-          //         roundCaps
-          //         sections={[{ value: progress, color: 'primary' }]}
-          //         label={
-          //           <Text fw={700} ta="center" size="xl">
-          //             {progress}%
-          //           </Text>
-          //         }
-          //       />
-          //     </Group>
-          //   ),
-          // }}
         >
           <Stack align="center" justify="center" gap={12}>
             <Dropzone.Idle>
@@ -95,10 +84,17 @@ export function Upload3DModelModal() {
               Размер файла не должен превышать {formatBytes(MAX_3D_MODEL_FILE_SIZE)}.<br />
               Допустимые форматы {ACCEPTED_3D_MODEL_FILE_TYPES.map((i) => i.substring(1).toUpperCase()).join(', ')}.
               <br />
-              ZIP-архив должен содержать ровно один .gltf или .glb файл.
+              ZIP-архив должен содержать ровно один файл модели (.glb/.gltf/.fbx/.dae/.stl) или один или несколько .obj
+              файлов.
             </Text>
           </Stack>
         </Dropzone>
+        {showObjTip && (
+          <Alert variant="light" color="blue" icon={<IconInfoCircle size={16} />} mt="sm">
+            Упакуйте OBJ + MTL + текстуры в .zip-архив для полной поддержки материалов.
+          </Alert>
+        )}
+        {showProgress && <Progress value={uploadProgress} mt="sm" />}
         <Group mt={12} justify="space-between" c={!model ? 'dimmed' : undefined} gap={16} wrap="nowrap" align="center">
           <Tooltip label={model?.name ?? 'Файл не выбран'} position="top-start" openDelay={500}>
             <Text lh={rem(20)} size="sm" truncate="end">

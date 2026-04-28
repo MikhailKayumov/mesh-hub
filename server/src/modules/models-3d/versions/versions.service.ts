@@ -99,7 +99,7 @@ export class VersionsService {
 
       // Save file outside transaction (reversible via cleanup on error)
       if (isZip) {
-        const entryFile = await this.filesService.extractAndSaveModelVersionDirectory(
+        const { entryFile } = await this.filesService.extractAndSaveModelVersionDirectory(
           modelId,
           savedVersion.id,
           file,

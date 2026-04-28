@@ -15,7 +15,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 | [ITER-3](ITER-3.md) | Model Editor: Lights, Display Config & Post-Processing | ✅ Done | Custom lighting, renderer settings, EffectComposer pipeline, display presets |
 | [ITER-4](ITER-4.md) | Model Editor: Materials & Textures | ✅ Done | Per-mesh material overrides, PBR sliders, texture uploads |
 | [ITER-5](ITER-5.md) | Animations Enhanced + Audio | ✅ Done | Speed/loop/crossfade in AnimationToolbar, scene object animations, Three.js audio |
-| [ITER-6](ITER-6.md) | Multi-Format Support | 🔲 Pending | FBX / OBJ+MTL / DAE / STL loader registry |
+| [ITER-6](ITER-6.md) | Multi-Format Support | ✅ Done | FBX / OBJ+MTL / DAE / STL loader registry, `original_format` column, format badge, upload progress |
 | [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | 🔲 Pending | Scene annotations/comments, `@OptionalUser` access control, public scene page |
 | [ITER-8](ITER-8.md) | Discovery & UX Polish | 🔲 Pending | Search, DnD upload, presets menu, measure tool, screenshot, scene clone |
 | [ITER-9](ITER-9.md) | Embed & Integrations | 🔲 Pending | Scene embed, in-app notifications, webhooks, API key scopes |
@@ -436,6 +436,69 @@ Viewer
 3. **Stored path is cwd-relative** — texture paths stored as `models-3d/{modelId}/materials/{overrideId}/{type}{ext}`; the controller prepends `files/` to resolve the absolute path, matching the `fsConfig.folders.models` layout.
 4. **Material clone in Three.js** — `applyMaterialOverrides` always clones the original material before mutating it, preventing shared-material side effects across mesh instances.
 5. **Texture URLs in response DTO** — `toResponse()` in the service constructs URL strings using the `/api/models-3d/:modelId/materials/:meshName/texture/:type` pattern so the frontend can load them directly as `TextureLoader` URLs.
+
+---
+
+## ITER-6 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Multi-format 3D model support — FBX, OBJ+MTL, DAE (Collada), STL alongside existing GLB/GLTF. Browser-side loading via Three.js loader registry, no server-side conversion. Includes format-aware server validation, `original_format` persistence, format badge UI, OBJ-as-zip tip, and an XHR-based upload progress bar.
+
+### What was implemented
+
+**Backend (NestJS / TypeORM)**
+
+| File | Change |
+|---|---|
+| `constants/files.ts` | Added `DEFAULT_MAX_3D_MODEL_FILE_SIZE` and `MODEL_MAX_SIZE_BYTES` per-extension map (3 GB for `.glb/.gltf/.fbx/.zip`, 1 GB for `.dae`, 500 MB for `.obj/.stl`, 10 MB for `.mtl`); expanded `ACCEPTED_3D_MODEL_FILE_TYPES` to include `.fbx/.obj/.dae/.stl` (no `.mtl` at controller level — only valid inside zip) |
+| `pipes/file-size-validator.pipe.ts` | `FileSizeValidator` constructor accepts `number \| Record<string, number>` plus optional `defaultSizeBytes`; `isValid` derives extension from `file.originalname` and looks up the per-format limit; `buildErrorMessage` reports the applied limit |
+| `database/migrations/models-3d/1777600000000-AddModelOriginalFormat.ts` | New migration: `ALTER TABLE model_3d.model_3d_file ADD COLUMN original_format varchar(10) NOT NULL DEFAULT 'glb'` |
+| `database/entities/models-3d/model-3d-file.entity.ts` | Added `originalFormat: string` column |
+| `modules/files/types.ts` | `ExtractedFile` gains `size: number`; `IFileStorageStrategy.save3DModelDirectory` and `saveModelVersionDirectory` now `Promise<void>` |
+| `modules/files/strategies/fs.files.strategy.ts`, `s3.files.strategy.ts` | Removed inline entry-file regex pick; strategies are now storage-only |
+| `modules/files/files.service.ts` | Expanded `ALLOWED_EXTENSIONS` zip allowlist with `.obj/.mtl/.dae/.fbx/.stl/.tga/.bmp/.tif/.tiff`; new private helper `selectEntryFile(files)` enforces per-format rules (mixed-format rejection, gltf/glb mutual exclusion, exactly-one for fbx/dae/stl, largest-wins with lexicographic tiebreak for OBJ); both `extractAndSave3DModelDirectory` and `extractAndSaveModelVersionDirectory` now return `{ entryFile, format }` |
+| `modules/models-3d/controllers/model-3d.controller.ts`, `versions/versions.controller.ts` | Wired `MODEL_MAX_SIZE_BYTES` + `DEFAULT_MAX_3D_MODEL_FILE_SIZE` into `FileSizeValidator` on both upload endpoints |
+| `modules/models-3d/services/model-3d.service.ts` | `upload3DModel` writes `originalFormat` in both branches: non-zip uses `extname(file.originalname).slice(1).toLowerCase()`, zip uses the format returned by `extractAndSave3DModelDirectory` |
+| `modules/models-3d/versions/versions.service.ts` | Destructures new `{ entryFile }` shape from `extractAndSaveModelVersionDirectory` |
+| `modules/models-3d/dto/model-3d-file.response.dto.ts`, `mappers/model-3d-file.mapper.ts` | Added `originalFormat` to response shape |
+
+**Frontend Loader (Three.js)**
+
+| File | Change |
+|---|---|
+| `widgets/Model3DViewer/classes/types/viewer.ts` | `LoadedModel3D.scene` widened from `Group` to `Object3D` (Collada compatibility) |
+| `widgets/Model3DViewer/classes/Loader/Loader.ts` | Replaced single-format GLTF loader with extension-based dispatch; added private `loadGltf`, `loadFbx`, `loadObj`, `loadDae`, `loadStl` methods; OBJ uses `MTLLoader.setResourcePath(baseUrl)` with graceful fallback to OBJ-only on MTL fetch failure; FBX/DAE/STL apply default `MeshStandardMaterial({ color: 0xcccccc, metalness: 0.1, roughness: 0.8 })` to materialless meshes via traverse; `LoaderCache` semantics preserved |
+
+**Frontend Upload UI (React / RTK Query)**
+
+| File | Change |
+|---|---|
+| `shared/constants/files.ts` | Mirrored server: expanded `ACCEPTED_3D_MODEL_FILE_TYPES` to 7 formats; added `MAX_3D_MODEL_FILE_SIZES` per-format map |
+| `shared/api/uploadModel3DWithProgress.ts` | New pure-I/O XHR helper with `withCredentials = true` (matches `credentials: 'include'` baseQuery); reports progress via callback; resolves with `{ modelId }` |
+| `widgets/Upload3DModelModal/index.tsx` | Updated dropzone `accept` list and Russian help text; added Mantine `<Progress>` bar shown when `selectedFile.size > 10 MB && 0 < uploadProgress < 100`; added conditional OBJ-tip `<Alert>` when `selectedFile?.name.endsWith('.obj')` |
+| `widgets/Upload3DModelModal/useUpload3DModal.ts` | Replaced RTK mutation with `uploadModel3DWithProgress`; tracks `uploadProgress` state; on success dispatches `Api.util.invalidateTags([CurrentUser3DModels, Get3DModels])`; resets state on close |
+| `widgets/Models3DList/components/Model3DCard/index.tsx` + `constants.ts` | Added `FORMAT_COLOR` map and Mantine `<Badge>` next to model name (blue/orange/grape/teal/gray) when `originalFormat` is present |
+| `app/api/models-3d.ts` | Removed now-unused `upload3DModel` RTK mutation and `useUpload3DModelMutation` export (replaced by the XHR helper) |
+
+**Frontend DTO sync**
+
+| File | Change |
+|---|---|
+| `app/api/dto.ts` | Added `originalFormat?: string` to `Model3DFileResponseDto` (optional during rollout) |
+
+### Design decisions made
+
+1. **Entry-file selection lifted into `FilesService`** — both `FsFileStorageStrategy` and `S3FileStorageStrategy` independently re-picked the GLTF entry file via regex; that logic moved into a single `selectEntryFile(files)` helper inside `FilesService`. Strategies became pure storage. Eliminates duplication and centralises per-format rules.
+2. **`Record<ext, number>` validator extension** — `FileSizeValidator` constructor now accepts either a flat number (existing callers) or an extension-keyed map plus a fallback. Per-format limits are enforced server-side; the client uses a single coarse `maxSize` on the Mantine Dropzone.
+3. **`.mtl` rejected at controller level** — `.mtl` is useless without `.obj`, so it is excluded from `ACCEPTED_3D_MODEL_FILE_TYPES` and only allowed inside the zip-extracted-files allowlist.
+4. **Zip allowlist expanded** with `.obj/.mtl/.dae/.fbx/.stl` plus auxiliary texture types `.tga/.bmp/.tif/.tiff` that FBX and OBJ exports commonly reference.
+5. **Per-format entry-file rules with mixed-format rejection** — exactly-one for `.gltf/.glb/.fbx/.dae/.stl`; OBJ allows multiple files and picks the largest by byte size (lexicographic tiebreak); archives containing more than one entry-point format type return HTTP 400.
+6. **`originalFormat` derivation** — non-zip uploads derive it from `extname(file.originalname)`; zip uploads derive it from the entry file's extension after extraction; legacy rows default to `'glb'` via the migration's `DEFAULT 'glb'`.
+7. **Default `MeshStandardMaterial` fallback** applied inside per-format loaders (`loadFbx`, `loadDae`, `loadStl`) so the rest of the viewer code stays format-agnostic. OBJ-without-MTL also benefits via the MTL try/catch.
+8. **XHR-based upload helper** instead of RTK Query `fetchBaseQuery` (which doesn't expose `onUploadProgress`). The `shared/api/uploadModel3DWithProgress.ts` helper stays FSD-pure (no `Api` import); the widget hook calls `Api.util.invalidateTags` after success to keep RTK cache invalidation behaviour.
+9. **`Object3D` widening of `LoadedModel3D.scene`** — `ColladaLoader` returns a generic scene Object3D, not a `Group`. Widening the type covers all five loaders without per-loader casts at the call site.
+10. **Mantine badge color map** — `glb/gltf=blue, fbx=orange, obj=grape, dae=teal, stl=gray` placed in a co-located `constants.ts` next to the card. Plus the conditional OBJ-tip Alert in the upload modal.
 
 ---
 

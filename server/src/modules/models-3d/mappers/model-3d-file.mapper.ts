@@ -11,6 +11,7 @@ export class Model3dFileMapper {
       size: entity.size,
       extension: entity.extension,
       entryFile: entity.entryFile ?? entity.name,
+      originalFormat: entity.originalFormat,
     };
   }
 }

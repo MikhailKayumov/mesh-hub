@@ -1,6 +1,7 @@
 export interface ExtractedFile {
   relativePath: string;
   buffer: Buffer;
+  size: number;
 }
 
 export interface S3StorageConfig {
@@ -20,7 +21,7 @@ export interface IFileStorageStrategy {
   save3DModel(id: string, file: Express.Multer.File): Promise<string>;
   save3DModelThumbnailFromBase64(id: string, thumbnail: string): Promise<string>;
   delete3DModel(id: string, silent: boolean): Promise<void>;
-  save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string>;
+  save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<void>;
   saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string>;
   /**
    * Returns a URL that can be used to access the file.
@@ -30,8 +31,8 @@ export interface IFileStorageStrategy {
   getFileUrl(relativePath: string): Promise<string | null>;
   /** Save a single .glb/.gltf file for a specific model version. */
   saveModelVersion(modelId: string, versionId: string, file: Express.Multer.File): Promise<void>;
-  /** Save extracted ZIP contents for a specific model version. Returns the entryFile relative path. */
-  saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<string>;
+  /** Save extracted ZIP contents for a specific model version. */
+  saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<void>;
   /** Delete all files associated with a specific model version. */
   deleteModelVersion(modelId: string, versionId: string): Promise<void>;
   /** Copy a version's files to the model root (used on activation). */

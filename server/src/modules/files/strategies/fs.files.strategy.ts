@@ -65,7 +65,7 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
     return this.deleteFile(this.get3DModelFilePath(id), silent);
   }
 
-  public async save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string> {
+  public async save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<void> {
     const modelDir = this.get3DModelFilePath(modelId);
 
     for (const f of files) {
@@ -80,12 +80,6 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
       await mkdir(dirname(target), { recursive: true });
       await writeFile(target, f.buffer);
     }
-
-    const entryFile = files.find((f) => /\.(gltf|glb)$/i.test(f.relativePath));
-    if (!entryFile) {
-      throw new BadRequestException('No .gltf or .glb entry point found in archive');
-    }
-    return entryFile.relativePath;
   }
 
   public async saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string> {
@@ -119,7 +113,7 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
     await rename(file.path, resolve(dir, file.originalname));
   }
 
-  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<string> {
+  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<void> {
     const versionDir = this.getVersionDirPath(modelId, versionId);
 
     for (const f of files) {
@@ -134,12 +128,6 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
       await mkdir(dirname(target), { recursive: true });
       await writeFile(target, f.buffer);
     }
-
-    const entryFile = files.find((f) => /\.(gltf|glb)$/i.test(f.relativePath));
-    if (!entryFile) {
-      throw new BadRequestException('No .gltf or .glb entry point found in archive');
-    }
-    return entryFile.relativePath;
   }
 
   public async deleteModelVersion(modelId: string, versionId: string): Promise<void> {

@@ -30,7 +30,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { UserRoles, ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
+import {
+  UserRoles,
+  ACCEPTED_3D_MODEL_FILE_TYPES,
+  DEFAULT_MAX_3D_MODEL_FILE_SIZE,
+  MODEL_MAX_SIZE_BYTES,
+} from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { PaginatedRequest, PaginatedResponse, PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
@@ -142,7 +147,7 @@ export class Model3dController {
       new ParseFilePipe({
         fileIsRequired: true,
         validators: [
-          new FileSizeValidator(MAX_3D_MODEL_FILE_SIZE),
+          new FileSizeValidator(MODEL_MAX_SIZE_BYTES, DEFAULT_MAX_3D_MODEL_FILE_SIZE),
           new FileExtensionValidatorPipe(ACCEPTED_3D_MODEL_FILE_TYPES),
         ],
       }),

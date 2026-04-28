@@ -1,4 +1,4 @@
-import { Avatar, Box, Card, Group, Menu, rem, Text, Tooltip } from '@mantine/core';
+import { Avatar, Badge, Box, Card, Group, Menu, rem, Text, Tooltip } from '@mantine/core';
 import { IconDotsVertical, IconSettings, IconTrash } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,7 @@ import { buildAbsolutePath } from '@/shared/utils/router';
 import { getAvatarSrcByString } from '@/shared/utils/user.ts';
 import classes from '../../Models3DList.module.scss';
 import { Model3DCardThumbnail } from '../Model3DCardThumbnail';
+import { FORMAT_COLOR } from './constants.ts';
 
 export interface Model3DCard {
   model: Model3DResponseDto;
@@ -17,6 +18,7 @@ export interface Model3DCard {
 
 export function Model3DCard({ model }: Model3DCard) {
   const { onDelete, isDeleting } = useDeleteModel3D(model?.id);
+  const fmt = model.file?.originalFormat?.toLowerCase();
 
   return (
     <Card withBorder className={clsx(classes.card, isDeleting && classes['card-deleting'])} p={0}>
@@ -25,19 +27,24 @@ export function Model3DCard({ model }: Model3DCard) {
         <Tooltip label={model.ownerName} withArrow position="top-start" offset={1} openDelay={500}>
           <Avatar radius="xs" src={getAvatarSrcByString(model.ownerAvatar)} color="primary" size={22} />
         </Tooltip>
-        <Tooltip label={model.name} position="top-start" openDelay={500}>
-          <Text
-            c="text"
-            ml={6}
-            size="sm"
-            truncate="end"
-            className={classes['model-name']}
-            component={Link}
-            to={buildAbsolutePath([RouterPaths.Models, model.id])}
-          >
-            {model.name}
-          </Text>
-        </Tooltip>
+        <Group gap={6} ml={6} wrap="nowrap" className={classes['model-name']}>
+          <Tooltip label={model.name} position="top-start" openDelay={500}>
+            <Text
+              c="text"
+              size="sm"
+              truncate="end"
+              component={Link}
+              to={buildAbsolutePath([RouterPaths.Models, model.id])}
+            >
+              {model.name}
+            </Text>
+          </Tooltip>
+          {fmt && (
+            <Badge size="xs" variant="light" color={FORMAT_COLOR[fmt] ?? 'gray'}>
+              {fmt.toUpperCase()}
+            </Badge>
+          )}
+        </Group>
         {model.isOwner && getBoolean('VITE_APP_ENABLE_EDITOR') && (
           <Menu position="left-end" openDelay={75} closeDelay={80} width={200} offset={1} trigger="hover" withArrow>
             <Menu.Target>

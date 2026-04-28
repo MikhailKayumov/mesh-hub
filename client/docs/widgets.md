@@ -115,7 +115,7 @@ Responsive grid/list of model cards. Accepts a paginated array of `Model3DRespon
 
 **Path:** `src/widgets/Upload3DModelModal/`
 
-Modal dialog for uploading a new 3D model file. Accepts `.glb` files via `@mantine/dropzone`. Calls `useUpload3DModelMutation` with a `FormData` payload. On success, navigates to the editor for the new model.
+Modal dialog for uploading a new 3D model file. Accepts `.glb`, `.gltf`, `.fbx`, `.obj`, `.dae`, `.stl`, and `.zip` (multi-file bundles) via `@mantine/dropzone`. Posts the `FormData` payload via the `uploadModel3DWithProgress` XHR helper (`shared/api/uploadModel3DWithProgress.ts`) so a Mantine `Progress` bar can advance for files > 10 MB; dispatches `Api.util.invalidateTags([CurrentUser3DModels, Get3DModels])` on success and navigates to the editor for the new model. Shows a context-aware Alert tip when the user selects an `.obj` file.
 
 ---
 

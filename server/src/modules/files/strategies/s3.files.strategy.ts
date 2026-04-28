@@ -66,7 +66,7 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
     return key;
   }
 
-  public async save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string> {
+  public async save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<void> {
     await Promise.all(
       files.map((f) =>
         this.client.send(
@@ -78,12 +78,6 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
         ),
       ),
     );
-
-    const entryFile = files.find((f) => /\.(gltf|glb)$/i.test(f.relativePath));
-    if (!entryFile) {
-      throw new Error('No .gltf or .glb entry point found in archive');
-    }
-    return entryFile.relativePath;
   }
 
   public async saveEmbedLogo(projectId: string, file: Express.Multer.File): Promise<string> {
@@ -176,7 +170,7 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
     await upload.done();
   }
 
-  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<string> {
+  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<void> {
     await Promise.all(
       files.map((f) =>
         this.client.send(
@@ -188,10 +182,6 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
         ),
       ),
     );
-
-    const entryFile = files.find((f) => /\.(gltf|glb)$/i.test(f.relativePath));
-    if (!entryFile) throw new Error('No .gltf or .glb entry point found in archive');
-    return entryFile.relativePath;
   }
 
   public async deleteModelVersion(modelId: string, versionId: string): Promise<void> {

@@ -4,7 +4,7 @@
 
 Support all major artistic 3D formats used across Blender, 3ds Max, Unity, and Unreal Engine. No server-side conversion — the browser loads files directly via Three.js loader registry.
 
-## Status: 🔲 Pending
+## Status: ✅ Done
 
 > **CAD formats (STEP / IGES / IFC)** — post-MVP, separate viewer mode, out of scope here.
 
@@ -35,7 +35,7 @@ export const ACCEPTED_3D_MODEL_FILE_TYPES = [
   '.obj', '.mtl',
   '.dae',
   '.stl',
-  '.zip',  // existing: multi-file GLTF bundles
+  '.zip',  // multi-file bundles for any supported format (entry + textures + materials)
 ];
 
 export const MODEL_MAX_SIZE_BYTES: Record<string, number> = {
@@ -63,18 +63,31 @@ ALTER TABLE model_3d.model_3d_file
 
 Set on upload: `extname(file.originalname).slice(1).toLowerCase()` (e.g. `'fbx'`).
 
-### 4. Multi-file OBJ upload
+### 4. Multi-file uploads via `.zip` (all formats)
 
-OBJ models typically come with a `.mtl` file and texture images. Options:
-- Accept as `.zip` (existing mechanism — already extracted on server)
-- OR accept multiple files in single upload → server groups them by base name
+The `.zip` upload path is **format-agnostic** — any of the supported model formats can be bundled with their auxiliary files (textures, materials, .bin buffers). The single zip pipeline handles them all; there is no per-format zip endpoint.
 
-**Decision: reuse `.zip` path for OBJ+MTL+textures bundles. Single `.obj` without MTL is supported too.**
+**Per-format entry-file selection rule** (applied by `FilesService.selectEntryFile` after zip extraction to `models-3d/<modelId>/`):
 
-**OBJ entry file detection rule** (after zip extraction to `models-3d/<modelId>/`):
-- Entry `.obj` = the only `.obj` in archive, **OR** the largest `.obj` file by byte size if multiple exist
-- Store as `entryFile` in `model_3d_file` table
-- `MTLLoader` `basePath` = the model's file directory URL (not filesystem path): `${API_BASE}/models-3d/files/${modelId}/` — so MTLLoader resolves relative texture paths (e.g. `textures/body.png` → `…/textures/body.png`)
+| Entry format | Rule |
+|---|---|
+| `.gltf` / `.glb` | Exactly one file required; both present together → reject |
+| `.fbx` | Exactly one `.fbx` |
+| `.dae` | Exactly one `.dae` |
+| `.stl` | Exactly one `.stl` |
+| `.obj` | 1+ `.obj` allowed; largest by uncompressed byte size wins (ties broken lexicographically) |
+
+Mixed-format archives (more than one entry-point format type) are rejected with HTTP 400.
+
+**Auxiliary files allowed inside the zip** (not entry-points): `.bin, .png, .jpg, .jpeg, .webp, .ktx2, .mp3, .ogg, .wav, .mtl, .tga, .bmp, .tif, .tiff` plus any non-conflicting model files referenced by the entry. The `.mtl` extension is allowed only inside zip — it is rejected as a standalone upload at the controller's accept-list.
+
+**Format-specific notes:**
+- **OBJ:** Pack `.obj + .mtl + textures` together; `MTLLoader.setResourcePath` is set to the model's file directory URL (`${API_BASE}/models-3d/files/${modelId}/`) so relative texture paths resolve correctly.
+- **FBX:** Binary `.fbx` typically embeds textures and needs no zip; ASCII `.fbx` with external textures benefits from a zip bundle (loader picks them up via `setResourcePath`).
+- **DAE / GLTF:** External texture references (in `.dae` or `.gltf` JSON) resolve relative to the entry file's directory after extraction.
+- **STL:** Geometry-only — zip is rarely needed but supported for symmetry.
+
+The `entryFile` and the derived `originalFormat` are persisted on `model_3d_file` after extraction.
 
 ---
 
@@ -209,5 +222,5 @@ File: `client/src/app/api/dto.ts`
 - [ ] Format badge shown on model cards (exact Mantine colors: blue/orange/grape/teal/gray)
 - [ ] `Progress` bar shown below dropzone for files > 10 MB; disappears on completion
 - [ ] `.obj` file selection shows "Pack into .zip" `Alert`
-- [ ] Zip-bundled OBJ+MTL+textures load correctly via existing zip extraction
+- [ ] Zip uploads work for **every** format (GLB/GLTF, FBX, OBJ+MTL, DAE, STL) — not only GLTF and OBJ; mixed-format archives rejected with HTTP 400
 - [ ] Default material applied to materialless models (FBX/DAE/STL)

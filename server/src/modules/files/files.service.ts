@@ -74,7 +74,7 @@ export class FilesService implements OnApplicationBootstrap {
     return this.localStrategy.delete3DModel(id, silent);
   }
 
-  public async save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<string> {
+  public async save3DModelDirectory(modelId: string, files: ExtractedFile[]): Promise<void> {
     return this.localStrategy.save3DModelDirectory(modelId, files);
   }
 
@@ -86,7 +86,7 @@ export class FilesService implements OnApplicationBootstrap {
     return this.localStrategy.saveModelVersion(modelId, versionId, file);
   }
 
-  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<string> {
+  public async saveModelVersionDirectory(modelId: string, versionId: string, files: ExtractedFile[]): Promise<void> {
     return this.localStrategy.saveModelVersionDirectory(modelId, versionId, files);
   }
 
@@ -113,7 +113,7 @@ export class FilesService implements OnApplicationBootstrap {
     modelId: string,
     versionId: string,
     files: ExtractedFile[],
-  ): Promise<string> {
+  ): Promise<void> {
     const strategy = await this.getStrategyForOrg(orgId);
     return strategy.saveModelVersionDirectory(modelId, versionId, files);
   }
@@ -209,59 +209,16 @@ export class FilesService implements OnApplicationBootstrap {
     return strategy.getFileUrl(`models-3d/${modelId}/audio/${filename}`);
   }
 
-  public async extractAndSave3DModelDirectory(modelId: string, zipFile: Express.Multer.File): Promise<string> {
-    const ALLOWED_EXTENSIONS = new Set([
-      '.gltf',
-      '.glb',
-      '.bin',
-      '.png',
-      '.jpg',
-      '.jpeg',
-      '.webp',
-      '.ktx2',
-      '.mp3',
-      '.ogg',
-      '.wav',
-    ]);
+  public async extractAndSave3DModelDirectory(
+    modelId: string,
+    zipFile: Express.Multer.File,
+  ): Promise<{ entryFile: string; format: string }> {
+    const extractedFiles = this.extractZipForModel(zipFile);
+    const { entryFile, format } = this.selectEntryFile(extractedFiles);
 
-    const MAX_UNCOMPRESSED = 1024 ** 3 * 3; // 3 GB
-    let totalSize = 0;
+    await this.localStrategy.save3DModelDirectory(modelId, extractedFiles);
 
-    const zip = new AdmZip(zipFile.path);
-    const entries = zip.getEntries();
-    const extractedFiles: ExtractedFile[] = [];
-
-    for (const entry of entries) {
-      if (entry.isDirectory) continue;
-
-      const name = entry.entryName;
-      const depth = name.split('/').length - 1;
-      if (depth > 1) {
-        throw new BadRequestException(`Archive contains files more than 1 level deep: ${name}`);
-      }
-
-      const ext = extname(name).toLowerCase();
-      if (!ALLOWED_EXTENSIONS.has(ext)) {
-        throw new BadRequestException(`Archive contains disallowed file type: ${ext}`);
-      }
-
-      totalSize += entry.header.size;
-      if (totalSize > MAX_UNCOMPRESSED) {
-        throw new BadRequestException('Archive uncompressed size exceeds 3 GB limit');
-      }
-
-      extractedFiles.push({ relativePath: name, buffer: entry.getData() });
-    }
-
-    const entryPoints = extractedFiles.filter((f) => /\.(gltf|glb)$/i.test(f.relativePath));
-    if (entryPoints.length === 0) {
-      throw new BadRequestException('No .gltf or .glb file found in archive');
-    }
-    if (entryPoints.length > 1) {
-      throw new BadRequestException('Archive contains multiple .gltf/.glb files — exactly one required');
-    }
-
-    return this.localStrategy.save3DModelDirectory(modelId, extractedFiles);
+    return { entryFile, format };
   }
 
   public async extractAndSaveModelVersionDirectory(
@@ -269,7 +226,21 @@ export class FilesService implements OnApplicationBootstrap {
     versionId: string,
     zipFile: Express.Multer.File,
     orgId?: string,
-  ): Promise<string> {
+  ): Promise<{ entryFile: string; format: string }> {
+    const extractedFiles = this.extractZipForModel(zipFile);
+    const { entryFile, format } = this.selectEntryFile(extractedFiles);
+
+    if (orgId) {
+      await this.saveModelVersionDirectoryForOrg(orgId, modelId, versionId, extractedFiles);
+    } else {
+      await this.saveModelVersionDirectory(modelId, versionId, extractedFiles);
+    }
+
+    return { entryFile, format };
+  }
+
+  /** Validate, depth-check and extract zip entries used by both upload and version pipelines. */
+  private extractZipForModel(zipFile: Express.Multer.File): ExtractedFile[] {
     const ALLOWED_EXTENSIONS = new Set([
       '.gltf',
       '.glb',
@@ -282,6 +253,15 @@ export class FilesService implements OnApplicationBootstrap {
       '.mp3',
       '.ogg',
       '.wav',
+      '.obj',
+      '.mtl',
+      '.dae',
+      '.fbx',
+      '.stl',
+      '.tga',
+      '.bmp',
+      '.tif',
+      '.tiff',
     ]);
 
     const MAX_UNCOMPRESSED = 1024 ** 3 * 3; // 3 GB
@@ -310,20 +290,85 @@ export class FilesService implements OnApplicationBootstrap {
         throw new BadRequestException('Archive uncompressed size exceeds 3 GB limit');
       }
 
-      extractedFiles.push({ relativePath: name, buffer: entry.getData() });
+      extractedFiles.push({ relativePath: name, buffer: entry.getData(), size: entry.header.size });
     }
 
-    const entryPoints = extractedFiles.filter((f) => /\.(gltf|glb)$/i.test(f.relativePath));
-    if (entryPoints.length === 0) {
-      throw new BadRequestException('No .gltf or .glb file found in archive');
-    }
-    if (entryPoints.length > 1) {
-      throw new BadRequestException('Archive contains multiple .gltf/.glb files — exactly one required');
+    return extractedFiles;
+  }
+
+  /**
+   * Pick the entry-point file from an extracted archive and derive the original format.
+   * - GLTF and GLB are mutually exclusive — both present is an error.
+   * - Only one entry-point format type may be present per archive.
+   * - GLTF/GLB/FBX/DAE/STL: exactly one file required.
+   * - OBJ: 1+ allowed; pick the largest by uncompressed size, ties broken lexicographically.
+   */
+  private selectEntryFile(files: ExtractedFile[]): { entryFile: string; format: string } {
+    const buckets: Record<string, ExtractedFile[]> = {
+      '.gltf': [],
+      '.glb': [],
+      '.fbx': [],
+      '.obj': [],
+      '.dae': [],
+      '.stl': [],
+    };
+
+    for (const f of files) {
+      const ext = extname(f.relativePath).toLowerCase();
+      if (ext in buckets) {
+        buckets[ext].push(f);
+      }
     }
 
-    if (orgId) {
-      return this.saveModelVersionDirectoryForOrg(orgId, modelId, versionId, extractedFiles);
+    if (buckets['.gltf'].length > 0 && buckets['.glb'].length > 0) {
+      throw new BadRequestException('Archive contains both .gltf and .glb files — exactly one required');
     }
-    return this.saveModelVersionDirectory(modelId, versionId, extractedFiles);
+
+    // Treat gltf+glb as a single "gltf-family" type for mixed-format detection.
+    const presentTypes: string[] = [];
+    if (buckets['.gltf'].length > 0 || buckets['.glb'].length > 0) presentTypes.push('gltf-family');
+    if (buckets['.fbx'].length > 0) presentTypes.push('.fbx');
+    if (buckets['.obj'].length > 0) presentTypes.push('.obj');
+    if (buckets['.dae'].length > 0) presentTypes.push('.dae');
+    if (buckets['.stl'].length > 0) presentTypes.push('.stl');
+
+    if (presentTypes.length > 1) {
+      throw new BadRequestException('Archive contains multiple model formats');
+    }
+
+    if (presentTypes.length === 0) {
+      throw new BadRequestException(
+        'No supported 3D model entry file (.glb/.gltf/.fbx/.obj/.dae/.stl) found in archive',
+      );
+    }
+
+    const exactlyOne = (ext: string): ExtractedFile => {
+      const bucket = buckets[ext];
+      if (bucket.length > 1) {
+        throw new BadRequestException(`Archive contains multiple ${ext} files — exactly one required`);
+      }
+      return bucket[0];
+    };
+
+    const presentType = presentTypes[0];
+    let chosen: ExtractedFile;
+    let chosenExt: string;
+
+    if (presentType === 'gltf-family') {
+      const ext = buckets['.gltf'].length > 0 ? '.gltf' : '.glb';
+      chosen = exactlyOne(ext);
+      chosenExt = ext;
+    } else if (presentType === '.obj') {
+      chosen = [...buckets['.obj']].sort((a, b) => {
+        if (b.size !== a.size) return b.size - a.size;
+        return a.relativePath.localeCompare(b.relativePath);
+      })[0];
+      chosenExt = '.obj';
+    } else {
+      chosen = exactlyOne(presentType);
+      chosenExt = presentType;
+    }
+
+    return { entryFile: chosen.relativePath, format: chosenExt.slice(1).toLowerCase() };
   }
 }

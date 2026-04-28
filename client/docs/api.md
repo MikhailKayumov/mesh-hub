@@ -63,7 +63,8 @@ All API communication is handled through **RTK Query**, injected into a single `
 | `updateCurrentUser` | — | `CurrentUser`, `CGSoft` |
 | `updateCurrentUserAvatar` | — | `CurrentUser` |
 | `updateModel3D` | — | `Reset`, `Get3DModels`, `{ type: Get3DModel, id }` |
-| `upload3DModel` / `delete3DModel` / `saveThumbnailFromBase64` | — | `CurrentUser3DModels`, `Get3DModels` |
+| `delete3DModel` / `saveThumbnailFromBase64` | — | `CurrentUser3DModels`, `Get3DModels` |
+| `uploadModel3DWithProgress` (XHR helper, not RTK) | — | dispatched manually after success: `CurrentUser3DModels`, `Get3DModels` |
 
 > **`Reset` tag:** Invalidating it causes all queries that provide `Reset` to refetch simultaneously. Use it only for hard resets (e.g. after closing all sessions).
 
@@ -112,7 +113,6 @@ All API communication is handled through **RTK Query**, injected into a single `
 | `useModel3DQuery` | `GET` | `models-3d/:id` | `string` (id) | `Model3DResponseDto` |
 | `useUpdateModel3DMutation` | `PATCH` | `models-3d/:id` | `{ id, body: Model3DUpdateRequestDto }` | `Model3DResponseDto` |
 | `useCurrentUser3DModelsQuery` | `GET` | `models-3d/current-user` | `PaginationDto<any>` | `PaginationResponseDto<Model3DResponseDto>` |
-| `useUpload3DModelMutation` | `POST` | `models-3d/upload` | `FormData` | `{ modelId: string }` |
 | `useDelete3DModelMutation` | `DELETE` | `models-3d/:id` | `string` (id) | `void` |
 | `useSaveThumbnailFromBase64Mutation` | `POST` | `models-3d/:id/save-thumbnail-base64` | `{ id, thumbnail: string }` | `void` |
 

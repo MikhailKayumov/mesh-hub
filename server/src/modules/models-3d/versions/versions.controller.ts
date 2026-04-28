@@ -21,7 +21,12 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserRoles, ACCEPTED_3D_MODEL_FILE_TYPES, MAX_3D_MODEL_FILE_SIZE } from '@/constants';
+import {
+  UserRoles,
+  ACCEPTED_3D_MODEL_FILE_TYPES,
+  DEFAULT_MAX_3D_MODEL_FILE_SIZE,
+  MODEL_MAX_SIZE_BYTES,
+} from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Roles } from '@/decorators/auth/auth.decorator';
 import { User } from '@/decorators/user/user.decorator';
@@ -72,7 +77,7 @@ export class VersionsController {
       new ParseFilePipe({
         fileIsRequired: true,
         validators: [
-          new FileSizeValidator(MAX_3D_MODEL_FILE_SIZE),
+          new FileSizeValidator(MODEL_MAX_SIZE_BYTES, DEFAULT_MAX_3D_MODEL_FILE_SIZE),
           new FileExtensionValidatorPipe(ACCEPTED_3D_MODEL_FILE_TYPES),
         ],
       }),

@@ -108,6 +108,11 @@ export class Model3dService {
         fileEntity.size = file.size;
         fileEntity.extension = extname(file.originalname);
 
+        const isZip = extname(file.originalname).toLowerCase() === '.zip';
+        if (!isZip) {
+          fileEntity.originalFormat = extname(file.originalname).slice(1).toLowerCase();
+        }
+
         const createdFileEntity = await em.save(fileEntity);
 
         const modelEntity = new Model3dEntity();
@@ -121,11 +126,10 @@ export class Model3dService {
         const savedModel = await em.save(modelEntity);
         savedModelId = savedModel.id;
 
-        const isZip = extname(file.originalname).toLowerCase() === '.zip';
-
         if (isZip) {
-          const entryFile = await this.filesService.extractAndSave3DModelDirectory(savedModel.id, file);
+          const { entryFile, format } = await this.filesService.extractAndSave3DModelDirectory(savedModel.id, file);
           createdFileEntity.entryFile = entryFile;
+          createdFileEntity.originalFormat = format;
           await em.save(createdFileEntity);
           await this.filesService.deleteFile(file.path);
         } else {

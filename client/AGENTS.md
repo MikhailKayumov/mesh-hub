@@ -49,6 +49,25 @@ app  ←  widgets  ←  pages
 
 ---
 
+## UI/UX Conventions
+
+Apply to **all** pages and panels. Follow without exception:
+
+| Pattern | Mantine Component | When |
+|---|---|---|
+| Empty lists / grids | `EmptyData` widget (existing in `widgets/EmptyData/`) | When query returns 0 items |
+| Loading cards / lists | `Skeleton` (same grid/list structure as data) | While `isLoading=true` |
+| Full-page / panel loading | `LoadingOverlay` | Initial page load or in-flight uploads |
+| Destructive actions | `modals.openConfirmModal()` | Delete, reset, revoke |
+| Mutation errors | `notifications.show({ color: 'red', title: 'Error', message: ... })` | All RTK mutation failures |
+| Icon-only buttons | Wrapped in `<Tooltip label="...">` | Every `ActionIcon` without visible text |
+| Color pickers | `ColorInput` (Mantine) | All hex color fields |
+| Float value sliders | `NumberInputSlider` widget (existing in `widgets/NumberInputSlider/`) | Combined slider + number input |
+| Unsaved state indicator | Dirty `Badge` / `dot` on tab icon + `loading={isSaving}` on Save button | Forms with pending DB changes |
+| Tab navigation (editors) | Icon-only `Tabs` with `Tooltip`, using `TabValues` const + `getTabsConfig()` helper | Both Model Editor and Scene Editor navbars |
+
+---
+
 ## Naming Conventions
 
 | Artifact | Convention | Example |

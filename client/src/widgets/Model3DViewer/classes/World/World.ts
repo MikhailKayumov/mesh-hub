@@ -300,6 +300,45 @@ export class World extends EventTarget {
     this.scene.background = texture;
   }
 
+  public setBackgroundColor(hex: string): void {
+    this.scene.background = new Color(hex);
+  }
+
+  public syncLights(lights: SceneLightResponseDto[]): void {
+    // remove Three.js lights that are no longer in the DTO list
+    const incomingIds = new Set(lights.map((l) => l.id));
+    const toRemove: Light[] = [];
+    this.scene.traverse((obj) => {
+      if (obj.userData.isLight && obj.userData.lightId && !incomingIds.has(obj.userData.lightId as string)) {
+        toRemove.push(obj as Light);
+      }
+    });
+    for (const light of toRemove) {
+      this.scene.remove(light);
+      const idx = this.lights.indexOf(light);
+      if (idx !== -1) this.lights.splice(idx, 1);
+    }
+
+    // add or update
+    for (const dto of lights) {
+      let existing: Light | undefined;
+      this.scene.traverse((obj) => {
+        if (obj.userData.isLight && obj.userData.lightId === dto.id) {
+          existing = obj as Light;
+        }
+      });
+
+      if (existing) {
+        existing.color.set(dto.color);
+        existing.intensity = dto.intensity;
+        existing.position.set(dto.posX, dto.posY, dto.posZ);
+        existing.castShadow = dto.castShadow;
+      } else {
+        this.addLight(dto);
+      }
+    }
+  }
+
   public highlightObject(object: Object3D): void {
     const box = new Box3Helper(new Box3().setFromObject(object), 0xff9900);
     box.userData.isHighlight = true;

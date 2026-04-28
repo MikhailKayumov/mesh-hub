@@ -8,9 +8,11 @@ import type {
 import { ApiTags } from '@/app/api/tags.ts';
 import { ApiUrls } from '@/app/api/urls.ts';
 
+export type Models3DQueryParams = PaginationDto<any> & { workspaceId?: string };
+
 export const Models3dApi = Api.injectEndpoints({
   endpoints: (build) => ({
-    models3D: build.query<PaginationResponseDto<Model3DResponseDto>, PaginationDto<any>>({
+    models3D: build.query<PaginationResponseDto<Model3DResponseDto>, Models3DQueryParams>({
       providesTags: [ApiTags.Get3DModels],
       query: (params) => ({
         method: 'GET',

@@ -1,0 +1,47 @@
+.root {
+    padding: 0;
+
+    & :global(.mantine-Tabs-root) {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tabs {
+        &:before {
+            border-bottom-width: rem(1px);
+        }
+
+        .tab {
+            border-radius: 0;
+            padding: rem(8px);
+            border-bottom-width: rem(1px);
+
+            :global(.mantine-Tabs-tabLabel) {
+                display: block;
+                width: rem(18px);
+                height: rem(18px);
+            }
+
+            .tab-icon {
+                width: rem(18px);
+                height: rem(18px);
+                transition: color 0.124s ease-out;
+
+                svg {
+                    stroke-width: 1;
+                }
+            }
+
+            &.active {
+                .tab-icon {
+                    color: var(--mantine-color-primary-7);
+                }
+            }
+        }
+    }
+
+    .content {
+        flex: 1;
+    }
+}

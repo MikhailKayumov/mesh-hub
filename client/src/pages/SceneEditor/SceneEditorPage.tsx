@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useDocumentTitle } from '@/shared/hooks';
 import { useSceneQuery } from '@/app/api/scenes.ts';
 import { useSceneViewer } from './hooks/useSceneViewer';
+import { SceneNavbar } from './components/Navbar/SceneNavbar';
 import { SceneEditorTopBar } from './panels/SceneEditorTopBar';
-import { SceneObjectsPanel } from './panels/SceneObjectsPanel';
 import { ScenePropertiesPanel } from './panels/ScenePropertiesPanel';
 import classes from './SceneEditorPage.module.scss';
 
@@ -15,9 +15,18 @@ export function SceneEditorPage() {
 
     useDocumentTitle(scene?.name ?? 'Scene Editor');
 
-    const { containerRef, isSceneLoading, selectedObjectId, selectObject, captureScreenshot } = useSceneViewer({
-        scene,
-    });
+    const {
+        containerRef,
+        isSceneLoading,
+        selectionState,
+        selectObject,
+        selectLight,
+        captureScreenshot,
+        updateBackgroundColor,
+        updateAmbientLight,
+        loadHdri,
+        syncLights,
+    } = useSceneViewer({ scene });
 
     if (isSceneDataLoading) {
         return (
@@ -39,7 +48,7 @@ export function SceneEditorPage() {
         <AppShell
             header={{ height: 52 }}
             navbar={{ width: 260, breakpoint: 'sm' }}
-            aside={{ width: 280, breakpoint: 'md', collapsed: { mobile: !selectedObjectId } }}
+            aside={{ width: 280, breakpoint: 'md', collapsed: { mobile: !selectionState } }}
             padding={0}
             className={classes.root}
         >
@@ -47,13 +56,16 @@ export function SceneEditorPage() {
                 <SceneEditorTopBar scene={scene} captureScreenshot={captureScreenshot} />
             </AppShell.Header>
 
-            <AppShell.Navbar p="xs">
-                <SceneObjectsPanel
-                    scene={scene}
-                    selectedObjectId={selectedObjectId}
-                    onSelectObject={selectObject}
-                />
-            </AppShell.Navbar>
+            <SceneNavbar
+                scene={scene}
+                selectionState={selectionState}
+                onSelectObject={selectObject}
+                onSelectLight={selectLight}
+                syncLights={syncLights}
+                updateBackgroundColor={updateBackgroundColor}
+                updateAmbientLight={updateAmbientLight}
+                loadHdri={loadHdri}
+            />
 
             <AppShell.Main>
                 <Box ref={containerRef} className={classes.canvas} />
@@ -64,10 +76,11 @@ export function SceneEditorPage() {
                 )}
             </AppShell.Main>
 
-            <AppShell.Aside p="xs">
+            <AppShell.Aside p={0}>
                 <ScenePropertiesPanel
                     scene={scene}
-                    selectedObjectId={selectedObjectId}
+                    selectionState={selectionState}
+                    syncLights={syncLights}
                 />
             </AppShell.Aside>
         </AppShell>

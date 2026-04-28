@@ -46,4 +46,8 @@ export interface IFileStorageStrategy {
   saveModelDisplayHdri(modelId: string, file: Express.Multer.File): Promise<void>;
   /** Delete HDRI environment file for a model's display config. */
   deleteModelDisplayHdri(modelId: string): Promise<void>;
+  /** Save a texture file for a material override mesh. Stored as models-3d/<modelId>/materials/<overrideId>/<type>.<ext> */
+  saveModelMaterialTexture(modelId: string, overrideId: string, type: string, file: Express.Multer.File): Promise<void>;
+  /** Delete a texture file for a material override mesh. */
+  deleteModelMaterialTexture(modelId: string, overrideId: string, type: string): Promise<void>;
 }

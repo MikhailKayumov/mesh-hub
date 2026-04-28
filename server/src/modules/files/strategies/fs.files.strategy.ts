@@ -203,4 +203,28 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
     const dest = resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'display-hdri.hdr');
     await rm(dest, { force: true });
   }
+
+  public async saveModelMaterialTexture(
+    modelId: string,
+    overrideId: string,
+    type: string,
+    file: Express.Multer.File,
+  ): Promise<void> {
+    const ext = extname(file.originalname) || '.png';
+    const dir = resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'materials', overrideId);
+    await mkdir(dir, { recursive: true });
+    const dest = resolve(dir, `${type}${ext}`);
+    if (file.path) {
+      await rename(file.path, dest);
+    } else {
+      await writeFile(dest, file.buffer);
+    }
+  }
+
+  public async deleteModelMaterialTexture(modelId: string, overrideId: string, type: string): Promise<void> {
+    const dir = resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'materials', overrideId);
+    // Remove any file matching the type regardless of extension
+    const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+    await Promise.all(extensions.map((ext) => rm(resolve(dir, `${type}${ext}`), { force: true })));
+  }
 }

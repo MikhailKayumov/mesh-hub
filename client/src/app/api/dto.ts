@@ -637,3 +637,34 @@ export interface ModelLightUpdateDto {
   castShadow?: boolean;
 }
 
+export interface MaterialOverrideResponseDto {
+  id: string;
+  modelId: string;
+  meshName: string;
+  colorHex?: string;
+  metalness?: number;
+  roughness?: number;
+  emissiveHex?: string;
+  emissiveIntensity?: number;
+  opacity?: number;
+  wireframe: boolean;
+  textureMapUrl?: string;
+  normalMapUrl?: string;
+  roughnessMapUrl?: string;
+  metalnessMapUrl?: string;
+  emissiveMapUrl?: string;
+  aoMapUrl?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface MaterialOverrideUpsertDto {
+  colorHex?: string;
+  metalness?: number;
+  roughness?: number;
+  emissiveHex?: string;
+  emissiveIntensity?: number;
+  opacity?: number;
+  wireframe?: boolean;
+}
+

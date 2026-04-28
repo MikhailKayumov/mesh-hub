@@ -39,6 +39,7 @@ export const Models3DSchemaTables = {
   ModelVersion: 'model_version',
   ModelDisplayConfig: 'model_display_config',
   ModelLight: 'model_light',
+  ModelMaterialOverride: 'model_material_override',
 } as const;
 
 export const OrganizationsSchemaTables = {

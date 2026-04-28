@@ -298,4 +298,30 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
   public async deleteModelDisplayHdri(modelId: string): Promise<void> {
     await this.deleteKey(`models-3d/${modelId}/display-hdri.hdr`);
   }
+
+  public async saveModelMaterialTexture(
+    modelId: string,
+    overrideId: string,
+    type: string,
+    file: Express.Multer.File,
+  ): Promise<void> {
+    const ext = extname(file.originalname) || '.png';
+    const key = `models-3d/${modelId}/materials/${overrideId}/${type}${ext}`;
+    const body = file.buffer ? Readable.from(file.buffer) : Readable.from(createReadStream(file.path));
+    const upload = new Upload({
+      client: this.client,
+      params: { Bucket: this.bucket, Key: key, Body: body, ContentType: file.mimetype },
+    });
+    await upload.done();
+  }
+
+  public async deleteModelMaterialTexture(modelId: string, overrideId: string, type: string): Promise<void> {
+    // Delete all extensions for the given type
+    const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
+    await Promise.all(
+      extensions.map((ext) =>
+        this.deleteKey(`models-3d/${modelId}/materials/${overrideId}/${type}${ext}`, true),
+      ),
+    );
+  }
 }

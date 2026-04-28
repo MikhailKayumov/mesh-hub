@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import type { DisplayConfigResponseDto, Model3DResponseDto } from '@/app/api/dto.ts';
+import type { DisplayConfigResponseDto, MaterialOverrideResponseDto, Model3DResponseDto } from '@/app/api/dto.ts';
 import { getModel3DVersionFileSrc } from '@/shared/utils/model3d.ts';
 import { sleep } from '@/shared/utils/sleep.ts';
 import { Viewer } from '../classes/Viewer';
@@ -9,12 +9,13 @@ import type { PostProcessConfig } from '../classes/types';
 export interface UseViewerProps {
   model: Model3DResponseDto | null;
   displayConfig?: DisplayConfigResponseDto | null;
+  materialOverrides?: MaterialOverrideResponseDto[] | null;
   onInit?: (viewer: Viewer) => void | Promise<void>;
   onReady?: (viewer: Viewer) => void | Promise<void>;
   onDestroy?: (viewer?: Viewer) => void | Promise<void>;
 }
 
-export function useViewer({ model, displayConfig, onReady, onInit, onDestroy }: UseViewerProps) {
+export function useViewer({ model, displayConfig, materialOverrides, onReady, onInit, onDestroy }: UseViewerProps) {
   const placeRef = useRef<HTMLDivElement>(null);
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [searchParams] = useSearchParams();
@@ -78,6 +79,10 @@ export function useViewer({ model, displayConfig, onReady, onInit, onDestroy }: 
         if (displayConfig.postProcess) {
           viewer.renderer.setPostProcessing(displayConfig.postProcess as PostProcessConfig);
         }
+      }
+
+      if (materialOverrides?.length) {
+        viewer.world.applyMaterialOverrides(materialOverrides);
       }
 
       await viewer.run();

@@ -20,6 +20,7 @@ export const ApiTags = {
   Scenes: 'Scenes',
   Scene: 'Scene',
   DisplayConfig: 'DisplayConfig',
+  Materials: 'Materials',
 } as const;
 
 export type ApiTag = keyof typeof ApiTags;

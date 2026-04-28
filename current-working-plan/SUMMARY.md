@@ -13,7 +13,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 | [ITER-1](ITER-1.md) | Foundation: DB + Personal Scenes & Models | ✅ Done | Personal scope for models/scenes, `visibility` field, personal routes |
 | [ITER-2](ITER-2.md) | Scene Editor: Complete UI | ✅ Done | Objects/Lights/Config panels, real-time canvas, scene state sync |
 | [ITER-3](ITER-3.md) | Model Editor: Lights, Display Config & Post-Processing | ✅ Done | Custom lighting, renderer settings, EffectComposer pipeline, display presets |
-| [ITER-4](ITER-4.md) | Model Editor: Materials & Textures | 🔲 Pending | Per-mesh material overrides, PBR sliders, texture uploads |
+| [ITER-4](ITER-4.md) | Model Editor: Materials & Textures | ✅ Done | Per-mesh material overrides, PBR sliders, texture uploads |
 | [ITER-5](ITER-5.md) | Animations Enhanced + Audio | 🔲 Pending | Speed/loop/crossfade in AnimationToolbar, scene object animations, Three.js audio |
 | [ITER-6](ITER-6.md) | Multi-Format Support | 🔲 Pending | FBX / OBJ+MTL / DAE / STL loader registry |
 | [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | 🔲 Pending | Scene annotations/comments, `@OptionalUser` access control, public scene page |
@@ -297,6 +297,96 @@ Viewer
 4. **displayConfig is optional prop** — `useViewer` applies config only when the prop is non-null; the public model page and embed viewer remain unaffected since they don't pass it.
 5. **Lights use `syncLights` which accepts `SceneLightResponseDto[]`** — `ModelLightResponseDto` is structurally identical; cast as `any` in the tabs to avoid a coupling between schemas.
 6. **HDRI served at `/api/models-3d/:modelId/display-config/hdri`** — consistent with the scene HDRI pattern at `/api/scenes/:id/hdri`.
+
+---
+
+## ITER-4 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Model Editor — per-mesh PBR material overrides with color, metalness, roughness, emissive, opacity, wireframe controls, and 6 texture map upload slots (map, normal, roughness, metalness, emissive, ao).
+
+### What was implemented
+
+**Database (Phase 1)**
+
+| File | Change |
+|---|---|
+| `server/src/database/constants.ts` | Added `ModelMaterialOverride: 'model_material_override'` to `Models3DSchemaTables` |
+| `server/src/database/entities/models-3d/model-material-override.entity.ts` | New entity — M:1 with `model_3d`; stores `meshName`, PBR floats, hex colors, `wireframe`, 6 texture path columns; unique constraint on `(modelId, meshName)` |
+| `server/src/database/migrations/models-3d/1777404000000-AddModelMaterialOverride.ts` | Migration: creates `model_material_override` table with all columns, FK to `model_3d` with CASCADE delete, index on `model_id` |
+
+**File Storage (Phase 2)**
+
+| File | Change |
+|---|---|
+| `server/src/modules/files/types.ts` | Added `saveModelMaterialTexture` and `deleteModelMaterialTexture` to `IFileStorageStrategy` |
+| `server/src/modules/files/strategies/fs.files.strategy.ts` | Local strategy: saves to `files/models-3d/{modelId}/materials/{overrideId}/`; delete tries all 4 extensions with `force: true` |
+| `server/src/modules/files/strategies/s3.files.strategy.ts` | S3 strategy: key `models-3d/{modelId}/materials/{overrideId}/{type}{ext}`; silent delete of all 4 extensions |
+| `server/src/modules/files/files.service.ts` | Added `saveModelMaterialTexture` and `deleteModelMaterialTexture` org-aware methods |
+
+**Backend materials submodule (Phase 3)**
+
+| File | Change |
+|---|---|
+| `server/src/modules/models-3d/materials/dto/material-override.response.dto.ts` | Response DTO — all PBR fields + 6 `*Url` fields for texture serving URLs |
+| `server/src/modules/models-3d/materials/dto/material-override.upsert.dto.ts` | Upsert DTO — all PBR fields optional; `@IsHexColor`, `@IsNumber @Min @Max`, `@IsBoolean` validators |
+| `server/src/modules/models-3d/materials/material-override.repository.ts` | TypeORM repository wrapper with `findByModelId`, `findByModelAndMesh`, `save`, `softDelete` |
+| `server/src/modules/models-3d/materials/materials.service.ts` | Business logic: `listMaterials`, `upsertMaterial`, `deleteMaterial`, `uploadTexture`, `clearTexture`, `getOverrideForTexture` |
+| `server/src/modules/models-3d/materials/materials.controller.ts` | REST controller — prefix `models-3d/:modelId/materials`; 6 endpoints; `GET /:meshName/texture/:type` streams file with `StreamableFile` |
+| `server/src/modules/models-3d/materials/materials.module.ts` | Feature module |
+| `server/src/modules/models-3d/models-3d.module.ts` | Added `MaterialsModule` import |
+
+**Frontend API layer (Phase 4)**
+
+| File | Change |
+|---|---|
+| `client/src/app/api/dto.ts` | Added `MaterialOverrideResponseDto` and `MaterialOverrideUpsertDto` |
+| `client/src/app/api/tags.ts` | Added `Materials: 'Materials'` to `ApiTags` |
+| `client/src/app/api/materials.ts` | 5 RTK Query endpoints: `getMaterials`, `upsertMaterial`, `deleteMaterial`, `uploadMaterialTexture`, `deleteMaterialTexture` |
+
+**Three.js (Phase 5)**
+
+| File | Change |
+|---|---|
+| `client/src/widgets/Model3DViewer/classes/World/World.ts` | Added `applyMaterialOverrides(overrides: MaterialOverrideResponseDto[])` — traverses scene, matches by `mesh.name`, clones material, applies PBR values, loads textures via `TextureLoader` |
+| `client/src/widgets/Model3DViewer/hooks/useViewer.ts` | Added `materialOverrides?: MaterialOverrideResponseDto[] | null` to `UseViewerProps`; applies after `displayConfig` in model-load effect |
+
+**Editor UI (Phase 6)**
+
+| File | Change |
+|---|---|
+| `client/src/pages/Editor/components/Navbar/model.ts` | Added `'materials'` to `TabValue` type |
+| `client/src/pages/Editor/components/Navbar/constants.ts` | Added `Materials: 'materials'` to `TabValues` |
+| `client/src/pages/Editor/components/Navbar/utils.tsx` | Added `MaterialsTab` entry with `IconPalette` to `getTabsConfig()` |
+| `client/src/pages/Editor/components/Navbar/components/MaterialsTab/index.tsx` | New tab: mesh list from scene traverse with WorldSceneChange listener; per-mesh `Collapse` form with all PBR fields; 6 texture slots with `FileButton` upload and `ActionIcon` delete; Save/Reset buttons |
+
+**Integration (Phase 7)**
+
+| File | Change |
+|---|---|
+| `client/src/pages/Editor/index.tsx` | Fetches `useGetMaterialsQuery`; passes `materialOverrides` to `<Main>` |
+| `client/src/pages/Editor/components/Main/index.tsx` | Added `materialOverrides?` prop; passes to `<Model3DViewer>` |
+| `client/src/pages/Models3D/pages/Model3D/index.tsx` | Fetches `useGetMaterialsQuery`; passes `materialOverrides` to `<Model3DViewer>` |
+
+### REST API surface added
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/models-3d/:modelId/materials` | Public | List all material overrides |
+| PUT | `/api/models-3d/:modelId/materials/:meshName` | JWT + owner | Upsert PBR values for a mesh |
+| DELETE | `/api/models-3d/:modelId/materials/:meshName` | JWT + owner | Delete override + all textures |
+| POST | `/api/models-3d/:modelId/materials/:meshName/texture/:type` | JWT + owner | Upload texture file |
+| DELETE | `/api/models-3d/:modelId/materials/:meshName/texture/:type` | JWT + owner | Remove texture file |
+| GET | `/api/models-3d/:modelId/materials/:meshName/texture/:type` | Public | Stream texture binary |
+
+### Design decisions made
+
+1. **Upsert-by-meshName** — the controller uses `PUT /:meshName` for idempotent creation/update; the unique constraint `(modelId, meshName)` in the DB enforces one override per mesh. This avoids a separate "create vs update" flow in the UI.
+2. **Texture serving via StreamableFile** — textures for local storage are streamed directly from disk by NestJS; S3 URLs are returned in the response DTO as pre-signed links (inherited from `FilesService.getModelMaterialTextureUrl`).
+3. **Stored path is cwd-relative** — texture paths stored as `models-3d/{modelId}/materials/{overrideId}/{type}{ext}`; the controller prepends `files/` to resolve the absolute path, matching the `fsConfig.folders.models` layout.
+4. **Material clone in Three.js** — `applyMaterialOverrides` always clones the original material before mutating it, preventing shared-material side effects across mesh instances.
+5. **Texture URLs in response DTO** — `toResponse()` in the service constructs URL strings using the `/api/models-3d/:modelId/materials/:meshName/texture/:type` pattern so the frontend can load them directly as `TextureLoader` URLs.
 
 ---
 

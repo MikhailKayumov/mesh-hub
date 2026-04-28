@@ -168,6 +168,27 @@ export class FilesService implements OnApplicationBootstrap {
     return strategy.getFileUrl(`models-3d/${modelId}/display-hdri.hdr`);
   }
 
+  public async saveModelMaterialTexture(
+    orgId: string | null,
+    modelId: string,
+    overrideId: string,
+    type: string,
+    file: Express.Multer.File,
+  ): Promise<void> {
+    const strategy = orgId ? await this.getStrategyForOrg(orgId) : this.localStrategy;
+    return strategy.saveModelMaterialTexture(modelId, overrideId, type, file);
+  }
+
+  public async deleteModelMaterialTexture(
+    orgId: string | null,
+    modelId: string,
+    overrideId: string,
+    type: string,
+  ): Promise<void> {
+    const strategy = orgId ? await this.getStrategyForOrg(orgId) : this.localStrategy;
+    return strategy.deleteModelMaterialTexture(modelId, overrideId, type);
+  }
+
   public async extractAndSave3DModelDirectory(modelId: string, zipFile: Express.Multer.File): Promise<string> {
     const ALLOWED_EXTENSIONS = new Set([
       '.gltf',

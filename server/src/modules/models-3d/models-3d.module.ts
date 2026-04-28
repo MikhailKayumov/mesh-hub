@@ -9,6 +9,7 @@ import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.rep
 import { Model3dService } from '@/modules/models-3d/services/model-3d.service';
 import { DisplayConfigModule } from '@/modules/models-3d/display-config/display-config.module';
 import { VersionsModule } from '@/modules/models-3d/versions/versions.module';
+import { MaterialsModule } from '@/modules/models-3d/materials/materials.module';
 import { StorageQuotaModule } from '@/modules/storage-quota/storage-quota.module';
 import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
 
@@ -19,6 +20,7 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
     StorageQuotaModule,
     VersionsModule,
     DisplayConfigModule,
+    MaterialsModule,
   ],
   providers: [Model3dService, Model3dRepository, Model3dFileRepository],
   exports: [Model3dService, Model3dRepository, Model3dFileRepository],

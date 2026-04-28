@@ -50,4 +50,10 @@ export class SceneObjectEntity extends GuidIdEntityBase {
   @ManyToOne(() => Model3dEntity, { nullable: false })
   @JoinColumn({ name: 'model_id' })
   public model: Model3dEntity;
+
+  @Column({ type: 'jsonb', name: 'animation_config', nullable: true })
+  public animationConfig?: Record<string, unknown> | null;
+
+  @Column({ type: 'jsonb', name: 'audio_config', nullable: true })
+  public audioConfig?: Record<string, unknown> | null;
 }

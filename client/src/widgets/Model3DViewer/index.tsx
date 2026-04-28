@@ -1,5 +1,8 @@
-import { Box } from '@mantine/core';
+import { Box, Button, Overlay } from '@mantine/core';
 import { useFullscreenElement } from '@mantine/hooks';
+import { IconVolume } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import { useListModelAudioQuery } from '@/app/api/audio.ts';
 import { Model3DViewerBottomBar } from './components/Model3DViewerBottomBar';
 import { Model3DViewerTopBar } from './components/Model3DViewerTopBar';
 import { ViewerContextProvider } from './context.tsx';
@@ -13,26 +16,53 @@ export function Model3DViewer(props: Model3DPageViewerProps) {
   const { onMouseEnter, onMouseLeave } = usePreventMiddleClick();
   const { placeRef, viewer } = useViewer(props);
   const { ref: rootRef, toggle: toggleFullscreen, fullscreen } = useFullscreenElement();
+  const modelId = props.model?.id;
+  const [audioSuspended, setAudioSuspended] = useState(false);
+
+  const { data: audioTracks = [] } = useListModelAudioQuery(
+    { modelId: modelId! },
+    { skip: !modelId },
+  );
+
+  // Check if AudioContext is suspended after viewer is ready
+  useEffect(() => {
+    if (!viewer || audioTracks.length === 0) return;
+    const ctx = viewer.audioContext;
+    if (ctx?.state === 'suspended') {
+      setAudioSuspended(true);
+    }
+  }, [viewer, audioTracks]);
+
+  const handleUnlockAudio = () => {
+    viewer?.audioContext?.resume();
+    setAudioSuspended(false);
+  };
 
   return (
     <ViewerContextProvider viewer={viewer}>
       <Box ref={rootRef} className={classes.root} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
         <Model3DViewerTopBar />
         <Box ref={placeRef} className={classes.viewer} />
-        <Model3DViewerBottomBar fullscreen={fullscreen} toggleFullscreen={toggleFullscreen} />
+        {audioSuspended && (
+          <>
+            <Overlay backgroundOpacity={0.3} zIndex={10} />
+            <Button
+              style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 11 }}
+              leftSection={<IconVolume size={16} />}
+              onClick={handleUnlockAudio}
+              variant="filled"
+            >
+              Click to enable audio
+            </Button>
+          </>
+        )}
+        <Model3DViewerBottomBar
+          fullscreen={fullscreen}
+          toggleFullscreen={toggleFullscreen}
+          modelId={modelId}
+          viewer={viewer ?? undefined}
+        />
       </Box>
     </ViewerContextProvider>
   );
-}
-
-
-return (
-  <ViewerContextProvider viewer={viewer}>
-    <Box ref={rootRef} className={classes.root} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <Model3DViewerTopBar />
-      <Box ref={placeRef} className={classes.viewer} />
-      <Model3DViewerBottomBar fullscreen={fullscreen} toggleFullscreen={toggleFullscreen} />
-    </Box>
-  </ViewerContextProvider>
-);
 }

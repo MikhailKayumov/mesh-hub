@@ -471,6 +471,8 @@ export interface SceneObjectResponseDto {
   model: SceneObjectModelDto;
   createdAt: string;
   updatedAt?: string;
+  animationConfig?: Record<string, unknown> | null;
+  audioConfig?: Record<string, unknown> | null;
 }
 
 export const SceneVisibility = {
@@ -521,6 +523,15 @@ export interface SceneUpdateRequestDto {
   visibility?: SceneVisibilityType;
 }
 
+export interface SceneObjectAudioConfigDto {
+  audioId: string;
+  volume?: number;
+  loop?: boolean;
+  autoplay?: boolean;
+  positional?: boolean;
+  maxDistance?: number;
+}
+
 export interface SceneObjectUpsertDto {
   modelId: string;
   posX?: number;
@@ -532,6 +543,8 @@ export interface SceneObjectUpsertDto {
   scaleX?: number;
   scaleY?: number;
   scaleZ?: number;
+  audioConfig?: SceneObjectAudioConfigDto | null;
+  animationConfig?: Record<string, unknown> | null;
 }
 
 export interface SceneLightUpsertDto {
@@ -667,4 +680,14 @@ export interface MaterialOverrideUpsertDto {
   opacity?: number;
   wireframe?: boolean;
 }
+
+export interface ModelAudioResponseDto {
+  id: string;
+  modelId: string;
+  filename: string;
+  originalName: string;
+  durationS?: number | null;
+  createdAt: string;
+}
+
 

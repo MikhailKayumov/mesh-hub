@@ -10,6 +10,7 @@ import { Model3dService } from '@/modules/models-3d/services/model-3d.service';
 import { DisplayConfigModule } from '@/modules/models-3d/display-config/display-config.module';
 import { VersionsModule } from '@/modules/models-3d/versions/versions.module';
 import { MaterialsModule } from '@/modules/models-3d/materials/materials.module';
+import { AudioModule } from '@/modules/models-3d/audio/audio.module';
 import { StorageQuotaModule } from '@/modules/storage-quota/storage-quota.module';
 import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
 
@@ -21,6 +22,7 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
     VersionsModule,
     DisplayConfigModule,
     MaterialsModule,
+    AudioModule,
   ],
   providers: [Model3dService, Model3dRepository, Model3dFileRepository],
   exports: [Model3dService, Model3dRepository, Model3dFileRepository],

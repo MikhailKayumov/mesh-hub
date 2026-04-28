@@ -19,9 +19,9 @@ export function AnimationList({ animations }: AnimationListProps) {
       </Menu.Target>
       <Menu.Dropdown>
         <ScrollArea.Autosize mah={211} offsetScrollbars scrollbarSize={4} mx="auto" scrollbars="y">
-          {animations.clips?.map((a, i) => (
+          {animations.clips?.map((a) => (
             <Menu.Item
-              key={i}
+              key={a.uuid}
               onClick={() => animations.setAnimation(a)}
               className={classes['animation-list-item']}
               rightSection={

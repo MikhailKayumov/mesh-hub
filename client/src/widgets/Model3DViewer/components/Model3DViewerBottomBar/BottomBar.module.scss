@@ -10,12 +10,15 @@
     flex: 1;
   }
 
+  .audio {
+    margin-right: rem(8px);
+  }
+
   .toggle-fullscreen-button {
     margin-left: auto;
   }
 }
 
 [data-mantine-color-scheme='dark'] {
-  .root {
-  }
+  .root {}
 }

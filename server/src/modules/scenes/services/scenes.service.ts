@@ -147,7 +147,9 @@ export class ScenesService {
       scaleY: dto.scaleY ?? 1,
       scaleZ: dto.scaleZ ?? 1,
       order: dto.order ?? 0,
-    });
+      animationConfig: (dto.animationConfig as Record<string, unknown>) ?? null,
+      audioConfig: (dto.audioConfig as Record<string, unknown>) ?? null,
+    } as import('typeorm').DeepPartial<import('@/database/entities/scenes/scene-object.entity').SceneObjectEntity>);
     await this.sceneObjectRepository.save(obj);
 
     return this.getScene(sceneId, user);
@@ -175,6 +177,8 @@ export class ScenesService {
     if (dto.scaleY !== undefined) obj.scaleY = dto.scaleY;
     if (dto.scaleZ !== undefined) obj.scaleZ = dto.scaleZ;
     if (dto.order !== undefined) obj.order = dto.order;
+    if ('animationConfig' in dto) obj.animationConfig = (dto.animationConfig as Record<string, unknown>) ?? null;
+    if ('audioConfig' in dto) obj.audioConfig = (dto.audioConfig as Record<string, unknown>) ?? null;
 
     await this.sceneObjectRepository.save(obj);
     return this.getScene(sceneId, user);

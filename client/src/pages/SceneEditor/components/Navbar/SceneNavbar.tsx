@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { AppShell, Tabs, Tooltip } from '@mantine/core';
+import type { AnimationClip, AnimationMixer } from 'three';
 import type { SceneResponseDto } from '@/app/api/dto.ts';
 import type { SelectionState } from '../../hooks/model.ts';
 import { SceneTabValues, type SceneTabValue } from './constants.ts';
@@ -17,12 +18,17 @@ interface SceneNavbarProps {
     updateBackgroundColor: (hex: string) => void;
     updateAmbientLight: (intensity: number) => void;
     loadHdri: (url: string) => void;
+    getObjectAnimations: (id: string) => AnimationClip[];
+    getObjectMixer: (id: string) => AnimationMixer | undefined;
+    getAnimatedObjectIds: () => string[];
+    isSceneLoading: boolean;
 }
 
 const TAB_TOOLTIPS: Record<SceneTabValue, string> = {
     objects: 'Objects',
     lights: 'Lights',
     config: 'Scene Config',
+    animations: 'Animations',
 };
 
 export function SceneNavbar({
@@ -35,6 +41,10 @@ export function SceneNavbar({
     updateBackgroundColor,
     updateAmbientLight,
     loadHdri,
+    getObjectAnimations,
+    getObjectMixer,
+    getAnimatedObjectIds,
+    isSceneLoading,
 }: SceneNavbarProps) {
     const [tabValue, setTabValue] = useState<SceneTabValue>(SceneTabValues.Objects);
 
@@ -56,9 +66,13 @@ export function SceneNavbar({
                 updateBackgroundColor,
                 updateAmbientLight,
                 loadHdri,
+                getObjectAnimations,
+                getObjectMixer,
+                getAnimatedObjectIds,
+                isSceneLoading,
             }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [scene, selectionState],
+        [scene, selectionState, isSceneLoading],
     );
 
     return (

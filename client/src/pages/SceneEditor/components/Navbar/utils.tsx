@@ -1,9 +1,11 @@
-import { IconBulb, IconCube, IconSettings } from '@tabler/icons-react';
+import { IconBulb, IconCube, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
+import type { AnimationClip, AnimationMixer } from 'three';
 import type { SceneResponseDto } from '@/app/api/dto.ts';
 import type { SelectionState } from '../../hooks/model.ts';
 import { SceneObjectsPanel } from '../../panels/SceneObjectsPanel';
 import { SceneLightsPanel } from '../../panels/SceneLightsPanel';
 import { SceneConfigPanel } from '../../panels/SceneConfigPanel';
+import { SceneAnimationsPanel } from '../../panels/SceneAnimationsPanel';
 import { SceneTabValues } from './constants.ts';
 import type { SceneTabsConfig } from './model.ts';
 import classes from './SceneNavbar.module.scss';
@@ -17,6 +19,10 @@ interface GetSceneTabsConfigOptions {
     updateBackgroundColor: (hex: string) => void;
     updateAmbientLight: (intensity: number) => void;
     loadHdri: (url: string) => void;
+    getObjectAnimations: (id: string) => AnimationClip[];
+    getObjectMixer: (id: string) => AnimationMixer | undefined;
+    getAnimatedObjectIds: () => string[];
+    isSceneLoading: boolean;
 }
 
 export function getSceneTabsConfig({
@@ -28,6 +34,10 @@ export function getSceneTabsConfig({
     updateBackgroundColor,
     updateAmbientLight,
     loadHdri,
+    getObjectAnimations,
+    getObjectMixer,
+    getAnimatedObjectIds,
+    isSceneLoading,
 }: GetSceneTabsConfigOptions): SceneTabsConfig[] {
     const selectedObjectId = selectionState?.type === 'object' ? selectionState.id : null;
     const selectedLightId = selectionState?.type === 'light' ? selectionState.id : null;
@@ -65,6 +75,19 @@ export function getSceneTabsConfig({
                     updateBackgroundColor={updateBackgroundColor}
                     updateAmbientLight={updateAmbientLight}
                     loadHdri={loadHdri}
+                />
+            ),
+        },
+        {
+            value: SceneTabValues.Animations,
+            title: <IconPlayerPlay className={classes['tab-icon']} />,
+            content: (
+                <SceneAnimationsPanel
+                    scene={scene}
+                    getObjectAnimations={getObjectAnimations}
+                    getObjectMixer={getObjectMixer}
+                    getAnimatedObjectIds={getAnimatedObjectIds}
+                    isSceneLoading={isSceneLoading}
                 />
             ),
         },

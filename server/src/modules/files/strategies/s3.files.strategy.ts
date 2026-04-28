@@ -324,4 +324,21 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
       ),
     );
   }
+
+  public async saveModelAudio(modelId: string, audioId: string, file: Express.Multer.File): Promise<string> {
+    const ext = extname(file.originalname) || '.mp3';
+    const filename = `${audioId}${ext}`;
+    const key = `models-3d/${modelId}/audio/${filename}`;
+    const body = file.buffer ? Readable.from(file.buffer) : Readable.from(createReadStream(file.path));
+    const upload = new Upload({
+      client: this.client,
+      params: { Bucket: this.bucket, Key: key, Body: body, ContentType: file.mimetype },
+    });
+    await upload.done();
+    return filename;
+  }
+
+  public async deleteModelAudio(modelId: string, filename: string): Promise<void> {
+    await this.deleteKey(`models-3d/${modelId}/audio/${filename}`);
+  }
 }

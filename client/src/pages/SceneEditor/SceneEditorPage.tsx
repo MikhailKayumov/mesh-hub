@@ -26,6 +26,9 @@ export function SceneEditorPage() {
         updateAmbientLight,
         loadHdri,
         syncLights,
+        getObjectAnimations,
+        getObjectMixer,
+        getAnimatedObjectIds,
     } = useSceneViewer({ scene });
 
     if (isSceneDataLoading) {
@@ -65,6 +68,10 @@ export function SceneEditorPage() {
                 updateBackgroundColor={updateBackgroundColor}
                 updateAmbientLight={updateAmbientLight}
                 loadHdri={loadHdri}
+                getObjectAnimations={getObjectAnimations}
+                getObjectMixer={getObjectMixer}
+                getAnimatedObjectIds={getAnimatedObjectIds}
+                isSceneLoading={isSceneLoading}
             />
 
             <AppShell.Main>

@@ -1,4 +1,4 @@
-import { AnimationObjectGroup, Box3, type Object3D, Raycaster, Vector2, Vector3 } from 'three';
+import { Audio as ThreeAudio, AudioListener, AudioLoader, AnimationClip, AnimationMixer, AnimationObjectGroup, Box3, type Object3D, Raycaster, Vector2, Vector3 } from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import type { Model3DResponseDto, SceneResponseDto } from '@/app/api/dto.ts';
 import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
@@ -19,6 +19,9 @@ export class Viewer {
 
   private _mode: ViewerMode = 'view';
   private _pointerDownHandler: ((e: PointerEvent) => void) | null = null;
+  private _sceneObjectMixers = new Map<string, { clips: AnimationClip[]; mixer: AnimationMixer; cleanup: () => void }>();
+  private _audioListener: AudioListener | null = null;
+  private _audioObjects: ThreeAudio[] = [];
 
   public constructor(place?: HTMLDivElement) {
     this.place = place;
@@ -46,6 +49,10 @@ export class Viewer {
     if (this.stats) {
       this.renderer.addCallback(() => this.stats?.update());
     }
+
+    const listener = new AudioListener();
+    this.camera.camera.add(listener);
+    this._audioListener = listener;
 
     return this;
   }
@@ -137,6 +144,7 @@ export class Viewer {
   public async loadScene(scene: SceneResponseDto): Promise<void> {
     Loader.resizeCache(20);
     this.world.clearScene();
+    this.clearSceneAnimations();
     this.renderer.setSettings({ clearColor: scene.config.backgroundColor });
     this.world.setAmbientLight(scene.config.ambientLightIntensity);
 
@@ -150,6 +158,20 @@ export class Viewer {
         object.userData.sceneObjectId = obj.id;
         object.userData.isSceneObject = true;
         await this.world.spawn(object);
+
+        if (loaded.animations?.length) {
+          const mixer = new AnimationMixer(object);
+          const onRender = mixer.update.bind(mixer);
+          this.renderer.addCallback(onRender);
+          this._sceneObjectMixers.set(obj.id, {
+            clips: loaded.animations,
+            mixer,
+            cleanup: () => {
+              mixer.stopAllAction();
+              this.renderer.removeCallback(onRender);
+            },
+          });
+        }
       }),
     );
 
@@ -184,6 +206,49 @@ export class Viewer {
       if (obj.userData.sceneObjectId === sceneObjectId) target = obj;
     });
     if (target) this.world.highlightObject(target);
+  }
+
+  public getObjectAnimations(sceneObjectId: string): AnimationClip[] {
+    return this._sceneObjectMixers.get(sceneObjectId)?.clips ?? [];
+  }
+
+  public getObjectMixer(sceneObjectId: string): AnimationMixer | undefined {
+    return this._sceneObjectMixers.get(sceneObjectId)?.mixer;
+  }
+
+  public getSceneObjectMixerIds(): string[] {
+    return Array.from(this._sceneObjectMixers.keys());
+  }
+
+  public get audioContext(): AudioContext | null {
+    return this._audioListener?.context ?? null;
+  }
+
+  public playAudio(url: string, opts: { loop?: boolean; volume?: number } = {}): ThreeAudio {
+    if (!this._audioListener) throw new Error('AudioListener not initialized');
+    const audio = new ThreeAudio(this._audioListener);
+    audio.setVolume(opts.volume ?? 1);
+    audio.setLoop(opts.loop ?? false);
+    const loader = new AudioLoader();
+    loader.load(url, (buffer: AudioBuffer) => {
+      audio.setBuffer(buffer);
+      audio.play();
+    });
+    this._audioObjects.push(audio);
+    return audio;
+  }
+
+  public stopAllAudio(): void {
+    this._audioObjects.forEach((a) => {
+      if (a.isPlaying) a.stop();
+      a.disconnect();
+    });
+    this._audioObjects = [];
+  }
+
+  private clearSceneAnimations(): void {
+    this._sceneObjectMixers.forEach((entry) => entry.cleanup());
+    this._sceneObjectMixers.clear();
   }
 
   public setPlace(place: HTMLDivElement): this {

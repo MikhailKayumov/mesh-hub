@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { SceneVisibility } from '@/database/entities/scenes/scene.entity';
-import { SceneConfig } from '@/database/entities/scenes/scene-config.type';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { SceneVisibility } from '@/database/entities/scenes/scene.entity';
+import type { SceneConfig } from '@/database/entities/scenes/scene-config.type';
 import { LightType } from '@/database/entities/scenes/scene-light.entity';
 
 export class SceneObjectFileDto {
@@ -58,6 +58,12 @@ export class SceneObjectResponseDto {
 
   @ApiProperty()
   public createdAt: Date;
+
+  @ApiPropertyOptional({ nullable: true })
+  public animationConfig?: Record<string, unknown> | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  public audioConfig?: Record<string, unknown> | null;
 }
 
 export class SceneLightResponseDto {

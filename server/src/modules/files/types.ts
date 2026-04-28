@@ -50,4 +50,8 @@ export interface IFileStorageStrategy {
   saveModelMaterialTexture(modelId: string, overrideId: string, type: string, file: Express.Multer.File): Promise<void>;
   /** Delete a texture file for a material override mesh. */
   deleteModelMaterialTexture(modelId: string, overrideId: string, type: string): Promise<void>;
+  /** Save an audio track for a model. Stored as models-3d/<modelId>/audio/<audioId>.<ext> */
+  saveModelAudio(modelId: string, audioId: string, file: Express.Multer.File): Promise<string>;
+  /** Delete an audio track file for a model. */
+  deleteModelAudio(modelId: string, filename: string): Promise<void>;
 }

@@ -60,6 +60,8 @@ export class SceneMapper {
       scaleZ: obj.scaleZ,
       order: obj.order,
       createdAt: obj.createdAt,
+      animationConfig: obj.animationConfig ?? null,
+      audioConfig: obj.audioConfig ?? null,
     };
   }
 

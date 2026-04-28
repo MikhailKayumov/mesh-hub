@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { AnimationClip, AnimationMixer } from 'three';
 import type { SceneLightResponseDto, SceneResponseDto } from '@/app/api/dto.ts';
 import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import type { SelectionState } from './model.ts';
@@ -42,6 +43,14 @@ export function useSceneViewer({ scene }: UseSceneViewerOptions) {
     viewer.loadScene(scene).then(() => {
       if (!cancelled) {
         setIsSceneLoading(false);
+        // Auto-play audio for scene objects that have autoplay configured
+        for (const obj of scene.objects) {
+          const cfg = obj.audioConfig as { audioId?: string; autoplay?: boolean; loop?: boolean; volume?: number } | null | undefined;
+          if (cfg?.autoplay && cfg.audioId && obj.model.id) {
+            const audioUrl = `/api/models-3d/${obj.model.id}/audio/${cfg.audioId}/stream`;
+            viewer.playAudio(audioUrl, { loop: cfg.loop ?? false, volume: cfg.volume ?? 1 });
+          }
+        }
       }
     });
 
@@ -80,6 +89,18 @@ export function useSceneViewer({ scene }: UseSceneViewerOptions) {
     viewerRef.current?.world.syncLights(lights);
   }, []);
 
+  const getObjectAnimations = useCallback((sceneObjectId: string): AnimationClip[] => {
+    return viewerRef.current?.getObjectAnimations(sceneObjectId) ?? [];
+  }, []);
+
+  const getObjectMixer = useCallback((sceneObjectId: string): AnimationMixer | undefined => {
+    return viewerRef.current?.getObjectMixer(sceneObjectId);
+  }, []);
+
+  const getAnimatedObjectIds = useCallback((): string[] => {
+    return viewerRef.current?.getSceneObjectMixerIds() ?? [];
+  }, []);
+
   return {
     containerRef,
     viewer: viewerRef.current,
@@ -92,5 +113,8 @@ export function useSceneViewer({ scene }: UseSceneViewerOptions) {
     updateAmbientLight,
     loadHdri,
     syncLights,
+    getObjectAnimations,
+    getObjectMixer,
+    getAnimatedObjectIds,
   };
 }

@@ -1,8 +1,9 @@
-import { IconBulb, IconClockHour4, IconCube, IconMapPin, IconMessageCircle, IconPalette, IconPhotoEdit } from '@tabler/icons-react';
+import { IconBulb, IconClockHour4, IconCube, IconMapPin, IconMessageCircle, IconPalette, IconPhotoEdit, IconVolume } from '@tabler/icons-react';
 import { DisplayConfigTab } from '@/pages/Editor/components/Navbar/components/DisplayConfigTab';
 import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { LightsTab } from '@/pages/Editor/components/Navbar/components/LightsTab';
 import { MaterialsTab } from '@/pages/Editor/components/Navbar/components/MaterialsTab';
+import { AudioTab } from '@/pages/Editor/components/Navbar/components/AudioTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
 import { AnnotationManager } from '@/widgets/AnnotationManager';
 import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
@@ -49,6 +50,11 @@ export const getTabsConfig = (viewer: Viewer | null, modelId?: string): TabsConf
       value: TabValues.Materials,
       title: <IconPalette className={classes['tab-icon']} />,
       content: <MaterialsTab viewer={viewer} modelId={modelId} />,
+    },
+    {
+      value: TabValues.Audio,
+      title: <IconVolume className={classes['tab-icon']} />,
+      content: <AudioTab modelId={modelId} />,
     },
   ];
 };

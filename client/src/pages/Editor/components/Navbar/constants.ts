@@ -8,4 +8,5 @@ export const TabValues: Record<Capitalize<TabValue>, TabValue> = {
   Annotations: 'annotations',
   Versions: 'versions',
   Materials: 'materials',
+  Audio: 'audio',
 } as const;

@@ -14,7 +14,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 | [ITER-2](ITER-2.md) | Scene Editor: Complete UI | ✅ Done | Objects/Lights/Config panels, real-time canvas, scene state sync |
 | [ITER-3](ITER-3.md) | Model Editor: Lights, Display Config & Post-Processing | ✅ Done | Custom lighting, renderer settings, EffectComposer pipeline, display presets |
 | [ITER-4](ITER-4.md) | Model Editor: Materials & Textures | ✅ Done | Per-mesh material overrides, PBR sliders, texture uploads |
-| [ITER-5](ITER-5.md) | Animations Enhanced + Audio | 🔲 Pending | Speed/loop/crossfade in AnimationToolbar, scene object animations, Three.js audio |
+| [ITER-5](ITER-5.md) | Animations Enhanced + Audio | ✅ Done | Speed/loop/crossfade in AnimationToolbar, scene object animations, Three.js audio |
 | [ITER-6](ITER-6.md) | Multi-Format Support | 🔲 Pending | FBX / OBJ+MTL / DAE / STL loader registry |
 | [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | 🔲 Pending | Scene annotations/comments, `@OptionalUser` access control, public scene page |
 | [ITER-8](ITER-8.md) | Discovery & UX Polish | 🔲 Pending | Search, DnD upload, presets menu, measure tool, screenshot, scene clone |
@@ -305,6 +305,55 @@ Viewer
 **Status:** ✅ Completed
 
 **Scope:** Model Editor — per-mesh PBR material overrides with color, metalness, roughness, emissive, opacity, wireframe controls, and 6 texture map upload slots (map, normal, roughness, metalness, emissive, ao).
+
+---
+
+## ITER-5 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Animations Enhanced + Audio — improved animation player controls in the model viewer, scene-level animation management, full-stack audio support for 3D models (upload/stream/playback), and audio configuration per scene object.
+
+### What was implemented
+
+**Backend (NestJS / TypeORM)**
+
+| File | Change |
+|---|---|
+| `database/entities/model_3d/model-audio.entity.ts` | New entity: `model_audio` table with UUID PK, `modelId` FK, `filename`, `originalName`, `mimeType`, `sizeBytes`, `durationS` nullable |
+| `database/entities/scenes/scene-object.entity.ts` | Added `animationConfig` and `audioConfig` JSONB columns (nullable `Record<string, unknown>`) |
+| `migrations/model_3d/1777500000000-AddModelAudio.ts` | Creates `model_audio` table |
+| `migrations/scenes/1777501000000-AddSceneObjectAnimationAndAudioConfig.ts` | Adds `animation_config` and `audio_config` JSONB columns to `scene_object` |
+| `modules/models-3d/audio/` | New submodule: `AudioModule`, `AudioController`, `AudioService`, `AudioRepository`, `ModelAudioMapper`; endpoints: `GET /models-3d/:modelId/audio`, `POST` (upload), `DELETE :audioId`, `GET :audioId/stream` (StreamableFile for local FS, redirect for S3) |
+| `modules/scenes/dto/scene.request.dto.ts` | Added `AnimationConfigDto`, `SceneObjectAudioConfigDto`; `SceneObjectUpsertDto` accepts optional `animationConfig`/`audioConfig` |
+| `modules/scenes/dto/scene.response.dto.ts` | `SceneObjectResponseDto` includes `animationConfig?` and `audioConfig?` nullable; `SceneVisibility`/`SceneConfig` changed to `import type` to satisfy TS1272 |
+| `modules/scenes/services/scenes.service.ts` | `updateObject` maps `animationConfig`/`audioConfig` with cast to `Record<string, unknown>` |
+| `modules/scenes/mappers/scene.mapper.ts` | Maps `animationConfig` and `audioConfig` to response |
+
+**Frontend (React / RTK Query)**
+
+| File | Change |
+|---|---|
+| `app/api/dto.ts` | Added `ModelAudioResponseDto`, `SceneObjectAudioConfigDto`; extended `SceneObjectUpsertDto` with `audioConfig`/`animationConfig`; `SceneObjectResponseDto` includes optional config fields |
+| `app/api/audio.ts` | New — `AudioApi` with `listModelAudio`, `uploadModelAudio`, `deleteModelAudio`; exports three hooks |
+| `widgets/Model3DViewer/classes/Viewer/Viewer.ts` | Added `AudioListener`, `AudioLoader`, `Audio` (ThreeAudio) support; `playAudio(url, opts)`, `stopAllAudio()`, `audioContext` getter |
+| `widgets/Model3DViewer/index.tsx` | Shows suspended-AudioContext overlay + resume button; passes `modelId` + `viewer` to `Model3DViewerBottomBar` |
+| `widgets/Model3DViewer/components/Model3DViewerBottomBar/index.tsx` | Accepts `modelId?` + `viewer?` props; renders `<AudioToolbar>` when `modelId` is set |
+| `widgets/Model3DViewer/components/Model3DViewerBottomBar/components/AudioToolbar/index.tsx` | New — track Select, play/stop, loop toggle, volume Slider, mute ActionIcon |
+| `pages/Editor/components/Navbar/model.ts` | `TabValue` union includes `'audio'` |
+| `pages/Editor/components/Navbar/constants.ts` | `TabValues.Audio = 'audio'` |
+| `pages/Editor/components/Navbar/utils.tsx` | Audio tab entry with `IconVolume` |
+| `pages/Editor/components/Navbar/components/AudioTab/index.tsx` | New — lists/uploads/deletes model audio tracks |
+| `pages/SceneEditor/panels/SceneAnimationsPanel.tsx` | Added `ObjectAudioConfig` sub-component: track Select, volume, loop/autoplay/positional switches, maxDistance; patches scene object via `useUpdateSceneObjectMutation` |
+| `pages/SceneEditor/hooks/useSceneViewer.ts` | After scene loads, auto-plays audio for objects with `audioConfig.autoplay === true` |
+
+### Design decisions made
+
+1. **Audio stream uses `@Redirect()`** — for S3 storage, returns `{ url, statusCode: 302 }` which NestJS handles; for local FS returns a `StreamableFile`. Avoids proxying large audio through the API server.
+2. **`AudioModule` provides `FilesService` directly** — `FileStorageModule` is `@Global()`, so providing `FilesService` in `AudioModule.providers` avoids a module import circular dependency.
+3. **AudioContext unblock overlay** — browsers suspend `AudioContext` until user gesture; viewer shows an overlay with "Click to enable audio" when context is suspended and tracks are present.
+4. **Per-scene-object audio config stored as JSONB** — typed as `SceneObjectAudioConfigDto` on the client via interface cast; flexible schema avoids a schema migration each time a new config field is added.
+5. **Autoplay fires after `loadScene()` resolves** — gives Three.js time to set up the scene graph before audio playback starts.
 
 ### What was implemented
 

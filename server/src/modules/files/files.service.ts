@@ -189,6 +189,26 @@ export class FilesService implements OnApplicationBootstrap {
     return strategy.deleteModelMaterialTexture(modelId, overrideId, type);
   }
 
+  public async saveModelAudio(
+    orgId: string | null,
+    modelId: string,
+    audioId: string,
+    file: Express.Multer.File,
+  ): Promise<string> {
+    const strategy = orgId ? await this.getStrategyForOrg(orgId) : this.localStrategy;
+    return strategy.saveModelAudio(modelId, audioId, file);
+  }
+
+  public async deleteModelAudio(orgId: string | null, modelId: string, filename: string): Promise<void> {
+    const strategy = orgId ? await this.getStrategyForOrg(orgId) : this.localStrategy;
+    return strategy.deleteModelAudio(modelId, filename);
+  }
+
+  public async getModelAudioUrl(orgId: string | null, modelId: string, filename: string): Promise<string | null> {
+    const strategy = orgId ? await this.getStrategyForOrg(orgId) : this.localStrategy;
+    return strategy.getFileUrl(`models-3d/${modelId}/audio/${filename}`);
+  }
+
   public async extractAndSave3DModelDirectory(modelId: string, zipFile: Express.Multer.File): Promise<string> {
     const ALLOWED_EXTENSIONS = new Set([
       '.gltf',

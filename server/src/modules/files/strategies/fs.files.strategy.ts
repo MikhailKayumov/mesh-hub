@@ -227,4 +227,23 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
     const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
     await Promise.all(extensions.map((ext) => rm(resolve(dir, `${type}${ext}`), { force: true })));
   }
+
+  public async saveModelAudio(modelId: string, audioId: string, file: Express.Multer.File): Promise<string> {
+    const ext = extname(file.originalname) || '.mp3';
+    const filename = `${audioId}${ext}`;
+    const dir = resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'audio');
+    await mkdir(dir, { recursive: true });
+    const dest = resolve(dir, filename);
+    if (file.path) {
+      await rename(file.path, dest);
+    } else {
+      await writeFile(dest, file.buffer);
+    }
+    return filename;
+  }
+
+  public async deleteModelAudio(modelId: string, filename: string): Promise<void> {
+    const dest = resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'audio', filename);
+    await rm(dest, { force: true });
+  }
 }

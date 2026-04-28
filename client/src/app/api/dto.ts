@@ -565,3 +565,75 @@ export interface ModelVersionResponseDto {
   uploader: ModelVersionUploaderDto;
   createdAt: string;
 }
+
+/**
+ * Model Display Config
+ */
+export const ModelLightType = {
+  Ambient: 'ambient',
+  Directional: 'directional',
+  Point: 'point',
+  Spot: 'spot',
+} as const;
+export type ModelLightTypeValue = (typeof ModelLightType)[keyof typeof ModelLightType];
+
+export interface ModelLightResponseDto {
+  id: string;
+  type: ModelLightTypeValue;
+  posX: number;
+  posY: number;
+  posZ: number;
+  color: string;
+  intensity: number;
+  castShadow: boolean;
+  createdAt: string;
+}
+
+export interface DisplayConfigResponseDto {
+  id: string;
+  modelId: string;
+  backgroundColor: string;
+  ambientIntensity: number;
+  environmentHdriPath?: string;
+  fogEnabled: boolean;
+  fogType: 'linear' | 'exp2';
+  fogColor: string;
+  fogNear: number;
+  fogFar: number;
+  postProcess?: Record<string, any> | null;
+  rendererConfig?: Record<string, any> | null;
+  lights: ModelLightResponseDto[];
+}
+
+export interface DisplayConfigUpdateDto {
+  backgroundColor?: string;
+  ambientIntensity?: number;
+  fogEnabled?: boolean;
+  fogType?: 'linear' | 'exp2';
+  fogColor?: string;
+  fogNear?: number;
+  fogFar?: number;
+  postProcess?: Record<string, any> | null;
+  rendererConfig?: Record<string, any> | null;
+}
+
+export interface ModelLightUpsertDto {
+  type: ModelLightTypeValue;
+  posX?: number;
+  posY?: number;
+  posZ?: number;
+  color?: string;
+  intensity?: number;
+  castShadow?: boolean;
+}
+
+export interface ModelLightUpdateDto {
+  type?: ModelLightTypeValue;
+  posX?: number;
+  posY?: number;
+  posZ?: number;
+  color?: string;
+  intensity?: number;
+  castShadow?: boolean;
+}
+

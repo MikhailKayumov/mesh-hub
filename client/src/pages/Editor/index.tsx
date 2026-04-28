@@ -1,5 +1,6 @@
 import { AppShell, Box, LoadingOverlay, rem } from '@mantine/core';
 import { useParams } from 'react-router-dom';
+import { useGetDisplayConfigQuery } from '@/app/api/display-config.ts';
 import { useModel3D } from '@/entities/model-3d';
 import { Model3DContextProvider } from '@/shared/contexts/Model3DContext';
 import { NotFoundError } from '@/widgets/Errors';
@@ -18,6 +19,7 @@ export function EditorPage() {
   const { id } = useParams<{ id: string }>();
   const { model3d, isModelLoading } = useModel3D({ id });
   const { viewer, isViewerLoading, onViewerReady } = useEditor();
+  const { data: displayConfig } = useGetDisplayConfigQuery({ modelId: id! }, { skip: !id });
 
   if (!isModelLoading && !model3d) {
     return (
@@ -32,10 +34,11 @@ export function EditorPage() {
       <AppShell h="100%" padding="md" header={headerConfig} footer={footerConfig} navbar={navbarConfig}>
         <Header className={classes.header} viewer={viewer} />
         <Navbar className={classes.navbar} viewer={viewer} modelId={id} />
-        <Main model={model3d} onViewerReady={onViewerReady} />
+        <Main model={model3d} displayConfig={displayConfig} onViewerReady={onViewerReady} />
         <Footer className={classes.footer} viewer={viewer} />
       </AppShell>
       <LoadingOverlay visible={isModelLoading || isViewerLoading} className={classes.loader} />
     </Model3DContextProvider>
   );
 }
+

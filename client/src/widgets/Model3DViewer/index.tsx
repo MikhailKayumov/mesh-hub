@@ -24,3 +24,15 @@ export function Model3DViewer(props: Model3DPageViewerProps) {
     </ViewerContextProvider>
   );
 }
+
+
+return (
+  <ViewerContextProvider viewer={viewer}>
+    <Box ref={rootRef} className={classes.root} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      <Model3DViewerTopBar />
+      <Box ref={placeRef} className={classes.viewer} />
+      <Model3DViewerBottomBar fullscreen={fullscreen} toggleFullscreen={toggleFullscreen} />
+    </Box>
+  </ViewerContextProvider>
+);
+}

@@ -5,6 +5,8 @@ import {
   Box3Helper,
   Color,
   DirectionalLight,
+  Fog,
+  FogExp2,
   GridHelper,
   type Light,
   MathUtils,
@@ -22,7 +24,7 @@ import {
 import { Destroyer } from '../Destroyer';
 import { buildAmbientLight, buildDirectionalLight } from '../Lights';
 import type { SceneLightResponseDto } from '@/app/api/dto.ts';
-import { type WorldEventListener, type WorldObject3D, type WorldObjects3D, type WorldSpawnOptions } from '../types';
+import { type FogConfig, type WorldEventListener, type WorldObject3D, type WorldObjects3D, type WorldSpawnOptions } from '../types';
 import { isLight, isObject3D } from '../utils';
 import { DEFAULT_LAYER, type WorldEvent, WorldEventNames } from './constants.ts';
 import { WorldHelpers } from './WorldHelpers.ts';
@@ -302,6 +304,18 @@ export class World extends EventTarget {
 
   public setBackgroundColor(hex: string): void {
     this.scene.background = new Color(hex);
+  }
+
+  public setFog(config: FogConfig): void {
+    if (!config.enabled) {
+      this.scene.fog = null;
+      return;
+    }
+    if (config.type === 'exp2') {
+      this.scene.fog = new FogExp2(config.color, config.density ?? 0.01);
+    } else {
+      this.scene.fog = new Fog(config.color, config.near ?? 10, config.far ?? 100);
+    }
   }
 
   public syncLights(lights: SceneLightResponseDto[]): void {

@@ -37,6 +37,8 @@ export const Models3DSchemaTables = {
   ModelComment: 'model_comment',
   ModelAnnotation: 'model_annotation',
   ModelVersion: 'model_version',
+  ModelDisplayConfig: 'model_display_config',
+  ModelLight: 'model_light',
 } as const;
 
 export const OrganizationsSchemaTables = {

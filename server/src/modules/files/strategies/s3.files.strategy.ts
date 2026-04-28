@@ -284,4 +284,18 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
       continuationToken = list.IsTruncated ? list.NextContinuationToken : undefined;
     } while (continuationToken);
   }
+
+  public async saveModelDisplayHdri(modelId: string, file: Express.Multer.File): Promise<void> {
+    const key = `models-3d/${modelId}/display-hdri.hdr`;
+    const body = file.buffer ? Readable.from(file.buffer) : Readable.from(createReadStream(file.path));
+    const upload = new Upload({
+      client: this.client,
+      params: { Bucket: this.bucket, Key: key, Body: body, ContentType: 'application/octet-stream' },
+    });
+    await upload.done();
+  }
+
+  public async deleteModelDisplayHdri(modelId: string): Promise<void> {
+    await this.deleteKey(`models-3d/${modelId}/display-hdri.hdr`);
+  }
 }

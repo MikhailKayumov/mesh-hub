@@ -1,7 +1,7 @@
-import { Text } from '@mantine/core';
 import { IconBulb, IconClockHour4, IconCube, IconMapPin, IconMessageCircle, IconPhotoEdit } from '@tabler/icons-react';
-import { RendererTab } from '@/pages/Editor/components/Navbar/components/RendererTab';
+import { DisplayConfigTab } from '@/pages/Editor/components/Navbar/components/DisplayConfigTab';
 import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
+import { LightsTab } from '@/pages/Editor/components/Navbar/components/LightsTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
 import { AnnotationManager } from '@/widgets/AnnotationManager';
 import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
@@ -15,9 +15,9 @@ export const getTabsConfig = (viewer: Viewer | null, modelId?: string): TabsConf
 
   return [
     {
-      value: TabValues.Renderer,
+      value: TabValues.DisplayConfig,
       title: <IconPhotoEdit className={classes['tab-icon']} />,
-      content: <RendererTab viewer={viewer} />,
+      content: <DisplayConfigTab viewer={viewer} modelId={modelId} />,
     },
     {
       value: TabValues.Scene,
@@ -27,7 +27,7 @@ export const getTabsConfig = (viewer: Viewer | null, modelId?: string): TabsConf
     {
       value: TabValues.Lights,
       title: <IconBulb className={classes['tab-icon']} />,
-      content: <Text size="sm">Lights</Text>,
+      content: <LightsTab viewer={viewer} modelId={modelId} />,
     },
     {
       value: TabValues.Comments,

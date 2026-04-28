@@ -42,4 +42,8 @@ export interface IFileStorageStrategy {
   saveSceneThumbnail(sceneId: string, buffer: Buffer): Promise<void>;
   /** Delete all files associated with a scene (HDRI, thumbnail, etc.). */
   deleteSceneFiles(sceneId: string): Promise<void>;
+  /** Save HDRI environment file for a model's display config. Stored as models-3d/<modelId>/display-hdri.hdr */
+  saveModelDisplayHdri(modelId: string, file: Express.Multer.File): Promise<void>;
+  /** Delete HDRI environment file for a model's display config. */
+  deleteModelDisplayHdri(modelId: string): Promise<void>;
 }

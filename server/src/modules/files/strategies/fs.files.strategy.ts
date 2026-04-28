@@ -187,4 +187,20 @@ export class FsFileStorageStrategy implements IFileStorageStrategy {
   private getSceneDirPath(sceneId: string): string {
     return resolve(process.cwd(), 'files', 'scenes', sceneId);
   }
+
+  public async saveModelDisplayHdri(modelId: string, file: Express.Multer.File): Promise<void> {
+    const dir = resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId);
+    await mkdir(dir, { recursive: true });
+    const dest = resolve(dir, 'display-hdri.hdr');
+    if (file.path) {
+      await rename(file.path, dest);
+    } else {
+      await writeFile(dest, file.buffer);
+    }
+  }
+
+  public async deleteModelDisplayHdri(modelId: string): Promise<void> {
+    const dest = resolve(process.cwd(), this.configService.fsConfig.folders.models, modelId, 'display-hdri.hdr');
+    await rm(dest, { force: true });
+  }
 }

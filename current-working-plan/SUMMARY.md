@@ -12,7 +12,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 |---|---|---|---|
 | [ITER-1](ITER-1.md) | Foundation: DB + Personal Scenes & Models | ✅ Done | Personal scope for models/scenes, `visibility` field, personal routes |
 | [ITER-2](ITER-2.md) | Scene Editor: Complete UI | ✅ Done | Objects/Lights/Config panels, real-time canvas, scene state sync |
-| [ITER-3](ITER-3.md) | Model Editor: Lights, Display Config & Post-Processing | 🔲 Pending | Custom lighting, renderer settings, EffectComposer pipeline, display presets |
+| [ITER-3](ITER-3.md) | Model Editor: Lights, Display Config & Post-Processing | ✅ Done | Custom lighting, renderer settings, EffectComposer pipeline, display presets |
 | [ITER-4](ITER-4.md) | Model Editor: Materials & Textures | 🔲 Pending | Per-mesh material overrides, PBR sliders, texture uploads |
 | [ITER-5](ITER-5.md) | Animations Enhanced + Audio | 🔲 Pending | Speed/loop/crossfade in AnimationToolbar, scene object animations, Three.js audio |
 | [ITER-6](ITER-6.md) | Multi-Format Support | 🔲 Pending | FBX / OBJ+MTL / DAE / STL loader registry |
@@ -197,6 +197,106 @@ Viewer
 3. **`syncLights` deduplication** — `SceneLightsPanel` passes `result.lights` from mutation response directly to `syncLights`; `ScenePropertiesPanel` also calls `syncLights` after `updateSceneLight` to keep Three.js in sync without needing a re-query.
 4. **Tab auto-switch** — `SceneNavbar` uses a `useEffect` to switch to the Lights tab whenever `selectionState.type === 'light'`, ensuring the user sees the light list after clicking a light in the canvas.
 5. **Dual-source model list** — `AddModelToSceneModal` merges `currentUser3DModels` and `workspaceModels` (when `scene.workspaceId` is set) by deduplicating on `model.id`, so the user sees all accessible models in one grid.
+
+---
+
+## ITER-3 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Model Editor — custom lighting per model, display configuration (background, ambient, fog, renderer settings), EffectComposer post-processing pipeline, and display presets.
+
+### What was implemented
+
+**Database (Phase 1)**
+
+| File | Change |
+|---|---|
+| `server/src/database/constants.ts` | Added `ModelDisplayConfig` and `ModelLight` to `Models3DSchemaTables` |
+| `server/src/database/entities/models-3d/model-display-config.entity.ts` | New entity — 1:1 with `model_3d`; stores background color, ambient intensity, HDRI path, fog settings, postProcess JSON, rendererConfig JSON |
+| `server/src/database/entities/models-3d/model-light.entity.ts` | New entity — M:1 with `model_3d`; stores type (directional/point/spot), position, color, intensity, castShadow |
+| `server/src/database/migrations/models-3d/1777402000000-AddModelDisplayConfig.ts` | Migration: creates `model_display_config` and `model_light` tables |
+
+**File Storage (Phase 2)**
+
+| File | Change |
+|---|---|
+| `server/src/modules/files/types.ts` | Added `saveModelDisplayHdri` and `deleteModelDisplayHdri` to `IFileStorageStrategy` |
+| `server/src/modules/files/strategies/fs.files.strategy.ts` | Implemented HDRI save/delete for local filesystem |
+| `server/src/modules/files/strategies/s3.files.strategy.ts` | Implemented HDRI save/delete for S3 |
+| `server/src/modules/files/files.service.ts` | Added `saveModelDisplayHdri`, `deleteModelDisplayHdri`, `getModelDisplayHdriUrl` |
+
+**Backend display-config submodule (Phase 2)**
+
+| File | Change |
+|---|---|
+| `server/src/modules/models-3d/display-config/dto/display-config.response.dto.ts` | Response DTO with nested `ModelLightResponseDto` array |
+| `server/src/modules/models-3d/display-config/dto/display-config.update.dto.ts` | Partial update DTO for display config fields |
+| `server/src/modules/models-3d/display-config/dto/model-light.upsert.dto.ts` | Upsert + update DTOs for model lights |
+| `server/src/modules/models-3d/display-config/repositories/display-config.repository.ts` | TypeORM repository wrapper |
+| `server/src/modules/models-3d/display-config/repositories/model-light.repository.ts` | TypeORM repository wrapper |
+| `server/src/modules/models-3d/display-config/display-config.service.ts` | Business logic: get/update config (upsert), upload/remove HDRI, add/update/remove lights |
+| `server/src/modules/models-3d/display-config/display-config.controller.ts` | REST controller — prefix `models-3d/:modelId/display-config`; 7 endpoints |
+| `server/src/modules/models-3d/display-config/display-config.module.ts` | Feature module |
+| `server/src/modules/models-3d/models-3d.module.ts` | Added `DisplayConfigModule` import |
+
+**Three.js / Renderer (Phase 3)**
+
+| File | Change |
+|---|---|
+| `client/src/widgets/Model3DViewer/classes/types/renderer.ts` | Added `PostProcessConfig` and `FogConfig` interfaces |
+| `client/src/widgets/Model3DViewer/classes/World/World.ts` | Added `setFog(config: FogConfig)` — creates `Fog` or `FogExp2` on the scene |
+| `client/src/widgets/Model3DViewer/classes/Renderer/Renderer.ts` | Full rewrite to use `EffectComposer` pipeline; `RenderPass` + `OutputPass` always active; `setPostProcessing(config)` dynamically adds/removes SSAOPass, UnrealBloomPass, BokehPass, VignetteShader, ColorCorrectionShader passes |
+| `client/src/widgets/Model3DViewer/constants/displayPresets.ts` | 6 display presets (Studio, Outdoor, Dark, Cinematic, Minimal, Product) with full config snapshots |
+
+**Frontend API layer (Phase 4)**
+
+| File | Change |
+|---|---|
+| `client/src/app/api/dto.ts` | Added `ModelLightType`, `ModelLightTypeValue`, `ModelLightResponseDto`, `DisplayConfigResponseDto`, `DisplayConfigUpdateDto`, `ModelLightUpsertDto`, `ModelLightUpdateDto` |
+| `client/src/app/api/tags.ts` | Added `DisplayConfig: 'DisplayConfig'` to `ApiTags` |
+| `client/src/app/api/display-config.ts` | 7 RTK Query endpoints: `getDisplayConfig`, `updateDisplayConfig`, `uploadDisplayHdri`, `removeDisplayHdri`, `addModelLight`, `updateModelLight`, `removeModelLight` |
+
+**Editor UI (Phases 5–6)**
+
+| File | Change |
+|---|---|
+| `client/src/pages/Editor/components/Navbar/constants.ts` | `Renderer: 'renderer'` → `DisplayConfig: 'display-config'` |
+| `client/src/pages/Editor/components/Navbar/model.ts` | `TabValue` updated to include `'display-config'` |
+| `client/src/pages/Editor/components/Navbar/utils.tsx` | Removed RendererTab; wires DisplayConfigTab and LightsTab |
+| `client/src/pages/Editor/components/Navbar/components/DisplayConfigTab/index.tsx` | New tab: 5 collapsible sections — Presets, Environment (bg color, ambient, HDRI), Fog (type, color, near/far/density), Post-Processing (Bloom, Vignette, SSAO with Collapse sliders), Renderer settings; applies changes live to viewer; Save button persists to backend |
+| `client/src/pages/Editor/components/Navbar/components/LightsTab/index.tsx` | New tab: add / edit / delete model lights (directional, point, spot); inline LightForm with type, color, intensity, position, castShadow; syncs Three.js scene on every mutation |
+| `client/src/pages/Editor/components/Navbar/components/RendererTab/` | **Deleted** — replaced by DisplayConfigTab |
+
+**Apply config on load (Phase 7)**
+
+| File | Change |
+|---|---|
+| `client/src/widgets/Model3DViewer/hooks/useViewer.ts` | Added `displayConfig?: DisplayConfigResponseDto \| null` to `UseViewerProps`; after `world.prepare()`, applies background, ambient, fog, lights, rendererConfig, postProcess to the viewer |
+| `client/src/widgets/Model3DViewer/index.tsx` | `Model3DPageViewerProps` now includes `displayConfig` (passed through to `useViewer`) |
+| `client/src/pages/Editor/components/Main/index.tsx` | Added `displayConfig?: DisplayConfigResponseDto \| null` prop, passed to `<Model3DViewer>` |
+| `client/src/pages/Editor/index.tsx` | Fetches `useGetDisplayConfigQuery` and passes result to `<Main displayConfig={displayConfig}>` |
+
+### REST API surface added
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/models-3d/:modelId/display-config` | JWT | Get full config + lights |
+| PATCH | `/api/models-3d/:modelId/display-config` | JWT + owner | Update display config fields |
+| POST | `/api/models-3d/:modelId/display-config/hdri` | JWT + owner | Upload HDRI environment map |
+| DELETE | `/api/models-3d/:modelId/display-config/hdri` | JWT + owner | Remove HDRI |
+| POST | `/api/models-3d/:modelId/display-config/lights` | JWT + owner | Add a light |
+| PATCH | `/api/models-3d/:modelId/display-config/lights/:lightId` | JWT + owner | Update a light |
+| DELETE | `/api/models-3d/:modelId/display-config/lights/:lightId` | JWT + owner | Delete a light |
+
+### Design decisions made
+
+1. **RendererTab replaced** — `DisplayConfigTab` absorbs all previous renderer settings and adds Environment, Fog, and Post-Processing sections. A single consolidated tab reduces UI surface.
+2. **EffectComposer always active** — Even without post-processing enabled, the render path uses `EffectComposer` → `RenderPass` → `OutputPass`, ensuring color-space correct output and zero cost when effects are off.
+3. **Post-processing passes dynamically imported** — `setPostProcessing()` uses dynamic `import()` to load SSAOPass, BokehPass, etc. only when needed, keeping the initial bundle lean.
+4. **displayConfig is optional prop** — `useViewer` applies config only when the prop is non-null; the public model page and embed viewer remain unaffected since they don't pass it.
+5. **Lights use `syncLights` which accepts `SceneLightResponseDto[]`** — `ModelLightResponseDto` is structurally identical; cast as `any` in the tabs to avoid a coupling between schemas.
+6. **HDRI served at `/api/models-3d/:modelId/display-config/hdri`** — consistent with the scene HDRI pattern at `/api/scenes/:id/hdri`.
 
 ---
 

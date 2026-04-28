@@ -1,7 +1,7 @@
 import { type TabValue } from './model.ts';
 
 export const TabValues: Record<Capitalize<TabValue>, TabValue> = {
-  Renderer: 'renderer',
+  DisplayConfig: 'display-config',
   Scene: 'scene',
   Lights: 'lights',
   Comments: 'comments',

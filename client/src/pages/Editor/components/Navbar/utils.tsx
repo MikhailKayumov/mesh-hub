@@ -54,7 +54,7 @@ export const getTabsConfig = (viewer: Viewer | null, modelId?: string): TabsConf
     {
       value: TabValues.Audio,
       title: <IconVolume className={classes['tab-icon']} />,
-      content: <AudioTab modelId={modelId} />,
+      content: <AudioTab viewer={viewer} modelId={modelId} />,
     },
   ];
 };

@@ -91,6 +91,13 @@ export class Viewer {
   }
 
   public destroy(): void {
+    this.stopAllAudio();
+    if (this._audioListener) {
+      this.camera.camera.remove(this._audioListener);
+      this._audioListener.context.close().catch(() => undefined);
+      this._audioListener = null;
+    }
+    this.clearSceneAnimations();
     this.world.destroy();
     this.camera.off();
     this.renderer.destroy();

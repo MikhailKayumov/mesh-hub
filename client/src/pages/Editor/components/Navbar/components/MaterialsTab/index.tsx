@@ -44,6 +44,10 @@ const TEXTURE_SLOTS = [
     { key: 'ao', label: 'AO Map', urlKey: 'aoMapUrl' },
 ] as const;
 
+const TEXTURE_MAX_BYTES = 5 * 1024 * 1024;
+const TEXTURE_MIME_PATTERN = /^image\/(png|jpeg|webp)$/;
+const TEXTURE_HINT = 'PNG / JPEG / WebP, ≤5 MB';
+
 type TextureUrlKey = (typeof TEXTURE_SLOTS)[number]['urlKey'];
 
 function formFromDto(dto: MaterialOverrideResponseDto): MaterialOverrideUpsertDto {
@@ -180,6 +184,22 @@ export function MaterialsTab({ viewer, modelId }: MaterialsTabProps) {
 
     const handleTextureUpload = async (meshName: string, type: string, file: File | null) => {
         if (!file || !modelId) return;
+        if (!TEXTURE_MIME_PATTERN.test(file.type)) {
+            notifications.show({
+                color: 'red',
+                title: 'Unsupported format',
+                message: `${TEXTURE_HINT}. Got ${file.type || 'unknown'}.`,
+            });
+            return;
+        }
+        if (file.size > TEXTURE_MAX_BYTES) {
+            notifications.show({
+                color: 'red',
+                title: 'File too large',
+                message: `${TEXTURE_HINT}. Got ${(file.size / 1024 / 1024).toFixed(1)} MB.`,
+            });
+            return;
+        }
         const formData = new FormData();
         formData.append('file', file);
         try {
@@ -393,10 +413,10 @@ export function MaterialsTab({ viewer, modelId }: MaterialsTabProps) {
                                                                 onChange={(file) =>
                                                                     handleTextureUpload(meshName, key, file)
                                                                 }
-                                                                accept="image/*"
+                                                                accept="image/png,image/jpeg,image/webp"
                                                             >
                                                                 {(props) => (
-                                                                    <Tooltip label="Upload texture">
+                                                                    <Tooltip label={`Upload texture — ${TEXTURE_HINT}`}>
                                                                         <ActionIcon
                                                                             size="xs"
                                                                             variant="subtle"

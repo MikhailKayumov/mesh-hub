@@ -1,6 +1,7 @@
 import {
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
   HttpCode,
   HttpStatus,
@@ -19,13 +20,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBadRequestResponse, ApiConsumes, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UserRoles } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { Roles } from '@/decorators/auth/auth.decorator';
-import { User } from '@/decorators/user/user.decorator';
+import { Public, Roles } from '@/decorators/auth/auth.decorator';
+import { OptionalUser, User } from '@/decorators/user/user.decorator';
 import { FileSizeValidator } from '@/pipes/file-size-validator.pipe';
 import { ModelAudioResponseDto } from './dto/model-audio.response.dto';
 import { AudioService } from './audio.service';
 
-const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_AUDIO_SIZE = 20 * 1024 * 1024; // 20 MB
+const AUDIO_MIME_PATTERN = /^audio\/(mpeg|mp3|ogg|wav|x-wav|wave)$/;
 
 @Controller('models-3d/:modelId/audio')
 @ApiTags('models-3d-audio')
@@ -55,7 +57,7 @@ export class AudioController {
     @User() user: UserEntity,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileSizeValidator(MAX_AUDIO_SIZE)],
+        validators: [new FileSizeValidator(MAX_AUDIO_SIZE), new FileTypeValidator({ fileType: AUDIO_MIME_PATTERN })],
       }),
     )
     file: Express.Multer.File,
@@ -76,15 +78,15 @@ export class AudioController {
   }
 
   @Get(':audioId/stream')
-  @Roles([UserRoles.User])
+  @Public()
   @Redirect()
   public async stream(
     @Param('modelId', ParseUUIDPipe) modelId: string,
     @Param('audioId', ParseUUIDPipe) audioId: string,
-    @User() user: UserEntity,
+    @OptionalUser() user: UserEntity | undefined,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile | { url: string; statusCode: number }> {
-    const result = await this.audioService.streamAudio(modelId, audioId, user);
+    const result = await this.audioService.streamAudio(modelId, audioId, user ?? null);
     if ('redirect' in result) {
       return { url: result.redirect, statusCode: HttpStatus.FOUND };
     }

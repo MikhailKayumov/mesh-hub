@@ -135,7 +135,8 @@ export class Renderer {
   public async setPostProcessing(config: PostProcessConfig): Promise<void> {
     // Dispose all passes except the RenderPass (index 0) and re-add them from scratch
     while (this.composer.passes.length > 1) {
-      this.composer.passes.pop();
+      const pass = this.composer.passes.pop();
+      (pass as { dispose?: () => void } | undefined)?.dispose?.();
     }
 
     if (config.ssao?.enabled) {

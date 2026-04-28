@@ -3,6 +3,7 @@ import { resolve } from 'path';
 import { ForbiddenException, Injectable, NotFoundException, StreamableFile } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { ModelVisibility } from '@/constants';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
@@ -53,9 +54,9 @@ export class AudioService {
   public async streamAudio(
     modelId: string,
     audioId: string,
-    user: UserEntity,
+    user: UserEntity | null,
   ): Promise<StreamableFile | { redirect: string }> {
-    const model = await this.loadModel(modelId, user);
+    const model = await this.loadModelForRead(modelId, user);
     const orgId = await this.resolveOrgId(model);
     const track = await this.modelAudioRepository.findOneByModelAndId(modelId, audioId);
     if (!track) throw new NotFoundException('Audio track not found');
@@ -96,6 +97,17 @@ export class AudioService {
     if (!model) throw new NotFoundException('Model not found');
     if (model.user?.id !== user.id) throw new ForbiddenException('No access to this model');
     return model;
+  }
+
+  private async loadModelForRead(modelId: string, user: UserEntity | null): Promise<Model3dEntity> {
+    const model = await this.model3dRepository.findOne({
+      where: { id: modelId },
+      relations: { user: true },
+    });
+    if (!model) throw new NotFoundException('Model not found');
+    if (model.visibility === ModelVisibility.Public || model.visibility === ModelVisibility.Unlisted) return model;
+    if (user && model.user?.id === user.id) return model;
+    throw new ForbiddenException('No access to this model');
   }
 
   private async resolveOrgId(model: Model3dEntity): Promise<string | null> {

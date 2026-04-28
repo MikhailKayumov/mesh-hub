@@ -143,8 +143,8 @@ export class FilesService implements OnApplicationBootstrap {
     return strategy.saveSceneThumbnail(sceneId, buffer);
   }
 
-  public async deleteSceneFiles(orgId: string, sceneId: string): Promise<void> {
-    const strategy = await this.getStrategyForOrg(orgId);
+  public async deleteSceneFiles(orgId: string | null, sceneId: string): Promise<void> {
+    const strategy = orgId ? await this.getStrategyForOrg(orgId) : this.localStrategy;
     return strategy.deleteSceneFiles(sceneId);
   }
 

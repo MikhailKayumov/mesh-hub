@@ -3,6 +3,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useModel3D } from '@/entities/model-3d';
+import { useGetDisplayConfigQuery } from '@/app/api/display-config.ts';
 import { useGetMaterialsQuery } from '@/app/api/materials.ts';
 import { Model3DContextProvider } from '@/shared/contexts/Model3DContext';
 import { RouterPaths } from '@/shared/router/paths.ts';
@@ -22,6 +23,7 @@ export function Model3DPage() {
   const { id } = useParams<{ id: string }>();
   const { model3d, isModelLoading, model3dError } = useModel3D({ id });
   const { data: materialOverrides } = useGetMaterialsQuery({ modelId: id! }, { skip: !id });
+  const { data: displayConfig } = useGetDisplayConfigQuery({ modelId: id! }, { skip: !id });
   const [isViewerLoading, setIsViewerLoading] = useState(true);
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [commentsOpened, { open: openComments, close: closeComments }] = useDisclosure(false);
@@ -45,6 +47,7 @@ export function Model3DPage() {
         <Box className={classes['viewer-wrapper']}>
           <Model3DViewer
             model={model3d}
+            displayConfig={displayConfig}
             materialOverrides={materialOverrides}
             onReady={(v) => {
               if (!v?.model?.sceneBoundingBox) return;

@@ -30,7 +30,7 @@ import type { Response } from 'express';
 import { UserRoles } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
-import { User } from '@/decorators/user/user.decorator';
+import { OptionalUser, User } from '@/decorators/user/user.decorator';
 import { SceneLightUpsertDto } from '../dto/scene-light.upsert.dto';
 import { SceneObjectUpsertDto } from '../dto/scene-object.upsert.dto';
 import { SceneCreateRequestDto } from '../dto/scene.create.request.dto';
@@ -66,12 +66,15 @@ export class ScenesController {
   }
 
   @Get(':id')
-  @Roles([UserRoles.User])
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SceneResponseDto })
   @ApiNotFoundResponse()
-  public async getScene(@Param('id', ParseUUIDPipe) id: string, @User() user: UserEntity): Promise<SceneResponseDto> {
-    return this.scenesService.getScene(id, user);
+  public async getScene(
+    @Param('id', ParseUUIDPipe) id: string,
+    @OptionalUser() user: UserEntity | undefined,
+  ): Promise<SceneResponseDto> {
+    return this.scenesService.getScene(id, user ?? null);
   }
 
   @Patch(':id')

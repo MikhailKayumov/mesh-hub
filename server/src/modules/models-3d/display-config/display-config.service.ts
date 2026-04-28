@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { ModelVisibility } from '@/constants';
 import { ModelDisplayConfigEntity } from '@/database/entities/models-3d/model-display-config.entity';
 import { ModelLightEntity } from '@/database/entities/models-3d/model-light.entity';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
@@ -24,8 +25,8 @@ export class DisplayConfigService {
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
-  public async getOrCreate(modelId: string, user: UserEntity): Promise<DisplayConfigResponseDto> {
-    const model = await this.loadModel(modelId, user);
+  public async getOrCreate(modelId: string, user: UserEntity | null): Promise<DisplayConfigResponseDto> {
+    await this.loadModelForRead(modelId, user);
     let config = await this.displayConfigRepository.findByModelId(modelId);
     if (!config) {
       config = await this.displayConfigRepository.createDefault(modelId);
@@ -156,6 +157,17 @@ export class DisplayConfigService {
     if (!model) throw new NotFoundException('Модель не найдена');
     if (model.user?.id !== user.id) throw new ForbiddenException('Нет доступа к конфигурации модели');
     return model;
+  }
+
+  private async loadModelForRead(modelId: string, user: UserEntity | null): Promise<Model3dEntity> {
+    const model = await this.model3dRepository.findOne({
+      where: { id: modelId },
+      relations: { user: true },
+    });
+    if (!model) throw new NotFoundException('Модель не найдена');
+    if (model.visibility === ModelVisibility.Public || model.visibility === ModelVisibility.Unlisted) return model;
+    if (user && model.user?.id === user.id) return model;
+    throw new ForbiddenException('Нет доступа к конфигурации модели');
   }
 
   private async getOrCreateConfig(modelId: string): Promise<ModelDisplayConfigEntity> {

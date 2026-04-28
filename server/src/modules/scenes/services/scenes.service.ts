@@ -85,9 +85,9 @@ export class ScenesService {
     throw new BadRequestException('Either workspaceId or userId query param is required');
   }
 
-  public async getScene(sceneId: string, user: UserEntity): Promise<SceneResponseDto> {
+  public async getScene(sceneId: string, user: UserEntity | null): Promise<SceneResponseDto> {
     const scene = await this.loadSceneWithRelations(sceneId);
-    await this.requireSceneReadAccess(scene, user.id);
+    await this.requireSceneReadAccess(scene, user?.id ?? null);
     return SceneMapper.toResponse(scene);
   }
 
@@ -112,12 +112,10 @@ export class ScenesService {
 
     await this.sceneRepository.softDelete(sceneId);
 
-    if (scene.workspaceId) {
-      const orgId = await this.resolveOrgId(scene.workspaceId);
-      this.filesService.deleteSceneFiles(orgId, sceneId).catch((err) => {
-        this.logger.warn(`Failed to delete scene files for ${sceneId}: ${String(err)}`);
-      });
-    }
+    const orgId = scene.workspaceId ? await this.resolveOrgId(scene.workspaceId) : null;
+    this.filesService.deleteSceneFiles(orgId, sceneId).catch((err) => {
+      this.logger.warn(`Failed to delete scene files for ${sceneId}: ${String(err)}`);
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -329,17 +327,19 @@ export class ScenesService {
     return scene;
   }
 
-  private async requireSceneReadAccess(scene: SceneEntity, userId: string): Promise<void> {
+  private async requireSceneReadAccess(scene: SceneEntity, userId: string | null): Promise<void> {
+    if (scene.visibility === 'public' || scene.visibility === 'unlisted') return;
+    if (!userId) throw new ForbiddenException('Access denied');
     if (scene.workspaceId) {
       await this.requireMember(scene.workspaceId, userId);
       return;
     }
     if (scene.userId === userId) return;
-    if (scene.visibility === 'public') return;
     throw new ForbiddenException('Access denied');
   }
 
-  private async requireSceneWriteAccess(scene: SceneEntity, userId: string): Promise<void> {
+  private async requireSceneWriteAccess(scene: SceneEntity, userId: string | null): Promise<void> {
+    if (!userId) throw new ForbiddenException('Access denied');
     if (scene.workspaceId) {
       await this.requireMember(scene.workspaceId, userId);
       return;

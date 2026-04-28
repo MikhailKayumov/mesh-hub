@@ -23,8 +23,8 @@ import {
 } from '@nestjs/swagger';
 import { UserRoles } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
-import { Roles } from '@/decorators/auth/auth.decorator';
-import { User } from '@/decorators/user/user.decorator';
+import { Public, Roles } from '@/decorators/auth/auth.decorator';
+import { OptionalUser, User } from '@/decorators/user/user.decorator';
 import { FileSizeValidator } from '@/pipes/file-size-validator.pipe';
 import { DisplayConfigResponseDto } from './dto/display-config.response.dto';
 import { DisplayConfigUpdateDto } from './dto/display-config.update.dto';
@@ -39,15 +39,15 @@ export class DisplayConfigController {
   public constructor(private readonly displayConfigService: DisplayConfigService) {}
 
   @Get()
-  @Roles([UserRoles.User])
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: DisplayConfigResponseDto })
   @ApiNotFoundResponse()
   public async getConfig(
     @Param('modelId', ParseUUIDPipe) modelId: string,
-    @User() user: UserEntity,
+    @OptionalUser() user: UserEntity | undefined,
   ): Promise<DisplayConfigResponseDto> {
-    return this.displayConfigService.getOrCreate(modelId, user);
+    return this.displayConfigService.getOrCreate(modelId, user ?? null);
   }
 
   @Patch()

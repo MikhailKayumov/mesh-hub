@@ -382,7 +382,22 @@ export class World extends EventTarget {
       const override = overrides.find((o) => o.meshName === obj.name);
       if (!override) return;
 
-      const mat = (obj.material as MeshStandardMaterial).clone() as MeshStandardMaterial;
+      // Preserve the GLTF-supplied material on first apply, dispose previous clones thereafter
+      const originalKey = '__originalMaterial';
+      if (!obj.userData[originalKey]) {
+        obj.userData[originalKey] = obj.material;
+      } else {
+        const prev = obj.material as MeshStandardMaterial;
+        prev.map?.dispose();
+        prev.normalMap?.dispose();
+        prev.roughnessMap?.dispose();
+        prev.metalnessMap?.dispose();
+        prev.emissiveMap?.dispose();
+        prev.aoMap?.dispose();
+        prev.dispose();
+      }
+
+      const mat = (obj.userData[originalKey] as MeshStandardMaterial).clone() as MeshStandardMaterial;
       obj.material = mat;
 
       if (override.colorHex) mat.color.set(override.colorHex);
@@ -401,8 +416,17 @@ export class World extends EventTarget {
       if (override.roughnessMapUrl) mat.roughnessMap = loader.load(override.roughnessMapUrl, () => { mat.needsUpdate = true; });
       if (override.metalnessMapUrl) mat.metalnessMap = loader.load(override.metalnessMapUrl, () => { mat.needsUpdate = true; });
       if (override.emissiveMapUrl) mat.emissiveMap = loader.load(override.emissiveMapUrl, () => { mat.needsUpdate = true; });
-      // aoMap requires uv2 attribute on geometry to work
-      if (override.aoMapUrl && obj.geometry.attributes.uv) mat.aoMap = loader.load(override.aoMapUrl, () => { mat.needsUpdate = true; });
+      // aoMap needs a uv2 attribute on the geometry — backfill from uv if missing
+      if (override.aoMapUrl) {
+        if (!obj.geometry.attributes.uv2 && obj.geometry.attributes.uv) {
+          obj.geometry.setAttribute('uv2', obj.geometry.attributes.uv);
+        }
+        if (obj.geometry.attributes.uv2) {
+          mat.aoMap = loader.load(override.aoMapUrl, () => { mat.needsUpdate = true; });
+        } else {
+          console.warn(`aoMap skipped for mesh "${obj.name}": no UV channel`);
+        }
+      }
 
       mat.needsUpdate = true;
     });

@@ -42,6 +42,7 @@ export const RouterPaths = {
   // scenes
   Scenes: 'scenes',
   SceneId: ':sceneId',
+  PublicScene: 'scenes/:sceneId',
 } as const;
 
 export type RouterPathName = keyof typeof RouterPaths;

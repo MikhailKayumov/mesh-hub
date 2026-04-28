@@ -92,6 +92,11 @@ const routes: RouteObject[] = [
           },
         ],
       },
+      // public scene
+      {
+        path: RouterPaths.PublicScene,
+        lazy: async () => ({ Component: (await import('@/pages/PublicScene')).PublicScenePage }),
+      },
       // organizations
       {
         path: RouterPaths.Org,

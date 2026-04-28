@@ -1,17 +1,20 @@
-import { IconBulb, IconCube, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
+import { IconBulb, IconCube, IconMessage, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
 import type { AnimationClip, AnimationMixer } from 'three';
 import type { SceneResponseDto } from '@/app/api/dto.ts';
+import type { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import type { SelectionState } from '../../hooks/model.ts';
 import { SceneObjectsPanel } from '../../panels/SceneObjectsPanel';
 import { SceneLightsPanel } from '../../panels/SceneLightsPanel';
 import { SceneConfigPanel } from '../../panels/SceneConfigPanel';
 import { SceneAnimationsPanel } from '../../panels/SceneAnimationsPanel';
+import { SceneReviewPanel } from '../../panels/SceneReviewPanel.tsx';
 import { SceneTabValues } from './constants.ts';
 import type { SceneTabsConfig } from './model.ts';
 import classes from './SceneNavbar.module.scss';
 
 interface GetSceneTabsConfigOptions {
     scene: SceneResponseDto;
+    viewer: Viewer | null;
     selectionState: SelectionState;
     onSelectObject: (id: string | null) => void;
     onSelectLight: (id: string | null) => void;
@@ -27,6 +30,7 @@ interface GetSceneTabsConfigOptions {
 
 export function getSceneTabsConfig({
     scene,
+    viewer,
     selectionState,
     onSelectObject,
     onSelectLight,
@@ -88,6 +92,17 @@ export function getSceneTabsConfig({
                     getObjectMixer={getObjectMixer}
                     getAnimatedObjectIds={getAnimatedObjectIds}
                     isSceneLoading={isSceneLoading}
+                />
+            ),
+        },
+        {
+            value: SceneTabValues.Review,
+            title: <IconMessage className={classes['tab-icon']} />,
+            content: (
+                <SceneReviewPanel
+                    sceneId={scene.id}
+                    viewer={viewer}
+                    onSelectObject={onSelectObject}
                 />
             ),
         },

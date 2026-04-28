@@ -16,7 +16,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 | [ITER-4](ITER-4.md) | Model Editor: Materials & Textures | ✅ Done | Per-mesh material overrides, PBR sliders, texture uploads |
 | [ITER-5](ITER-5.md) | Animations Enhanced + Audio | ✅ Done | Speed/loop/crossfade in AnimationToolbar, scene object animations, Three.js audio |
 | [ITER-6](ITER-6.md) | Multi-Format Support | ✅ Done | FBX / OBJ+MTL / DAE / STL loader registry, `original_format` column, format badge, upload progress |
-| [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | 🔲 Pending | Scene annotations/comments, `@OptionalUser` access control, public scene page |
+| [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | ✅ Done | Scene annotations/comments, `@OptionalUser` access control, public scene page |
 | [ITER-8](ITER-8.md) | Discovery & UX Polish | 🔲 Pending | Search, DnD upload, presets menu, measure tool, screenshot, scene clone |
 | [ITER-9](ITER-9.md) | Embed & Integrations | 🔲 Pending | Scene embed, in-app notifications, webhooks, API key scopes |
 | [ITER-10](ITER-10.md) | Migration Consolidation | 🔲 Pending | All migrations collapsed into one `InitAll` file before first deploy |
@@ -499,6 +499,114 @@ Viewer
 8. **XHR-based upload helper** instead of RTK Query `fetchBaseQuery` (which doesn't expose `onUploadProgress`). The `shared/api/uploadModel3DWithProgress.ts` helper stays FSD-pure (no `Api` import); the widget hook calls `Api.util.invalidateTags` after success to keep RTK cache invalidation behaviour.
 9. **`Object3D` widening of `LoadedModel3D.scene`** — `ColladaLoader` returns a generic scene Object3D, not a `Group`. Widening the type covers all five loaders without per-loader casts at the call site.
 10. **Mantine badge color map** — `glb/gltf=blue, fbx=orange, obj=grape, dae=teal, stl=gray` placed in a co-located `constants.ts` next to the card. Plus the conditional OBJ-tip Alert in the upload modal.
+
+---
+
+## ITER-7 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Scene-side review system at parity with model-side: 3D annotation pins (with optional `scene_object_id` link, `cameraPos` for fly-to, drag-to-reorder), threaded comments, public scene page at `/scenes/:sceneId`, and `@OptionalUser()` access control on read endpoints.
+
+### What was implemented
+
+**Database**
+
+| File | Change |
+|---|---|
+| `server/src/database/constants.ts` | Added `SceneAnnotation: 'scene_annotation'` and `SceneComment: 'scene_comment'` to `ScenesSchemaTables` |
+| `server/src/database/entities/scenes/scene-annotation.entity.ts` | New entity — extends `GuidIdEntityBase`; `sceneId` (CASCADE), `sceneObjectId` nullable (SET NULL), `userId` (eager); `label varchar(120)`, `body text` nullable, `posX/Y/Z`, `cameraPosX/Y/Z` nullable, `order` int default 0; index on `sceneId` |
+| `server/src/database/entities/scenes/scene-comment.entity.ts` | New entity — extends `GuidIdEntityBase`; `sceneId` (CASCADE), `authorId` (eager), `parentId` nullable self-FK (SET NULL); `body text`, `resolved boolean` default false; indexes on `sceneId` + `parentId` |
+| `server/src/database/migrations/scenes/1777700000000-AddSceneAnnotation.ts` | Creates `scenes.scene_annotation` with all 3 FKs, index, fully reversible `down()` |
+| `server/src/database/migrations/scenes/1777700100000-AddSceneComment.ts` | Creates `scenes.scene_comment` with all 3 FKs (incl. self-FK), 2 indexes, fully reversible `down()` |
+
+**Backend — Scene Annotations submodule** (`server/src/modules/scenes/annotations/`)
+
+| File | Change |
+|---|---|
+| `dto/scene-annotation.create.request.dto.ts` | `label` (max 120, required), `body?`, `posX/Y/Z` (required), `cameraPosX/Y/Z?`, `sceneObjectId?` |
+| `dto/scene-annotation.update.request.dto.ts` | All fields optional |
+| `dto/scene-annotation.reorder.request.dto.ts` | `{ items: { id: uuid, order: int }[] }` |
+| `dto/scene-annotation.response.dto.ts` | Full annotation with embedded `author` summary `{ id, firstName, lastName, avatarUrl }` |
+| `mappers/scene-annotation.mapper.ts` | `toResponse(entity)` plain class |
+| `repositories/scene-annotation.repository.ts` | `findBySceneId`, `findById`, `save`, `softDelete`, `bulkUpdateOrder` |
+| `scene-annotations.service.ts` | 5 methods (`getAnnotations`, `createAnnotation`, `updateAnnotation`, `deleteAnnotation`, `reorderAnnotations`); read uses `assertCanReadScene` (public allowed via `@OptionalUser()`), write uses `assertCanWriteScene` |
+| `scene-annotations.controller.ts` | Route prefix `scenes/:sceneId/annotations`; `@Get()` `@Public()` + `@OptionalUser()`; POST/PATCH/DELETE/`PUT('order')` `@Roles(UserRole.User)` |
+| `scene-annotations.module.ts` | Imports `TypeOrmModule.forFeature([...])` and `ScenesModule` for `ScenesService` injection |
+
+**Backend — Scene Comments submodule** (`server/src/modules/scenes/comments/`)
+
+| File | Change |
+|---|---|
+| `dto/scene-comment.create.request.dto.ts` | `body` (required), `parentId?` |
+| `dto/scene-comment.update.request.dto.ts` | `body?`, `resolved?` |
+| `dto/scene-comment.response.dto.ts` | Full comment with `author` summary + recursive `replies?[]` |
+| `mappers/scene-comment.mapper.ts` | `toResponse` builds threaded tree from flat list |
+| `repositories/scene-comment.repository.ts` | `findBySceneId`, `findById`, `findChildrenOf`, `save`, `softDelete` |
+| `scene-comments.service.ts` | 4 methods; `assertCanModify` allows author OR workspace editor/admin OR scene owner; delete cascades to children via `softRemove` |
+| `scene-comments.controller.ts` | Route prefix `scenes/:sceneId/comments`; `@Get()` `@Public()` + `@OptionalUser()`; POST/PATCH/DELETE `@Roles(UserRole.User)` |
+| `scene-comments.module.ts` | Wired with `ScenesModule` for service injection |
+| `server/src/modules/scenes/services/scenes.service.ts` | Added 4 public wrappers (`loadSceneOrThrow`, `assertCanReadScene`, `assertCanWriteScene`, `isWorkspaceEditor`) consumed by the new submodules; original private helpers untouched |
+| `server/src/app.module.ts` | Registered `SceneAnnotationsModule` + `SceneCommentsModule` at app root (mirrors existing `AnnotationsModule` / `ReviewsModule` placement; avoids `ScenesModule` ↔ submodule cycle) |
+
+**Frontend — RTK Query layer**
+
+| File | Change |
+|---|---|
+| `client/src/app/api/dto.ts` | Added `SceneAnnotationAuthorDto`, `SceneAnnotationResponseDto`, `SceneAnnotationCreateRequestDto`, `SceneAnnotationUpdateRequestDto`, `SceneAnnotationReorderItemDto`, `SceneAnnotationReorderRequestDto`, `SceneCommentAuthorDto`, `SceneCommentResponseDto`, `SceneCommentCreateRequestDto`, `SceneCommentUpdateRequestDto` |
+| `client/src/app/api/tags.ts` | Added `SceneAnnotations` and `SceneComments` to `ApiTags` |
+| `client/src/app/api/scene-reviews.ts` | New — 9 endpoints injected via `Api.injectEndpoints({ overrideExisting: true })`; hooks `useSceneAnnotationsQuery`, `useCreateSceneAnnotationMutation`, `useUpdateSceneAnnotationMutation`, `useDeleteSceneAnnotationMutation`, `useReorderSceneAnnotationsMutation`, `useSceneCommentsQuery`, `useAddSceneCommentMutation`, `useUpdateSceneCommentMutation`, `useDeleteSceneCommentMutation` |
+
+**Frontend — Scene Editor Review tab**
+
+| File | Change |
+|---|---|
+| `client/src/widgets/SceneAnnotationManager/SceneAnnotationManager.tsx` | New — dnd-kit sortable cards inside Mantine `Timeline.Item` rail with `IconMapPin` bullets; "Annotate" toggle drives `viewer.setMode('annotate')` and registers a placement callback; raycast walks parent chain to capture `userData.sceneObjectId`; per-card "fly-to" uses `viewer.camera.flyTo`; "highlight linked object" routes through `onSelectAnnotation` → `selectObject`; markers spawned/cleared on `viewer.world` on every list change; reorder persists via `useReorderSceneAnnotationsMutation`; `readOnly?: boolean` prop hides controls for the public page |
+| `client/src/widgets/SceneAnnotationManager/SceneAnnotationManager.module.scss` | Layout + Timeline styling |
+| `client/src/widgets/ReviewPanel/ReviewPanel.tsx` | Added `scope?: 'model' \| 'scene'` (default `'model'`) and optional `sceneId`; internally splits into `ModelReview` / `SceneReview` against a `ScopeAdapter` interface so `CommentCard` / `CommentInput` are reused; comment input + reply links gated behind `isAuthenticated` |
+| `client/src/widgets/Model3DViewer/classes/Viewer/Viewer.ts` | Extended `onScenePointerDown` callback with third arg `sceneObjectId: string \| null` (walks up parents from intersected mesh); raycast now traverses `world.scene` to support multi-object scenes (no `this.model`); existing model-editor callers untouched |
+| `client/src/pages/SceneEditor/components/Navbar/constants.ts` | Added `Review: 'review'` |
+| `client/src/pages/SceneEditor/components/Navbar/utils.tsx` | Added 5th tab entry with `IconMessage` rendering `<SceneReviewPanel>` |
+| `client/src/pages/SceneEditor/components/Navbar/SceneNavbar.tsx` | Added `viewer` prop, threaded into `getSceneTabsConfig`; added `review: 'Review'` tooltip entry |
+| `client/src/pages/SceneEditor/SceneEditorPage.tsx` | Destructured `viewer` from `useSceneViewer` and passed to `<SceneNavbar>` |
+| `client/src/pages/SceneEditor/panels/SceneReviewPanel.tsx` | New — `<ScrollArea>` with `SceneAnnotationManager` + `<Divider />` + `<ReviewPanel scope="scene" sceneId={sceneId} />` |
+
+**Frontend — Public Scene page**
+
+| File | Change |
+|---|---|
+| `client/src/pages/PublicScene/index.tsx` | Barrel re-export |
+| `client/src/pages/PublicScene/PublicScenePage.tsx` | Reads `:sceneId` from params; loads via `useSceneQuery`; loading state (`<Center><Loader/></Center>`); 403/private state (`IconLock` + Title + dimmed Text + browse button); success state mounts read-only viewer + right-side aside with `SceneAnnotationManager readOnly` + `Divider` + `ReviewPanel scope="scene"`; mobile uses `hiddenFrom`/`visibleFrom` + floating `IconMessage` ActionIcon + `Drawer position="right" size="90vw"` via `useDisclosure()`; "Open in Editor" button shown when user has write access |
+| `client/src/pages/PublicScene/PublicScenePage.module.scss` | Layout styles for viewer + aside + mobile FAB |
+| `client/src/pages/PublicScene/hooks/usePublicSceneViewer.ts` | View-only sibling of `useSceneViewer` (~70 lines): viewer init, scene load + autoplay audio, `selectObject` helper. Avoids cross-page imports (FSD violation) |
+| `client/src/shared/router/paths.ts` | Added `PublicScene: 'scenes/:sceneId'` |
+| `client/src/app/router/index.tsx` | Added top-level lazy route `/scenes/:sceneId` inside the `BasePage` parent (inherits `BaseLayout`), outside any auth-gated subtree |
+
+### REST API surface added
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/scenes/:sceneId/annotations` | Public + OptionalUser | List scene annotations (access-checked) |
+| POST | `/api/scenes/:sceneId/annotations` | JWT + write access | Create annotation |
+| PATCH | `/api/scenes/:sceneId/annotations/:annotId` | JWT + write access | Update annotation |
+| DELETE | `/api/scenes/:sceneId/annotations/:annotId` | JWT + write access | Delete annotation |
+| PUT | `/api/scenes/:sceneId/annotations/order` | JWT + write access | Bulk reorder |
+| GET | `/api/scenes/:sceneId/comments` | Public + OptionalUser | List threaded comments |
+| POST | `/api/scenes/:sceneId/comments` | JWT + read access | Add comment / reply |
+| PATCH | `/api/scenes/:sceneId/comments/:commentId` | JWT + author or editor | Update body / resolve |
+| DELETE | `/api/scenes/:sceneId/comments/:commentId` | JWT + author or editor | Soft-delete + cascade children |
+
+### Design decisions made
+
+1. **Annotation schema mirrors `model_annotation`** — added `label` + `body` + `cameraPos` rather than the spec's single `text` column, so the existing AnnotationManager-style UX (fly-to-camera, list cards) ports over with no plumbing changes. Plus a new `scene_object_id` nullable FK that the model schema doesn't have, used for "click annotation → highlight linked object".
+2. **Submodules nested under `modules/scenes/`** rather than top-level — model-side `annotations/` and `reviews/` live at top-level, but for scenes we colocate under `scenes/` so all scene-related code stays grouped. Both submodules import `ScenesModule` to inject the read/write access helpers; registering them at app root (sibling pattern) avoided a `ScenesModule ↔ submodule` cycle.
+3. **`AnnotationManager` extended with Timeline rail, not replaced** — kept dnd-kit reorderable cards; wrapped them in `Timeline.Item` with `IconMapPin` bullets and `active` index tracking the most recently selected/fly-to-ed card. Best of both worlds: spec's Timeline visual + existing reorder UX.
+4. **`ReviewPanel` got a `scope` prop** instead of duplicating the widget — the rendering code is identical between model and scene comments (both have `id, body, resolved, parentId, author, replies?`), so a small `ScopeAdapter` selects the right RTK hook family. Default `scope='model'` keeps existing call sites working without edits.
+5. **Public model page (ITER-7 step 9) skipped** — comments + annotations are already exposed via `ReviewDrawerButtons` on the existing public model page; no work needed.
+6. **Mobile uses Mantine `hiddenFrom`/`visibleFrom`** props — repo convention, no `useMediaQuery` import added (the hook isn't used anywhere else in the codebase).
+7. **`Viewer.onScenePointerDown` callback signature widened** with a third `sceneObjectId` arg via parent-chain walk on the intersected mesh. Existing model-editor callers that destructure only `(worldPos, cameraPos)` continue to typecheck (unused params are fine). Also extended raycast traversal to `world.scene` so multi-model scenes hit-test correctly even without a `this.model`.
+8. **`usePublicSceneViewer` is a separate ~70-line hook**, not a reuse of `useSceneViewer` from `pages/SceneEditor/`, because cross-page imports violate FSD. Drops every editor-specific concern (transform controls, light/HDRI updaters, animation accessors, screenshot, light selection); keeps only viewer init + scene load + audio autoplay + `selectObject`. If the duplication ever becomes load-bearing, the right fix is to lift the shared init/load logic into `widgets/Model3DViewer/hooks/`.
+9. **`@OptionalUser()` reused, not added** — already shipped in an earlier iteration and already applied to `GET /scenes/:id`; the new GET endpoints simply add `@Public() + @OptionalUser()` together so anonymous users can read public/unlisted scenes' annotations + comments while authenticated users can read private workspace-scoped resources they belong to.
 
 ---
 

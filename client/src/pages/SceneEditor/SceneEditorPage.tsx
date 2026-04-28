@@ -17,6 +17,7 @@ export function SceneEditorPage() {
 
     const {
         containerRef,
+        viewer,
         isSceneLoading,
         selectionState,
         selectObject,
@@ -61,6 +62,7 @@ export function SceneEditorPage() {
 
             <SceneNavbar
                 scene={scene}
+                viewer={viewer}
                 selectionState={selectionState}
                 onSelectObject={selectObject}
                 onSelectLight={selectLight}

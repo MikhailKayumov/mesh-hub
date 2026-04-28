@@ -559,6 +559,95 @@ export interface SceneLightUpsertDto {
 }
 
 /**
+ * Scene Annotations
+ */
+export interface SceneAnnotationAuthorDto {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}
+
+export interface SceneAnnotationResponseDto {
+  id: string;
+  sceneId: string;
+  sceneObjectId: string | null;
+  label: string;
+  body: string | null;
+  pos: { x: number; y: number; z: number };
+  cameraPos: { x: number; y: number; z: number } | null;
+  order: number;
+  author: SceneAnnotationAuthorDto;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface SceneAnnotationCreateRequestDto {
+  label: string;
+  body?: string;
+  posX: number;
+  posY: number;
+  posZ: number;
+  cameraPosX?: number;
+  cameraPosY?: number;
+  cameraPosZ?: number;
+  sceneObjectId?: string | null;
+}
+
+export interface SceneAnnotationUpdateRequestDto {
+  label?: string;
+  body?: string;
+  posX?: number;
+  posY?: number;
+  posZ?: number;
+  cameraPosX?: number;
+  cameraPosY?: number;
+  cameraPosZ?: number;
+  sceneObjectId?: string | null;
+}
+
+export interface SceneAnnotationReorderItemDto {
+  id: string;
+  order: number;
+}
+
+export interface SceneAnnotationReorderRequestDto {
+  items: SceneAnnotationReorderItemDto[];
+}
+
+/**
+ * Scene Comments
+ */
+export interface SceneCommentAuthorDto {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}
+
+export interface SceneCommentResponseDto {
+  id: string;
+  sceneId: string;
+  body: string;
+  resolved: boolean;
+  parentId: string | null;
+  author: SceneCommentAuthorDto;
+  replies?: SceneCommentResponseDto[];
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface SceneCommentCreateRequestDto {
+  body: string;
+  parentId?: string | null;
+}
+
+export interface SceneCommentUpdateRequestDto {
+  body?: string;
+  resolved?: boolean;
+}
+
+/**
  * Model Versions
  */
 export interface ModelVersionUploaderDto {

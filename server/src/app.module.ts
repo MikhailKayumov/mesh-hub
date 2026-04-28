@@ -18,6 +18,8 @@ import { NotificationsModule } from '@/modules/notifications/notifications.modul
 import { OrganizationsModule } from '@/modules/organizations/organizations.module';
 import { ResourcesModule } from '@/modules/resources/resources.module';
 import { ReviewsModule } from '@/modules/reviews/reviews.module';
+import { SceneAnnotationsModule } from '@/modules/scenes/annotations/scene-annotations.module';
+import { SceneCommentsModule } from '@/modules/scenes/comments/scene-comments.module';
 import { ScenesModule } from '@/modules/scenes/scenes.module';
 import { UserModule } from '@/modules/user/user.module';
 import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
@@ -47,6 +49,8 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
     ReviewsModule,
     AnnotationsModule,
     ScenesModule,
+    SceneAnnotationsModule,
+    SceneCommentsModule,
   ],
   providers: [
     {

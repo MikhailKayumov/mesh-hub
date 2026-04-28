@@ -19,6 +19,8 @@ export const ApiTags = {
   ModelVersions: 'ModelVersions',
   Scenes: 'Scenes',
   Scene: 'Scene',
+  SceneAnnotations: 'SceneAnnotations',
+  SceneComments: 'SceneComments',
   DisplayConfig: 'DisplayConfig',
   Materials: 'Materials',
   ModelAudio: 'ModelAudio',

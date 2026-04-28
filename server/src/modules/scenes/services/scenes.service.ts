@@ -14,6 +14,7 @@ import { SCENE_LIMITS } from '@/constants/plan-limits';
 import { PlanType, OrganizationEntity } from '@/database/entities/organizations/organization.entity';
 import { SceneEntity } from '@/database/entities/scenes/scene.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
+import { WorkspaceMemberRole } from '@/database/entities/workspaces/workspace-member.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { FilesService } from '@/modules/files/files.service';
 import { WorkspaceMemberRepository } from '@/modules/workspaces/repositories/workspace-member.repository';
@@ -306,6 +307,31 @@ export class ScenesService {
     scene.thumbnailPath = `scenes/${sceneId}/thumbnail.png`;
     await this.sceneRepository.save(scene);
     return this.getScene(sceneId, user);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Access helpers (public — consumed by scene-annotations / scene-comments)
+  // ---------------------------------------------------------------------------
+
+  public async loadSceneOrThrow(sceneId: string): Promise<SceneEntity> {
+    return this.loadScene(sceneId);
+  }
+
+  public async assertCanReadScene(sceneId: string, userId: string | null): Promise<SceneEntity> {
+    const scene = await this.loadScene(sceneId);
+    await this.requireSceneReadAccess(scene, userId);
+    return scene;
+  }
+
+  public async assertCanWriteScene(sceneId: string, userId: string | null): Promise<SceneEntity> {
+    const scene = await this.loadScene(sceneId);
+    await this.requireSceneWriteAccess(scene, userId);
+    return scene;
+  }
+
+  public async isWorkspaceEditor(workspaceId: string, userId: string): Promise<boolean> {
+    const member = await this.workspaceMemberRepository.findByWorkspaceAndUser(workspaceId, userId);
+    return !!member && member.role === WorkspaceMemberRole.Editor;
   }
 
   // ---------------------------------------------------------------------------

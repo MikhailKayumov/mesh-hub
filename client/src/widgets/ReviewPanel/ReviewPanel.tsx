@@ -2,47 +2,182 @@ import { ActionIcon, Avatar, Box, Button, Group, Stack, Text, Textarea, Tooltip 
 import { useForm } from '@mantine/form';
 import { IconCheck, IconMapPin, IconMessagePlus, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
-import type { CommentResponseDto } from '@/app/api/dto.ts';
+import type { CommentResponseDto, SceneCommentResponseDto } from '@/app/api/dto.ts';
 import {
   useAddCommentMutation,
   useDeleteCommentMutation,
   useModelCommentsQuery,
   useUpdateCommentMutation,
 } from '@/app/api/reviews.ts';
+import {
+  useAddSceneCommentMutation,
+  useDeleteSceneCommentMutation,
+  useSceneCommentsQuery,
+  useUpdateSceneCommentMutation,
+} from '@/app/api/scene-reviews.ts';
 import { useCurrentUserQuery } from '@/app/api/user.ts';
 import type { Viewer } from '../Model3DViewer/classes/Viewer';
 import classes from './ReviewPanel.module.scss';
 
+export type ReviewScope = 'model' | 'scene';
+
 export interface ReviewPanelProps {
-  modelId: string;
-  viewer: Viewer | null;
+  scope?: ReviewScope;
+  modelId?: string;
+  sceneId?: string;
+  viewer?: Viewer | null;
+}
+
+interface UnifiedAuthor {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+}
+
+interface UnifiedComment {
+  id: string;
+  body: string;
+  pos: { x: number; y: number; z: number } | null;
+  resolved: boolean;
+  parentId: string | null;
+  author: UnifiedAuthor;
+  createdAt: string;
 }
 
 interface CommentFormValues {
   body: string;
 }
 
+function toUnifiedFromModel(c: CommentResponseDto): UnifiedComment {
+  return {
+    id: c.id,
+    body: c.body,
+    pos: c.pos,
+    resolved: c.resolved,
+    parentId: c.parentId,
+    author: {
+      id: c.author.id,
+      firstName: c.author.firstName,
+      lastName: c.author.lastName,
+      avatar: c.author.avatar,
+    },
+    createdAt: c.createdAt,
+  };
+}
+
+function toUnifiedFromScene(c: SceneCommentResponseDto): UnifiedComment {
+  return {
+    id: c.id,
+    body: c.body,
+    pos: null,
+    resolved: c.resolved,
+    parentId: c.parentId,
+    author: {
+      id: c.author.id,
+      firstName: c.author.firstName,
+      lastName: c.author.lastName,
+      avatar: c.author.avatarUrl,
+    },
+    createdAt: c.createdAt,
+  };
+}
+
+function flattenSceneComments(comments: SceneCommentResponseDto[]): SceneCommentResponseDto[] {
+  const out: SceneCommentResponseDto[] = [];
+  const walk = (list: SceneCommentResponseDto[]) => {
+    for (const c of list) {
+      out.push(c);
+      if (c.replies?.length) walk(c.replies);
+    }
+  };
+  walk(comments);
+  return out;
+}
+
+interface ScopeAdapter {
+  add: (body: {
+    body: string;
+    posX?: number;
+    posY?: number;
+    posZ?: number;
+    parentId?: string | null;
+  }) => Promise<unknown>;
+  isAddLoading: boolean;
+  remove: (commentId: string) => void;
+  resolve: (commentId: string) => void;
+}
+
+function useModelAdapter(modelId: string): ScopeAdapter {
+  const [add, { isLoading }] = useAddCommentMutation();
+  const [del] = useDeleteCommentMutation();
+  const [upd] = useUpdateCommentMutation();
+  return {
+    add: (body) =>
+      add({
+        modelId,
+        body: {
+          body: body.body,
+          posX: body.posX,
+          posY: body.posY,
+          posZ: body.posZ,
+          parentId: body.parentId ?? undefined,
+        },
+      }).unwrap(),
+    isAddLoading: isLoading,
+    remove: (commentId) => {
+      void del({ modelId, commentId });
+    },
+    resolve: (commentId) => {
+      void upd({ modelId, commentId, body: { resolved: true } });
+    },
+  };
+}
+
+function useSceneAdapter(sceneId: string): ScopeAdapter {
+  const [add, { isLoading }] = useAddSceneCommentMutation();
+  const [del] = useDeleteSceneCommentMutation();
+  const [upd] = useUpdateSceneCommentMutation();
+  return {
+    add: (body) =>
+      add({
+        sceneId,
+        body: { body: body.body, parentId: body.parentId ?? undefined },
+      }).unwrap(),
+    isAddLoading: isLoading,
+    remove: (commentId) => {
+      void del({ sceneId, commentId });
+    },
+    resolve: (commentId) => {
+      void upd({ sceneId, commentId, body: { resolved: true } });
+    },
+  };
+}
+
 function CommentInput({
-  modelId,
+  scope,
   posX,
   posY,
   posZ,
   parentId,
+  adapter,
   onDone,
 }: {
-  modelId: string;
+  scope: ReviewScope;
   posX?: number;
   posY?: number;
   posZ?: number;
   parentId?: string;
+  adapter: ScopeAdapter;
   onDone: () => void;
 }) {
-  const [addComment, { isLoading }] = useAddCommentMutation();
   const form = useForm<CommentFormValues>({ initialValues: { body: '' } });
 
   const handleSubmit = async (values: CommentFormValues) => {
     if (!values.body.trim()) return;
-    await addComment({ modelId, body: { body: values.body, posX, posY, posZ, parentId } });
+    await adapter.add(
+      scope === 'model' ? { body: values.body, posX, posY, posZ, parentId } : { body: values.body, parentId },
+    );
     form.reset();
     onDone();
   };
@@ -58,10 +193,10 @@ function CommentInput({
         mb={8}
       />
       <Group justify="flex-end" gap={8}>
-        <Button variant="subtle" size="xs" onClick={onDone} disabled={isLoading}>
+        <Button variant="subtle" size="xs" onClick={onDone} disabled={adapter.isAddLoading}>
           Отмена
         </Button>
-        <Button type="submit" size="xs" loading={isLoading}>
+        <Button type="submit" size="xs" loading={adapter.isAddLoading}>
           Отправить
         </Button>
       </Group>
@@ -71,23 +206,24 @@ function CommentInput({
 
 function CommentCard({
   comment,
-  modelId,
+  scope,
+  adapter,
   currentUserId,
   depth = 0,
   allComments,
 }: {
-  comment: CommentResponseDto;
-  modelId: string;
+  comment: UnifiedComment;
+  scope: ReviewScope;
+  adapter: ScopeAdapter;
   currentUserId: string | undefined;
   depth?: number;
-  allComments: CommentResponseDto[];
+  allComments: UnifiedComment[];
 }) {
-  const [deleteComment] = useDeleteCommentMutation();
-  const [updateComment] = useUpdateCommentMutation();
   const [replyOpen, setReplyOpen] = useState(false);
 
   const authorName = [comment.author.firstName, comment.author.lastName].filter(Boolean).join(' ') || 'Аноним';
-  const isOwn = currentUserId === comment.author.id;
+  const isAuthenticated = Boolean(currentUserId);
+  const isOwn = isAuthenticated && currentUserId === comment.author.id;
   const replies = allComments.filter((c) => c.parentId === comment.id);
 
   return (
@@ -114,33 +250,25 @@ function CommentCard({
             {comment.body}
           </Text>
           <Group gap={6} mt={4}>
-            <Text size="xs" c="dimmed" style={{ cursor: 'pointer' }} onClick={() => setReplyOpen((v) => !v)}>
-              Ответить
-            </Text>
+            {isAuthenticated && (
+              <Text size="xs" c="dimmed" style={{ cursor: 'pointer' }} onClick={() => setReplyOpen((v) => !v)}>
+                Ответить
+              </Text>
+            )}
             {isOwn && (
-              <ActionIcon
-                size="xs"
-                variant="subtle"
-                color="red"
-                onClick={() => deleteComment({ modelId, commentId: comment.id })}
-              >
+              <ActionIcon size="xs" variant="subtle" color="red" onClick={() => adapter.remove(comment.id)}>
                 <IconTrash size={12} />
               </ActionIcon>
             )}
             {isOwn && !comment.resolved && (
-              <Text
-                size="xs"
-                c="dimmed"
-                style={{ cursor: 'pointer' }}
-                onClick={() => updateComment({ modelId, commentId: comment.id, body: { resolved: true } })}
-              >
+              <Text size="xs" c="dimmed" style={{ cursor: 'pointer' }} onClick={() => adapter.resolve(comment.id)}>
                 Закрыть
               </Text>
             )}
           </Group>
-          {replyOpen && (
+          {replyOpen && isAuthenticated && (
             <Box mt={8}>
-              <CommentInput modelId={modelId} parentId={comment.id} onDone={() => setReplyOpen(false)} />
+              <CommentInput scope={scope} parentId={comment.id} adapter={adapter} onDone={() => setReplyOpen(false)} />
             </Box>
           )}
         </Box>
@@ -149,7 +277,8 @@ function CommentCard({
         <CommentCard
           key={r.id}
           comment={r}
-          modelId={modelId}
+          scope={scope}
+          adapter={adapter}
           currentUserId={currentUserId}
           depth={depth + 1}
           allComments={allComments}
@@ -159,13 +288,15 @@ function CommentCard({
   );
 }
 
-export function ReviewPanel({ modelId, viewer }: ReviewPanelProps) {
+function ModelReview({ modelId, viewer }: { modelId: string; viewer: Viewer | null | undefined }) {
   const { data: comments = [] } = useModelCommentsQuery({ modelId }, { skip: !modelId });
   const { data: currentUser } = useCurrentUserQuery();
+  const adapter = useModelAdapter(modelId);
   const [placementActive, setPlacementActive] = useState(false);
   const [pendingPos, setPendingPos] = useState<{ x: number; y: number; z: number } | null>(null);
 
-  const rootComments = comments.filter((c) => !c.parentId);
+  const unified = comments.map(toUnifiedFromModel);
+  const rootComments = unified.filter((c) => !c.parentId);
 
   const handlePlaceComment = () => {
     if (!viewer) return;
@@ -206,7 +337,8 @@ export function ReviewPanel({ modelId, viewer }: ReviewPanelProps) {
             Комментарий в точке сцены
           </Text>
           <CommentInput
-            modelId={modelId}
+            scope="model"
+            adapter={adapter}
             posX={pendingPos.x}
             posY={pendingPos.y}
             posZ={pendingPos.z}
@@ -226,12 +358,78 @@ export function ReviewPanel({ modelId, viewer }: ReviewPanelProps) {
           <CommentCard
             key={c.id}
             comment={c}
-            modelId={modelId}
+            scope="model"
+            adapter={adapter}
             currentUserId={currentUser?.id}
-            allComments={comments}
+            allComments={unified}
           />
         ))}
       </Stack>
     </Stack>
   );
+}
+
+function SceneReview({ sceneId }: { sceneId: string }) {
+  const { data: comments = [] } = useSceneCommentsQuery(sceneId, { skip: !sceneId });
+  const { data: currentUser } = useCurrentUserQuery();
+  const adapter = useSceneAdapter(sceneId);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const isAuthenticated = Boolean(currentUser?.id);
+
+  // Server may return either a flat list with parentId or nested replies — handle both.
+  const unified = flattenSceneComments(comments).map(toUnifiedFromScene);
+  const rootComments = unified.filter((c) => !c.parentId);
+
+  return (
+    <Stack gap="md" className={classes.root}>
+      <Group justify="space-between" align="center">
+        <Text fw={600} size="sm">
+          Комментарии
+        </Text>
+        {isAuthenticated && (
+          <Tooltip label="Новый комментарий" openDelay={300}>
+            <ActionIcon
+              variant={composerOpen ? 'filled' : 'light'}
+              color={composerOpen ? 'orange' : 'blue'}
+              onClick={() => setComposerOpen((v) => !v)}
+            >
+              <IconMessagePlus size={16} />
+            </ActionIcon>
+          </Tooltip>
+        )}
+      </Group>
+
+      {composerOpen && isAuthenticated && (
+        <Box className={classes['pending-input']}>
+          <CommentInput scope="scene" adapter={adapter} onDone={() => setComposerOpen(false)} />
+        </Box>
+      )}
+
+      {rootComments.length === 0 && !composerOpen && (
+        <Text size="sm" c="dimmed" ta="center" py="xl">
+          Комментариев пока нет
+        </Text>
+      )}
+
+      <Stack gap="xs">
+        {rootComments.map((c) => (
+          <CommentCard
+            key={c.id}
+            comment={c}
+            scope="scene"
+            adapter={adapter}
+            currentUserId={currentUser?.id}
+            allComments={unified}
+          />
+        ))}
+      </Stack>
+    </Stack>
+  );
+}
+
+export function ReviewPanel({ scope = 'model', modelId, sceneId, viewer }: ReviewPanelProps) {
+  if (scope === 'scene') {
+    return <SceneReview sceneId={sceneId ?? ''} />;
+  }
+  return <ModelReview modelId={modelId ?? ''} viewer={viewer ?? null} />;
 }

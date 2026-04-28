@@ -66,4 +66,6 @@ export const ScenesSchemaTables = {
   Scene: 'scene',
   SceneObject: 'scene_object',
   SceneLight: 'scene_light',
+  SceneAnnotation: 'scene_annotation',
+  SceneComment: 'scene_comment',
 } as const;

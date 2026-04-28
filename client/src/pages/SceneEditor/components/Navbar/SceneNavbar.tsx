@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppShell, Tabs, Tooltip } from '@mantine/core';
 import type { AnimationClip, AnimationMixer } from 'three';
 import type { SceneResponseDto } from '@/app/api/dto.ts';
+import type { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import type { SelectionState } from '../../hooks/model.ts';
 import { SceneTabValues, type SceneTabValue } from './constants.ts';
 import { getSceneTabsConfig } from './utils.tsx';
@@ -11,6 +12,7 @@ import classes from './SceneNavbar.module.scss';
 interface SceneNavbarProps {
     className?: string;
     scene: SceneResponseDto;
+    viewer: Viewer | null;
     selectionState: SelectionState;
     onSelectObject: (id: string | null) => void;
     onSelectLight: (id: string | null) => void;
@@ -29,11 +31,13 @@ const TAB_TOOLTIPS: Record<SceneTabValue, string> = {
     lights: 'Lights',
     config: 'Scene Config',
     animations: 'Animations',
+    review: 'Review',
 };
 
 export function SceneNavbar({
     className,
     scene,
+    viewer,
     selectionState,
     onSelectObject,
     onSelectLight,
@@ -59,6 +63,7 @@ export function SceneNavbar({
         () =>
             getSceneTabsConfig({
                 scene,
+                viewer,
                 selectionState,
                 onSelectObject,
                 onSelectLight,
@@ -72,7 +77,7 @@ export function SceneNavbar({
                 isSceneLoading,
             }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [scene, selectionState, isSceneLoading],
+        [scene, viewer, selectionState, isSceneLoading],
     );
 
     return (

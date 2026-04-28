@@ -1842,6 +1842,649 @@
         ]
       }
     },
+    "/api/models-3d/{modelId}/display-config": {
+      "get": {
+        "operationId": "DisplayConfigController_getConfig",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisplayConfigResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "display-config"
+        ]
+      },
+      "patch": {
+        "operationId": "DisplayConfigController_updateConfig",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisplayConfigUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisplayConfigResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "display-config"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/display-config/hdri": {
+      "post": {
+        "operationId": "DisplayConfigController_uploadHdri",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisplayConfigResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "display-config"
+        ]
+      },
+      "delete": {
+        "operationId": "DisplayConfigController_removeHdri",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisplayConfigResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "display-config"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/display-config/lights": {
+      "post": {
+        "operationId": "DisplayConfigController_addLight",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelLightUpsertDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisplayConfigResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "display-config"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/display-config/lights/{lightId}": {
+      "patch": {
+        "operationId": "DisplayConfigController_updateLight",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lightId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelLightUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisplayConfigResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "display-config"
+        ]
+      },
+      "delete": {
+        "operationId": "DisplayConfigController_removeLight",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lightId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "display-config"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/materials": {
+      "get": {
+        "operationId": "MaterialsController_listMaterials",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MaterialOverrideResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "materials"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/materials/{meshName}": {
+      "put": {
+        "operationId": "MaterialsController_upsertMaterial",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "meshName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaterialOverrideUpsertDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialOverrideResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "materials"
+        ]
+      },
+      "delete": {
+        "operationId": "MaterialsController_deleteMaterial",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "meshName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "materials"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/materials/{meshName}/texture/{type}": {
+      "post": {
+        "operationId": "MaterialsController_uploadTexture",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "meshName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialOverrideResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "materials"
+        ]
+      },
+      "delete": {
+        "operationId": "MaterialsController_clearTexture",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "meshName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterialOverrideResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "materials"
+        ]
+      },
+      "get": {
+        "operationId": "MaterialsController_serveTexture",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "meshName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Texture image binary"
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "materials"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/audio": {
+      "get": {
+        "operationId": "AudioController_list",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModelAudioResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "models-3d-audio"
+        ]
+      },
+      "post": {
+        "operationId": "AudioController_upload",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelAudioResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "models-3d-audio"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/audio/{audioId}": {
+      "delete": {
+        "operationId": "AudioController_remove",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "audioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "models-3d-audio"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/audio/{audioId}/stream": {
+      "get": {
+        "operationId": "AudioController_stream",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "audioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "models-3d-audio"
+        ]
+      }
+    },
     "/api/api-keys": {
       "post": {
         "operationId": "ApiKeyController_generate",
@@ -2615,6 +3258,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3058,6 +3709,335 @@
           "scenes"
         ]
       }
+    },
+    "/api/scenes/{sceneId}/annotations": {
+      "get": {
+        "operationId": "SceneAnnotationsController_getAnnotations",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SceneAnnotationResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scene-annotations"
+        ]
+      },
+      "post": {
+        "operationId": "SceneAnnotationsController_createAnnotation",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SceneAnnotationCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SceneAnnotationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scene-annotations"
+        ]
+      }
+    },
+    "/api/scenes/{sceneId}/annotations/{annotId}": {
+      "patch": {
+        "operationId": "SceneAnnotationsController_updateAnnotation",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "annotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SceneAnnotationUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SceneAnnotationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scene-annotations"
+        ]
+      },
+      "delete": {
+        "operationId": "SceneAnnotationsController_deleteAnnotation",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "annotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "scene-annotations"
+        ]
+      }
+    },
+    "/api/scenes/{sceneId}/annotations/order": {
+      "put": {
+        "operationId": "SceneAnnotationsController_reorderAnnotations",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SceneAnnotationReorderRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "scene-annotations"
+        ]
+      }
+    },
+    "/api/scenes/{sceneId}/comments": {
+      "get": {
+        "operationId": "SceneCommentsController_getComments",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SceneCommentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scene-comments"
+        ]
+      },
+      "post": {
+        "operationId": "SceneCommentsController_addComment",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SceneCommentCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SceneCommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scene-comments"
+        ]
+      }
+    },
+    "/api/scenes/{sceneId}/comments/{commentId}": {
+      "patch": {
+        "operationId": "SceneCommentsController_updateComment",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SceneCommentUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SceneCommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scene-comments"
+        ]
+      },
+      "delete": {
+        "operationId": "SceneCommentsController_deleteComment",
+        "parameters": [
+          {
+            "name": "sceneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "scene-comments"
+        ]
+      }
     }
   },
   "info": {
@@ -3442,6 +4422,9 @@
           },
           "entryFile": {
             "type": "string"
+          },
+          "originalFormat": {
+            "type": "string"
           }
         },
         "required": [
@@ -3449,7 +4432,8 @@
           "createdAt",
           "name",
           "size",
-          "extension"
+          "extension",
+          "originalFormat"
         ]
       },
       "Model3dResponseDto": {
@@ -3928,6 +4912,355 @@
           "fileSize",
           "isActive",
           "uploader",
+          "createdAt"
+        ]
+      },
+      "ModelLightResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
+          "intensity": {
+            "type": "number"
+          },
+          "castShadow": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "posX",
+          "posY",
+          "posZ",
+          "color",
+          "intensity",
+          "castShadow",
+          "createdAt"
+        ]
+      },
+      "DisplayConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "ambientIntensity": {
+            "type": "number"
+          },
+          "environmentHdriPath": {
+            "type": "string"
+          },
+          "fogEnabled": {
+            "type": "boolean"
+          },
+          "fogType": {
+            "type": "string"
+          },
+          "fogColor": {
+            "type": "string"
+          },
+          "fogNear": {
+            "type": "number"
+          },
+          "fogFar": {
+            "type": "number"
+          },
+          "postProcess": {
+            "type": "object"
+          },
+          "rendererConfig": {
+            "type": "object"
+          },
+          "lights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelLightResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "modelId",
+          "backgroundColor",
+          "ambientIntensity",
+          "fogEnabled",
+          "fogType",
+          "fogColor",
+          "fogNear",
+          "fogFar",
+          "lights"
+        ]
+      },
+      "DisplayConfigUpdateDto": {
+        "type": "object",
+        "properties": {
+          "backgroundColor": {
+            "type": "string",
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$"
+          },
+          "ambientIntensity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "fogEnabled": {
+            "type": "boolean"
+          },
+          "fogType": {
+            "type": "string",
+            "enum": [
+              "linear",
+              "exp2"
+            ]
+          },
+          "fogColor": {
+            "type": "string",
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$"
+          },
+          "fogNear": {
+            "type": "number"
+          },
+          "fogFar": {
+            "type": "number"
+          },
+          "postProcess": {
+            "type": "object"
+          },
+          "rendererConfig": {
+            "type": "object"
+          }
+        }
+      },
+      "ModelLightUpsertDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ambient",
+              "directional",
+              "point",
+              "spot"
+            ]
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$"
+          },
+          "intensity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "castShadow": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ModelLightUpdateDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ambient",
+              "directional",
+              "point",
+              "spot"
+            ]
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$"
+          },
+          "intensity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "castShadow": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MaterialOverrideResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "meshName": {
+            "type": "string"
+          },
+          "colorHex": {
+            "type": "string"
+          },
+          "metalness": {
+            "type": "number"
+          },
+          "roughness": {
+            "type": "number"
+          },
+          "emissiveHex": {
+            "type": "string"
+          },
+          "emissiveIntensity": {
+            "type": "number"
+          },
+          "opacity": {
+            "type": "number"
+          },
+          "wireframe": {
+            "type": "boolean"
+          },
+          "textureMapUrl": {
+            "type": "string"
+          },
+          "normalMapUrl": {
+            "type": "string"
+          },
+          "roughnessMapUrl": {
+            "type": "string"
+          },
+          "metalnessMapUrl": {
+            "type": "string"
+          },
+          "emissiveMapUrl": {
+            "type": "string"
+          },
+          "aoMapUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "modelId",
+          "meshName",
+          "wireframe",
+          "createdAt"
+        ]
+      },
+      "MaterialOverrideUpsertDto": {
+        "type": "object",
+        "properties": {
+          "colorHex": {
+            "type": "string",
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$"
+          },
+          "metalness": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "roughness": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "emissiveHex": {
+            "type": "string",
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$"
+          },
+          "emissiveIntensity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "opacity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "wireframe": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ModelAudioResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "originalName": {
+            "type": "string"
+          },
+          "durationS": {
+            "type": "number",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "modelId",
+          "filename",
+          "originalName",
           "createdAt"
         ]
       },
@@ -4482,7 +5815,6 @@
           }
         },
         "required": [
-          "workspaceId",
           "name"
         ]
       },
@@ -4556,6 +5888,14 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "animationConfig": {
+            "type": "object",
+            "nullable": true
+          },
+          "audioConfig": {
+            "type": "object",
+            "nullable": true
           }
         },
         "required": [
@@ -4630,7 +5970,20 @@
             "type": "string"
           },
           "workspaceId": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "unlisted"
+            ]
           },
           "name": {
             "type": "string"
@@ -4672,6 +6025,8 @@
         "required": [
           "id",
           "workspaceId",
+          "userId",
+          "visibility",
           "name",
           "description",
           "config",
@@ -4689,7 +6044,20 @@
             "type": "string"
           },
           "workspaceId": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "unlisted"
+            ]
           },
           "name": {
             "type": "string"
@@ -4708,16 +6076,24 @@
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
           "id",
           "workspaceId",
+          "userId",
+          "visibility",
           "name",
           "description",
           "thumbnailPath",
           "objectCount",
-          "createdAt"
+          "createdAt",
+          "updatedAt"
         ]
       },
       "CameraBookmarkDto": {
@@ -4784,6 +6160,79 @@
           },
           "config": {
             "$ref": "#/components/schemas/SceneConfigUpdateDto"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "unlisted"
+            ]
+          }
+        }
+      },
+      "AnimationSequenceItemDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "loop": {
+            "type": "string"
+          },
+          "transitionDuration": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AnimationConfigDto": {
+        "type": "object",
+        "properties": {
+          "autoplay": {
+            "type": "boolean"
+          },
+          "activeClipName": {
+            "type": "string",
+            "nullable": true
+          },
+          "loop": {
+            "type": "string"
+          },
+          "speed": {
+            "type": "number"
+          },
+          "sequence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnimationSequenceItemDto"
+            }
+          }
+        }
+      },
+      "SceneObjectAudioConfigDto": {
+        "type": "object",
+        "properties": {
+          "audioId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "loop": {
+            "type": "boolean"
+          },
+          "volume": {
+            "type": "number"
+          },
+          "positional": {
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "type": "number"
+          },
+          "autoplay": {
+            "type": "boolean"
           }
         }
       },
@@ -4833,6 +6282,24 @@
           "order": {
             "type": "number",
             "default": 0
+          },
+          "animationConfig": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AnimationConfigDto"
+              }
+            ]
+          },
+          "audioConfig": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SceneObjectAudioConfigDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4879,6 +6346,305 @@
         "required": [
           "type"
         ]
+      },
+      "SceneAnnotationPosDto": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "z": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "SceneAnnotationAuthorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "SceneAnnotationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sceneId": {
+            "type": "string"
+          },
+          "sceneObjectId": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "pos": {
+            "$ref": "#/components/schemas/SceneAnnotationPosDto"
+          },
+          "cameraPos": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SceneAnnotationPosDto"
+              }
+            ]
+          },
+          "order": {
+            "type": "number"
+          },
+          "author": {
+            "$ref": "#/components/schemas/SceneAnnotationAuthorDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sceneId",
+          "sceneObjectId",
+          "label",
+          "body",
+          "pos",
+          "cameraPos",
+          "order",
+          "author",
+          "createdAt"
+        ]
+      },
+      "SceneAnnotationCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "body": {
+            "type": "string"
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "cameraPosX": {
+            "type": "number"
+          },
+          "cameraPosY": {
+            "type": "number"
+          },
+          "cameraPosZ": {
+            "type": "number"
+          },
+          "sceneObjectId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "label",
+          "posX",
+          "posY",
+          "posZ"
+        ]
+      },
+      "SceneAnnotationUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "body": {
+            "type": "string"
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "cameraPosX": {
+            "type": "number"
+          },
+          "cameraPosY": {
+            "type": "number"
+          },
+          "cameraPosZ": {
+            "type": "number"
+          },
+          "sceneObjectId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "SceneAnnotationReorderItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "order"
+        ]
+      },
+      "SceneAnnotationReorderRequestDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SceneAnnotationReorderItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "SceneCommentAuthorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "SceneCommentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sceneId": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "resolved": {
+            "type": "boolean"
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "author": {
+            "$ref": "#/components/schemas/SceneCommentAuthorDto"
+          },
+          "replies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SceneCommentResponseDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sceneId",
+          "body",
+          "resolved",
+          "parentId",
+          "author",
+          "createdAt"
+        ]
+      },
+      "SceneCommentCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "SceneCommentUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "resolved": {
+            "type": "boolean"
+          }
+        }
       }
     }
   }

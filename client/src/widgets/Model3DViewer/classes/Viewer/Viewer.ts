@@ -1,4 +1,16 @@
-import { Audio as ThreeAudio, AudioListener, AudioLoader, AnimationClip, AnimationMixer, AnimationObjectGroup, Box3, type Object3D, Raycaster, Vector2, Vector3 } from 'three';
+import {
+  Audio as ThreeAudio,
+  AudioListener,
+  AudioLoader,
+  type AnimationClip,
+  AnimationMixer,
+  AnimationObjectGroup,
+  Box3,
+  type Object3D,
+  Raycaster,
+  Vector2,
+  Vector3,
+} from 'three';
 import Stats from 'three/addons/libs/stats.module.js';
 import type { Model3DResponseDto, SceneResponseDto } from '@/app/api/dto.ts';
 import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
@@ -19,7 +31,10 @@ export class Viewer {
 
   private _mode: ViewerMode = 'view';
   private _pointerDownHandler: ((e: PointerEvent) => void) | null = null;
-  private _sceneObjectMixers = new Map<string, { clips: AnimationClip[]; mixer: AnimationMixer; cleanup: () => void }>();
+  private _sceneObjectMixers = new Map<
+    string,
+    { clips: AnimationClip[]; mixer: AnimationMixer; cleanup: () => void }
+  >();
   private _audioListener: AudioListener | null = null;
   private _audioObjects: ThreeAudio[] = [];
 
@@ -113,7 +128,9 @@ export class Viewer {
     }
   }
 
-  public onScenePointerDown(callback: (worldPos: Vector3, cameraPos: Vector3) => void): void {
+  public onScenePointerDown(
+    callback: (worldPos: Vector3, cameraPos: Vector3, sceneObjectId: string | null) => void,
+  ): void {
     const canvas = this.renderer.getCanvas();
     if (this._pointerDownHandler) {
       canvas.removeEventListener('pointerdown', this._pointerDownHandler);
@@ -133,15 +150,32 @@ export class Viewer {
           if (isMesh(o)) meshes.push(o);
         });
       }
+      // also include scene objects (multi-model scenes have no this.model)
+      this.world.scene.traverse((o) => {
+        if (isMesh(o)) meshes.push(o);
+      });
 
       const intersects = raycaster.intersectObjects(meshes, false);
       if (intersects.length > 0) {
         const hit = intersects[0].point;
         const camPos = this.camera.camera.position.clone();
+
+        // walk up parents to find a sceneObjectId in userData
+        let sceneObjectId: string | null = null;
+        let cursor: Object3D | null = intersects[0].object;
+        while (cursor) {
+          const id = cursor.userData?.sceneObjectId;
+          if (typeof id === 'string') {
+            sceneObjectId = id;
+            break;
+          }
+          cursor = cursor.parent;
+        }
+
         canvas.removeEventListener('pointerdown', this._pointerDownHandler!);
         this._pointerDownHandler = null;
         this.setMode('view');
-        callback(hit, camPos);
+        callback(hit, camPos, sceneObjectId);
       }
     };
 

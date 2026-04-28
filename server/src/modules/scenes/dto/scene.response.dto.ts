@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { SceneVisibility } from '@/database/entities/scenes/scene.entity';
 import { SceneConfig } from '@/database/entities/scenes/scene-config.type';
 import { LightType } from '@/database/entities/scenes/scene-light.entity';
 
@@ -92,8 +93,14 @@ export class SceneResponseDto {
   @ApiProperty()
   public id: string;
 
-  @ApiProperty()
-  public workspaceId: string;
+  @ApiProperty({ nullable: true })
+  public workspaceId: string | null;
+
+  @ApiProperty({ nullable: true })
+  public userId: string | null;
+
+  @ApiProperty({ enum: ['public', 'private', 'unlisted'] })
+  public visibility: SceneVisibility;
 
   @ApiProperty()
   public name: string;
@@ -124,8 +131,14 @@ export class SceneListItemResponseDto {
   @ApiProperty()
   public id: string;
 
-  @ApiProperty()
-  public workspaceId: string;
+  @ApiProperty({ nullable: true })
+  public workspaceId: string | null;
+
+  @ApiProperty({ nullable: true })
+  public userId: string | null;
+
+  @ApiProperty({ enum: ['public', 'private', 'unlisted'] })
+  public visibility: SceneVisibility;
 
   @ApiProperty()
   public name: string;
@@ -141,4 +154,7 @@ export class SceneListItemResponseDto {
 
   @ApiProperty()
   public createdAt: Date;
+
+  @ApiProperty({ nullable: true })
+  public updatedAt: Date | null;
 }

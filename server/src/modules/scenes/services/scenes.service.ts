@@ -1,6 +1,13 @@
 import { createReadStream } from 'fs';
 import { resolve } from 'path';
-import { ForbiddenException, Injectable, Logger, NotFoundException, StreamableFile } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { SCENE_LIMITS } from '@/constants/plan-limits';
@@ -33,11 +40,18 @@ export class ScenesService {
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
+  // ---------------------------------------------------------------------------
+  // Scene CRUD
+  // ---------------------------------------------------------------------------
+
   public async createScene(user: UserEntity, dto: SceneCreateRequestDto): Promise<SceneResponseDto> {
-    await this.requireMember(dto.workspaceId, user.id);
+    if (dto.workspaceId) {
+      await this.requireMember(dto.workspaceId, user.id);
+    }
 
     const scene = this.sceneRepository.create({
-      workspaceId: dto.workspaceId,
+      workspaceId: dto.workspaceId ?? null,
+      userId: dto.workspaceId ? null : user.id,
       name: dto.name,
       description: dto.description ?? null,
       config: null,
@@ -48,32 +62,45 @@ export class ScenesService {
     return SceneMapper.toResponse(saved);
   }
 
-  public async listScenes(workspaceId: string, user: UserEntity): Promise<SceneListItemResponseDto[]> {
-    await this.requireMember(workspaceId, user.id);
+  public async listScenes(
+    query: { workspaceId?: string; userId?: string },
+    user: UserEntity,
+  ): Promise<SceneListItemResponseDto[]> {
+    if (query.workspaceId) {
+      await this.requireMember(query.workspaceId, user.id);
+      const scenes = await this.sceneRepository.find({
+        where: { workspaceId: query.workspaceId },
+        relations: { objects: true },
+        order: { createdAt: 'DESC' },
+      });
+      return scenes.map(SceneMapper.toListItemResponse);
+    }
 
-    const scenes = await this.sceneRepository.find({
-      where: { workspaceId },
-      relations: { objects: true },
-      order: { createdAt: 'DESC' },
-    });
-    return scenes.map(SceneMapper.toListItemResponse);
+    if (query.userId) {
+      const resolvedUserId = query.userId === 'me' ? user.id : query.userId;
+      const scenes = await this.sceneRepository.findByUserId(resolvedUserId);
+      return scenes.map(SceneMapper.toListItemResponse);
+    }
+
+    throw new BadRequestException('Either workspaceId or userId query param is required');
   }
 
   public async getScene(sceneId: string, user: UserEntity): Promise<SceneResponseDto> {
     const scene = await this.loadSceneWithRelations(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneReadAccess(scene, user.id);
     return SceneMapper.toResponse(scene);
   }
 
   public async updateScene(sceneId: string, user: UserEntity, dto: SceneUpdateRequestDto): Promise<SceneResponseDto> {
     const scene = await this.loadSceneWithRelations(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
     if (dto.name !== undefined) scene.name = dto.name;
     if (dto.description !== undefined) scene.description = dto.description ?? null;
     if (dto.config !== undefined) {
       scene.config = { ...(scene.config ?? this.defaultConfig()), ...dto.config };
     }
+    if (dto.visibility !== undefined) scene.visibility = dto.visibility;
 
     const saved = await this.sceneRepository.save(scene);
     return SceneMapper.toResponse(saved);
@@ -81,20 +108,27 @@ export class ScenesService {
 
   public async deleteScene(sceneId: string, user: UserEntity): Promise<void> {
     const scene = await this.loadScene(sceneId);
-    const orgId = await this.resolveOrgId(scene.workspaceId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
     await this.sceneRepository.softDelete(sceneId);
-    this.filesService.deleteSceneFiles(orgId, sceneId).catch((err) => {
-      this.logger.warn(`Failed to delete scene files for ${sceneId}: ${String(err)}`);
-    });
+
+    if (scene.workspaceId) {
+      const orgId = await this.resolveOrgId(scene.workspaceId);
+      this.filesService.deleteSceneFiles(orgId, sceneId).catch((err) => {
+        this.logger.warn(`Failed to delete scene files for ${sceneId}: ${String(err)}`);
+      });
+    }
   }
+
+  // ---------------------------------------------------------------------------
+  // Objects
+  // ---------------------------------------------------------------------------
 
   public async addObject(sceneId: string, user: UserEntity, dto: SceneObjectUpsertDto): Promise<SceneResponseDto> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
-    const limits = await this.getPlanLimits(scene.workspaceId);
+    const limits = await this.getPlanLimitsForScene(scene);
     const count = await this.sceneObjectRepository.countByScene(sceneId);
     if (count >= limits.maxObjects) {
       throw new ForbiddenException('Object limit reached for your plan');
@@ -126,7 +160,7 @@ export class ScenesService {
     dto: SceneObjectUpsertDto,
   ): Promise<SceneResponseDto> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
     const obj = await this.sceneObjectRepository.findOne({ where: { id: objectId, sceneId } });
     if (!obj) throw new NotFoundException('Scene object not found');
@@ -148,15 +182,19 @@ export class ScenesService {
 
   public async removeObject(sceneId: string, objectId: string, user: UserEntity): Promise<void> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
     await this.sceneObjectRepository.softDelete({ id: objectId, sceneId });
   }
 
+  // ---------------------------------------------------------------------------
+  // Lights
+  // ---------------------------------------------------------------------------
+
   public async addLight(sceneId: string, user: UserEntity, dto: SceneLightUpsertDto): Promise<SceneResponseDto> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
-    const limits = await this.getPlanLimits(scene.workspaceId);
+    const limits = await this.getPlanLimitsForScene(scene);
     const count = await this.sceneLightRepository.countByScene(sceneId);
     if (count >= limits.maxLights) {
       throw new ForbiddenException('Light limit reached for your plan');
@@ -184,7 +222,7 @@ export class ScenesService {
     dto: SceneLightUpsertDto,
   ): Promise<SceneResponseDto> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
     const light = await this.sceneLightRepository.findOne({ where: { id: lightId, sceneId } });
     if (!light) throw new NotFoundException('Scene light not found');
@@ -203,21 +241,29 @@ export class ScenesService {
 
   public async removeLight(sceneId: string, lightId: string, user: UserEntity): Promise<void> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
     await this.sceneLightRepository.softDelete({ id: lightId, sceneId });
   }
 
+  // ---------------------------------------------------------------------------
+  // HDRI & Thumbnail
+  // ---------------------------------------------------------------------------
+
   public async uploadHdri(sceneId: string, user: UserEntity, file: Express.Multer.File): Promise<SceneResponseDto> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
-    const limits = await this.getPlanLimits(scene.workspaceId);
+    const limits = await this.getPlanLimitsForScene(scene);
     if (!limits.hdriEnabled) {
       throw new ForbiddenException('HDRI environment is not available on your plan');
     }
 
-    const orgId = await this.resolveOrgId(scene.workspaceId);
-    await this.filesService.saveSceneHdri(orgId, sceneId, file);
+    if (scene.workspaceId) {
+      const orgId = await this.resolveOrgId(scene.workspaceId);
+      await this.filesService.saveSceneHdri(orgId, sceneId, file);
+    } else {
+      await this.filesService.saveSceneHdri(null as unknown as string, sceneId, file);
+    }
 
     scene.config = { ...(scene.config ?? this.defaultConfig()), environmentHdriPath: 'environment.hdr' };
     await this.sceneRepository.save(scene);
@@ -227,15 +273,15 @@ export class ScenesService {
 
   public async getHdriFile(sceneId: string): Promise<StreamableFile | { redirect: string }> {
     const scene = await this.loadScene(sceneId);
-    const orgId = await this.resolveOrgId(scene.workspaceId);
 
-    const url = await this.filesService.getSceneHdriUrl(orgId, sceneId);
-    // S3 strategy returns a presigned URL — redirect
-    if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
-      return { redirect: url };
+    if (scene.workspaceId) {
+      const orgId = await this.resolveOrgId(scene.workspaceId);
+      const url = await this.filesService.getSceneHdriUrl(orgId, sceneId);
+      if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
+        return { redirect: url };
+      }
     }
 
-    // Local strategy — stream the file
     const filePath = resolve(process.cwd(), 'files', 'scenes', sceneId, 'environment.hdr');
     const stream = createReadStream(filePath);
     return new StreamableFile(stream, { type: 'application/octet-stream' });
@@ -243,12 +289,17 @@ export class ScenesService {
 
   public async saveThumbnail(sceneId: string, user: UserEntity, thumbnail: string): Promise<SceneResponseDto> {
     const scene = await this.loadScene(sceneId);
-    await this.requireMember(scene.workspaceId, user.id);
+    await this.requireSceneWriteAccess(scene, user.id);
 
     const base64Data = thumbnail.replace(/^data:image\/png;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
-    const orgId = await this.resolveOrgId(scene.workspaceId);
-    await this.filesService.saveSceneThumbnail(orgId, sceneId, buffer);
+
+    if (scene.workspaceId) {
+      const orgId = await this.resolveOrgId(scene.workspaceId);
+      await this.filesService.saveSceneThumbnail(orgId, sceneId, buffer);
+    } else {
+      await this.filesService.saveSceneThumbnail(null as unknown as string, sceneId, buffer);
+    }
 
     scene.thumbnailPath = `scenes/${sceneId}/thumbnail.png`;
     await this.sceneRepository.save(scene);
@@ -274,6 +325,25 @@ export class ScenesService {
     return scene;
   }
 
+  private async requireSceneReadAccess(scene: SceneEntity, userId: string): Promise<void> {
+    if (scene.workspaceId) {
+      await this.requireMember(scene.workspaceId, userId);
+      return;
+    }
+    if (scene.userId === userId) return;
+    if (scene.visibility === 'public') return;
+    throw new ForbiddenException('Access denied');
+  }
+
+  private async requireSceneWriteAccess(scene: SceneEntity, userId: string): Promise<void> {
+    if (scene.workspaceId) {
+      await this.requireMember(scene.workspaceId, userId);
+      return;
+    }
+    if (scene.userId === userId) return;
+    throw new ForbiddenException('Access denied');
+  }
+
   private async requireMember(workspaceId: string, userId: string): Promise<void> {
     const member = await this.workspaceMemberRepository.findByWorkspaceAndUser(workspaceId, userId);
     if (!member) throw new ForbiddenException('Not a workspace member');
@@ -290,6 +360,13 @@ export class ScenesService {
     const org = await this.dataSource.getRepository(OrganizationEntity).findOne({ where: { id: orgId } });
     if (!org) throw new NotFoundException('Organization not found');
     return SCENE_LIMITS[org.planType];
+  }
+
+  private async getPlanLimitsForScene(scene: SceneEntity): Promise<(typeof SCENE_LIMITS)[PlanType]> {
+    if (!scene.workspaceId) {
+      return SCENE_LIMITS[PlanType.Starter];
+    }
+    return this.getPlanLimits(scene.workspaceId);
   }
 
   private defaultConfig() {

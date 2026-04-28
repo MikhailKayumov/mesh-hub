@@ -13,12 +13,17 @@ import { ApiUrls } from './urls.ts';
 export const ScenesApi = Api.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    scenes: build.query<SceneListItemResponseDto[], { workspaceId: string }>({
-      providesTags: (_result, _error, { workspaceId }) => [{ type: ApiTags.Scenes, id: workspaceId }],
-      query: ({ workspaceId }) => ({
+    scenes: build.query<SceneListItemResponseDto[], { workspaceId?: string; userId?: string }>({
+      providesTags: (_result, _error, { workspaceId, userId }) => [
+        { type: ApiTags.Scenes, id: workspaceId ?? userId ?? 'personal' },
+      ],
+      query: ({ workspaceId, userId }) => ({
         method: 'GET',
         url: ApiUrls.Scenes,
-        params: { workspaceId },
+        params: {
+          ...(workspaceId ? { workspaceId } : {}),
+          ...(userId ? { userId } : {}),
+        },
       }),
     }),
 
@@ -31,7 +36,7 @@ export const ScenesApi = Api.injectEndpoints({
     }),
 
     createScene: build.mutation<SceneResponseDto, SceneCreateRequestDto>({
-      invalidatesTags: (_result, _error, arg) => [{ type: ApiTags.Scenes, id: arg.workspaceId }],
+      invalidatesTags: (_result, _error, arg) => [{ type: ApiTags.Scenes, id: arg.workspaceId ?? 'personal' }],
       query: (body) => ({
         method: 'POST',
         url: ApiUrls.Scenes,
@@ -48,8 +53,10 @@ export const ScenesApi = Api.injectEndpoints({
       }),
     }),
 
-    deleteScene: build.mutation<void, { sceneId: string; workspaceId: string }>({
-      invalidatesTags: (_result, _error, { workspaceId }) => [{ type: ApiTags.Scenes, id: workspaceId }],
+    deleteScene: build.mutation<void, { sceneId: string; workspaceId?: string }>({
+      invalidatesTags: (_result, _error, { workspaceId }) => [
+        { type: ApiTags.Scenes, id: workspaceId ?? 'personal' },
+      ],
       query: ({ sceneId }) => ({
         method: 'DELETE',
         url: `${ApiUrls.Scenes}/${sceneId}`,

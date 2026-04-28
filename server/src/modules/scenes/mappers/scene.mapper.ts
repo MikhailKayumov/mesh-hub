@@ -13,6 +13,8 @@ export class SceneMapper {
     return {
       id: entity.id,
       workspaceId: entity.workspaceId,
+      userId: entity.userId,
+      visibility: entity.visibility,
       name: entity.name,
       description: entity.description,
       config: entity.config,
@@ -28,11 +30,14 @@ export class SceneMapper {
     return {
       id: entity.id,
       workspaceId: entity.workspaceId,
+      userId: entity.userId,
+      visibility: entity.visibility,
       name: entity.name,
       description: entity.description,
       thumbnailPath: entity.thumbnailPath,
       objectCount: (entity.objects ?? []).length,
       createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt ?? null,
     };
   }
 

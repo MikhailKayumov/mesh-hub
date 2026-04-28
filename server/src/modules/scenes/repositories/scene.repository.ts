@@ -11,4 +11,12 @@ export class SceneRepository extends Repository<SceneEntity> {
   ) {
     super(repository.target, repository.manager, repository.queryRunner);
   }
+
+  public findByUserId(userId: string): Promise<SceneEntity[]> {
+    return this.find({
+      where: { userId },
+      relations: { objects: true },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }

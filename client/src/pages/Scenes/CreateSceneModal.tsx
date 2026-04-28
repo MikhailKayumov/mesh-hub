@@ -11,7 +11,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 interface Props {
-    workspaceId: string;
+    workspaceId?: string;
     opened: boolean;
     onClose: () => void;
     onCreated: (sceneId: string) => void;
@@ -30,7 +30,7 @@ export function CreateSceneModal({ workspaceId, opened, onClose, onCreated }: Pr
             const scene = await createScene({
                 name: values.name,
                 description: values.description || undefined,
-                workspaceId,
+                ...(workspaceId ? { workspaceId } : {}),
             }).unwrap();
             form.reset();
             onCreated(scene.id);

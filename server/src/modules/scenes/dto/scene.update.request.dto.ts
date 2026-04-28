@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 
 class CameraBookmarkDto {
   @IsString()
@@ -58,4 +58,9 @@ export class SceneUpdateRequestDto {
   @ValidateNested()
   @Type(() => SceneConfigUpdateDto)
   public config?: SceneConfigUpdateDto;
+
+  @ApiProperty({ required: false, enum: ['public', 'private', 'unlisted'] })
+  @IsOptional()
+  @IsEnum(['public', 'private', 'unlisted'])
+  public visibility?: 'public' | 'private' | 'unlisted';
 }

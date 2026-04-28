@@ -67,6 +67,14 @@ const routes: RouteObject[] = [
             path: RouterPaths.DevSandbox,
             lazy: async () => ({ Component: (await import('@/pages/User/pages/DevSandbox')).DevSandbox }),
           },
+          {
+            path: RouterPaths.UserScenes,
+            lazy: async () => ({ Component: (await import('@/pages/UserScenes')).UserScenesPage }),
+          },
+          {
+            path: `${RouterPaths.UserScenes}/${RouterPaths.SceneId}`,
+            lazy: async () => ({ Component: (await import('@/pages/SceneEditor')).SceneEditorPage }),
+          },
         ],
       },
       // models

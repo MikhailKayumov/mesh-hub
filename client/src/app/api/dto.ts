@@ -473,6 +473,13 @@ export interface SceneObjectResponseDto {
   updatedAt?: string;
 }
 
+export const SceneVisibility = {
+  Public: 'public',
+  Private: 'private',
+  Unlisted: 'unlisted',
+} as const;
+export type SceneVisibilityType = (typeof SceneVisibility)[keyof typeof SceneVisibility];
+
 export interface SceneResponseDto {
   id: string;
   name: string;
@@ -481,7 +488,9 @@ export interface SceneResponseDto {
   thumbnailPath?: string;
   objects: SceneObjectResponseDto[];
   lights: SceneLightResponseDto[];
-  workspaceId: string;
+  workspaceId: string | null;
+  userId: string | null;
+  visibility: SceneVisibilityType;
   createdAt: string;
   updatedAt?: string;
 }
@@ -492,20 +501,24 @@ export interface SceneListItemResponseDto {
   description?: string;
   thumbnailPath?: string;
   objectCount: number;
-  workspaceId: string;
+  workspaceId: string | null;
+  userId: string | null;
+  visibility: SceneVisibilityType;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface SceneCreateRequestDto {
   name: string;
   description?: string;
-  workspaceId: string;
+  workspaceId?: string;
 }
 
 export interface SceneUpdateRequestDto {
   name?: string;
   description?: string;
   config?: Partial<SceneConfigDto>;
+  visibility?: SceneVisibilityType;
 }
 
 export interface SceneObjectUpsertDto {

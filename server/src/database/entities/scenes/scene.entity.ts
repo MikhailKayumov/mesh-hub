@@ -1,10 +1,13 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { DatabaseSchemas, ScenesSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
+import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { SceneConfig } from './scene-config.type';
 import { SceneLightEntity } from './scene-light.entity';
 import { SceneObjectEntity } from './scene-object.entity';
+
+export type SceneVisibility = 'public' | 'private' | 'unlisted';
 
 @Entity({ name: ScenesSchemaTables.Scene, schema: DatabaseSchemas.Scenes })
 export class SceneEntity extends GuidIdEntityBase {
@@ -20,12 +23,27 @@ export class SceneEntity extends GuidIdEntityBase {
   @Column({ type: 'text', name: 'thumbnail_path', nullable: true })
   public thumbnailPath: string | null;
 
-  @Column({ type: 'uuid', name: 'workspace_id', nullable: false })
-  public workspaceId: string;
+  @Column({ type: 'uuid', name: 'workspace_id', nullable: true })
+  public workspaceId: string | null;
 
-  @ManyToOne(() => WorkspaceEntity, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => WorkspaceEntity, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'workspace_id' })
-  public workspace: WorkspaceEntity;
+  public workspace: WorkspaceEntity | null;
+
+  @Column({ type: 'uuid', name: 'user_id', nullable: true })
+  public userId: string | null;
+
+  @ManyToOne(() => UserEntity, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  public user: UserEntity | null;
+
+  @Column({
+    type: 'enum',
+    enum: ['public', 'private', 'unlisted'],
+    name: 'visibility',
+    default: 'private',
+  })
+  public visibility: SceneVisibility;
 
   @OneToMany(() => SceneObjectEntity, (obj) => obj.scene)
   public objects: SceneObjectEntity[];

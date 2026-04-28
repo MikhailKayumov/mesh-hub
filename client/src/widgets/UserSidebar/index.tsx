@@ -1,5 +1,5 @@
 import { Box, NavLink, Skeleton, Text, Tooltip } from '@mantine/core';
-import { IconCube, IconSandbox, IconSettings, IconUser } from '@tabler/icons-react';
+import { IconCube, IconMovie, IconSandbox, IconSettings, IconUser } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { NavLink as RRDNavLink } from 'react-router-dom';
 import { useCurrentUser } from '@/entities/user/hooks/useCurrentUser.ts';
@@ -36,6 +36,13 @@ export function UserSidebar({ className }: UserSidebarProps) {
           component={RRDNavLink}
           to={buildAbsolutePath([RouterPaths.User, RouterPaths.Models])}
           leftSection={<IconCube size={20} />}
+        />
+        <NavLink
+          label="Сцены"
+          className={classes.navlink}
+          component={RRDNavLink}
+          to={buildAbsolutePath([RouterPaths.User, RouterPaths.UserScenes])}
+          leftSection={<IconMovie size={20} />}
         />
         <NavLink
           label="Профиль"

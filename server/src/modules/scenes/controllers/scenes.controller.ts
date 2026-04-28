@@ -59,9 +59,10 @@ export class ScenesController {
   @ApiOkResponse({ type: [SceneListItemResponseDto] })
   public async listScenes(
     @User() user: UserEntity,
-    @Query('workspaceId', ParseUUIDPipe) workspaceId: string,
+    @Query('workspaceId') workspaceId?: string,
+    @Query('userId') userId?: string,
   ): Promise<SceneListItemResponseDto[]> {
-    return this.scenesService.listScenes(workspaceId, user);
+    return this.scenesService.listScenes({ workspaceId, userId }, user);
   }
 
   @Get(':id')

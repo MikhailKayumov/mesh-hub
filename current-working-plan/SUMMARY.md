@@ -19,7 +19,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 | [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | ✅ Done | Scene annotations/comments, `@OptionalUser` access control, public scene page |
 | [ITER-8](ITER-8.md) | Discovery & UX Polish | ✅ Done | Search, DnD upload, presets menu, measure tool, screenshot, scene clone |
 | [ITER-9](ITER-9.md) | Embed & Integrations | ✅ Done | Scene embed, in-app notifications, webhooks, API key scopes |
-| [ITER-10](ITER-10.md) | Migration Consolidation | 🔲 Pending | All migrations collapsed into one `InitAll` file before first deploy |
+| [ITER-10](ITER-10.md) | Migration Consolidation | ✅ Done | All migrations collapsed into one `InitAll` file before first deploy |
 
 ---
 
@@ -823,6 +823,57 @@ Plus contract changes:
 12. **Hand-edited `dto.ts`** — single consolidated edit covering all 4 tracks, before any FE track started, to avoid race conditions on the file.
 13. **Webhook URL hardening deferred** — security audit flagged SSRF risk (private/loopback IPs accepted) and lack of `X-Webhook-Timestamp` for replay protection as Medium/Low. Both are tracked as follow-ups; AES-256-CBC was kept (parity with `org_subscription`) rather than migrated to AES-256-GCM in this iteration.
 14. **Scene-embed view logging skipped** — `model_view_log.model_id` is `NOT NULL`, so scene embeds do not write a view-log row. Tracked as a follow-up: either make the column nullable, or introduce a separate `scene_view_log` table.
+
+---
+
+## ITER 10 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Collapsed 23 incremental migrations accumulated across ITER-1..9 into a single `InitAll` migration generated from current entity state. First and last schema-management cleanup before production deployability.
+
+### What was implemented
+
+**Entity changes**
+
+| File | Change |
+|---|---|
+| `database/entities/scenes/scene.entity.ts` | Added `@Check('CHK_scene_owner', '"user_id" IS NOT NULL OR "workspace_id" IS NOT NULL')` so the constraint is now declared on the entity rather than buried in an imperative migration |
+| `database/entities/embed/embed-project.entity.ts` | Added `@Check('embed_project_target_check', 'num_nonnulls("model_id", "scene_id") = 1')` for the same reason |
+
+**Migration changes**
+
+- Deleted 23 legacy migration files across `init/` (1), `models-3d/` (10), `organizations/` (2), `workspaces/` (1), `embed/` (3), `scenes/` (5), `notifications/` (1).
+- Removed the now-empty schema folders.
+- Generated `database/migrations/init/1777473811244-InitAll.ts` via `npm run migration:generate -- src/database/migrations/init/InitAll` against an empty DB. Single-transaction up() with 37 `CREATE TABLE` statements, all enums, all FKs, both CHECK constraints; symmetric down() that drops everything in reverse FK order.
+
+**No other code changes.** The `data.source.ts` migrations glob was already a wildcard (`src/database/migrations/**/*.ts`), so no datasource edit was needed. The `init/index.ts` schema bootstrapper continues to `CREATE SCHEMA IF NOT EXISTS` for every entry in `DatabaseSchemas` before migrations run.
+
+### Verification (all passed on clean DB)
+
+| Check | Result |
+|---|---|
+| `npm run db:init:hard` from zero | Single migration `InitAll1777473811244` ran, COMMIT clean |
+| `SELECT * FROM migrations` | 1 row (was: 23 rows pre-iteration) |
+| Tables per schema | auth=1, embed=4, model_3d=10, notifications=1, organizations=6, resources=2, scenes=5, users=6, workspaces=2 → **37 total** |
+| `npm run tscheck` | 0 errors |
+| `npm run build` | clean |
+| `npm run db:seeds` | roles + 11 users seeded |
+| `npm run start:dev` | "Nest application successfully started", no schema drift, 0 TS errors |
+
+### Design decisions made
+
+1. **`@Check()` decorators on entities, not appended SQL in the migration** — TypeORM `migration:generate` doesn't pick up CHECK constraints from raw SQL in old migrations. Two options were available: (a) hand-edit the generated `InitAll` to append CHECK statements, (b) declare the constraints on the entity via `@Check()` and regenerate. Chose (b) because it makes the entity the single source of truth and keeps `migration:generate` regenerable. If anyone runs `migration:generate` again later, the CHECKs come along automatically.
+2. **`db:init:hard` instead of `docker compose down -v`** — the repo already provides `cross-env DROP_SCHEMAS=true ts-node src/database/init/index.ts` which drops + recreates every schema in `DatabaseSchemas` via `DROP SCHEMA … CASCADE`. No need to nuke the docker volume; the existing tooling is the cleaner reset path.
+3. **Generated migration command is positional, not flagged** — the original ITER-10 spec wrote `npm run migration:generate -- --schema=init --name=InitAll`, but TypeORM CLI takes a positional output path. Actual command used: `npm run migration:generate -- src/database/migrations/init/InitAll`. TypeORM auto-prepends the timestamp.
+4. **Schema folders removed** — the 6 now-empty schema subfolders under `migrations/` were also deleted (not just emptied). Cleaner repo state and matches the new "one file, one folder" reality.
+5. **Two extra entities folded in** — `model_display_config` and `model_light` (added in ITER-3) were not in the ITER-10 schema checklist but exist in the entities tree. They came along automatically via `migration:generate`. The schema now has 37 tables, not the 35 the spec implied.
+6. **Migration history table is naturally empty after `DROP_SCHEMAS=true`** — `public` is recreated from scratch, so `migrations` is reborn empty. No special cleanup needed.
+
+### Follow-ups (none blocking)
+
+- The merge-conflict-prone history-table format remains the TypeORM default (`migrations` in `public` schema). If we ever want a per-schema history, that's a separate iteration.
+- The two `@Check()` decorators are declarative now; future migrations that touch those tables won't need to re-state the constraints in raw SQL.
 
 ---
 

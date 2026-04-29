@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { DatabaseSchemas, EmbedSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
@@ -13,6 +13,7 @@ export interface BrandingConfig {
 }
 
 @Entity({ name: EmbedSchemaTables.EmbedProject, schema: DatabaseSchemas.Embed })
+@Check('embed_project_target_check', 'num_nonnulls("model_id", "scene_id") = 1')
 export class EmbedProjectEntity extends GuidIdEntityBase {
   @Column({ type: 'text', name: 'name', nullable: false })
   public name: string;

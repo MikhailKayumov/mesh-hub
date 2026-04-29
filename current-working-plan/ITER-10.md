@@ -4,7 +4,7 @@
 
 Replace all existing incremental migration files with a single clean `InitAll` migration that reflects the final schema after all iterations. Eliminates migration history debt before first production deployment.
 
-## Status: 🔲 Pending
+## Status: ✅ Done
 
 > **When to do this:** After all preceding iterations are implemented and the schema is stable. This is the last step before first real deploy.
 

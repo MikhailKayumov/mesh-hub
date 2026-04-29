@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { DatabaseSchemas, ScenesSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { UserEntity } from '@/database/entities/user/user.entity';
@@ -10,6 +10,7 @@ import { SceneObjectEntity } from './scene-object.entity';
 export type SceneVisibility = 'public' | 'private' | 'unlisted';
 
 @Entity({ name: ScenesSchemaTables.Scene, schema: DatabaseSchemas.Scenes })
+@Check('CHK_scene_owner', '"user_id" IS NOT NULL OR "workspace_id" IS NOT NULL')
 export class SceneEntity extends GuidIdEntityBase {
   @Column({ type: 'varchar', name: 'name', length: 100, nullable: false })
   public name: string;

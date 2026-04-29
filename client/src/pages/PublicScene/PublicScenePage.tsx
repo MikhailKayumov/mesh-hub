@@ -16,12 +16,14 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconLock, IconMessage, IconPencil } from '@tabler/icons-react';
+import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useSceneQuery } from '@/app/api/scenes.ts';
 import { useCurrentUserQuery } from '@/app/api/user.ts';
 import { isHttpException } from '@/app/api/utils.ts';
 import { useDocumentTitle } from '@/shared/hooks';
 import { RouterPaths } from '@/shared/router/paths.ts';
+import { pushRecent } from '@/shared/utils/recentlyOpened.ts';
 import { buildAbsolutePath } from '@/shared/utils/router.ts';
 import { ReviewPanel } from '@/widgets/ReviewPanel';
 import { SceneAnnotationManager } from '@/widgets/SceneAnnotationManager';
@@ -39,6 +41,16 @@ export function PublicScenePage() {
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
 
   useDocumentTitle(scene?.name ?? 'Scene');
+
+  useEffect(() => {
+    if (!currentUser?.id || !scene?.id) return;
+    pushRecent(currentUser.id, 'scene', {
+      id: scene.id,
+      name: scene.name,
+      thumbnail: scene.thumbnailPath ?? null,
+      updatedAt: scene.updatedAt,
+    });
+  }, [currentUser?.id, scene?.id, scene?.name, scene?.thumbnailPath, scene?.updatedAt]);
 
   const { containerRef, viewer, isSceneLoading: isViewerSceneLoading, selectObject } = usePublicSceneViewer({ scene });
 

@@ -17,7 +17,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 | [ITER-5](ITER-5.md) | Animations Enhanced + Audio | ✅ Done | Speed/loop/crossfade in AnimationToolbar, scene object animations, Three.js audio |
 | [ITER-6](ITER-6.md) | Multi-Format Support | ✅ Done | FBX / OBJ+MTL / DAE / STL loader registry, `original_format` column, format badge, upload progress |
 | [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | ✅ Done | Scene annotations/comments, `@OptionalUser` access control, public scene page |
-| [ITER-8](ITER-8.md) | Discovery & UX Polish | 🔲 Pending | Search, DnD upload, presets menu, measure tool, screenshot, scene clone |
+| [ITER-8](ITER-8.md) | Discovery & UX Polish | ✅ Done | Search, DnD upload, presets menu, measure tool, screenshot, scene clone |
 | [ITER-9](ITER-9.md) | Embed & Integrations | 🔲 Pending | Scene embed, in-app notifications, webhooks, API key scopes |
 | [ITER-10](ITER-10.md) | Migration Consolidation | 🔲 Pending | All migrations collapsed into one `InitAll` file before first deploy |
 
@@ -607,6 +607,113 @@ Viewer
 7. **`Viewer.onScenePointerDown` callback signature widened** with a third `sceneObjectId` arg via parent-chain walk on the intersected mesh. Existing model-editor callers that destructure only `(worldPos, cameraPos)` continue to typecheck (unused params are fine). Also extended raycast traversal to `world.scene` so multi-model scenes hit-test correctly even without a `this.model`.
 8. **`usePublicSceneViewer` is a separate ~70-line hook**, not a reuse of `useSceneViewer` from `pages/SceneEditor/`, because cross-page imports violate FSD. Drops every editor-specific concern (transform controls, light/HDRI updaters, animation accessors, screenshot, light selection); keeps only viewer init + scene load + audio autoplay + `selectObject`. If the duplication ever becomes load-bearing, the right fix is to lift the shared init/load logic into `widgets/Model3DViewer/hooks/`.
 9. **`@OptionalUser()` reused, not added** — already shipped in an earlier iteration and already applied to `GET /scenes/:id`; the new GET endpoints simply add `@Public() + @OptionalUser()` together so anonymous users can read public/unlisted scenes' annotations + comments while authenticated users can read private workspace-scoped resources they belong to.
+
+---
+
+## ITER 8 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Discovery & UX polish — global search across models + scenes, drag-and-drop upload on the personal models page, screenshot export from both viewers, in-viewport measurement tool, mesh statistics card, scene cloning, runtime display-presets menu, model→scenes traceability badge, and a "recently opened" dashboard row. **No DB migration** — every feature is service / UI / repository-only.
+
+### What was implemented
+
+**Backend (NestJS / TypeORM)**
+
+| File | Change |
+|---|---|
+| `modules/scenes/repositories/scene.repository.ts` | Added `findScenes({ workspaceId?, userId?, search? })` — single QueryBuilder path replacing the legacy `find`/`findByUserId` split, with case-insensitive `ILIKE` filter on `name`+`description`. Added `findScenesUsingModel(modelId)` — INNER JOIN against `scene_object` filtering soft-deleted children. `findByUserId` retained for any leftover callers |
+| `modules/scenes/services/scenes.service.ts` | `listScenes` accepts `search?`, delegates to `findScenes` for both branches. New `cloneScene(id, user)` — read-access checked, target ownership decided via `isWorkspaceEditor` (workspace clone in-place if editor; otherwise personal `userId`/`workspaceId=null`/`visibility='private'`); deep-clones `scene_object` and `scene_light` rows via repositories; HDRI path **explicitly nulled** on the clone (intentional simplification — see decision #2). New `listScenesUsingModel(modelId, user|null)` — JS post-filter against `requireSceneReadAccess` (drop scenes the viewer cannot read) |
+| `modules/scenes/controllers/scenes.controller.ts` | `listScenes` signature extended with `@Query('search') search?: string`. New `@Get('using-model/:modelId') @Public() @OptionalUser()` handler. New `@Post(':id/clone') @Roles([UserRoles.User])` handler returning `SceneListItemResponseDto` |
+| `modules/models-3d/services/model-3d.service.ts` | Drive-by: wired the previously-no-op `search` DTO field into `find3DModels` via `model.name ILIKE :search` (description is `jsonb` and intentionally excluded) — required because the new ITER-8 search UI queries this endpoint |
+
+**Three.js viewer (Phase B)**
+
+| File | Change |
+|---|---|
+| `widgets/Model3DViewer/classes/MeasureTool/MeasureTool.ts` | New — pointer-down raycaster against `world.scene`; first click captures point A, second click captures B + draws a `Line2`/`LineGeometry`/`LineMaterial` segment plus a `CSS2DObject` label (`distance.toFixed(2) m`) at midpoint, then resets to "first click" state for repeated measures. ESC → `viewer.setMode('view')`. `LineMaterial` configured with `depthTest: false` + `renderOrder: 999` so the line stays visible through geometry |
+| `widgets/Model3DViewer/classes/MeasureTool/index.ts` | Barrel re-export |
+| `widgets/Model3DViewer/classes/types/viewer.ts` | `ViewerMode` union extended with `'measure'` |
+| `widgets/Model3DViewer/classes/Viewer/Viewer.ts` | Constructs `MeasureTool` after `world`/`renderer` are ready; `setMode` records previous mode and calls `measureTool.start()` / `.stop()` on transitions in/out of `'measure'`, mirroring the `'annotate'` lifecycle. `destroy()` also disposes the tool |
+| `widgets/Model3DViewer/classes/Renderer/Renderer.ts` | Constructs a `CSS2DRenderer` alongside `WebGLRenderer`, appends its DOM element to the same `place` container (positioned absolute, `pointer-events: none`, `z-index: 1`), renders it after `composer.render()`, syncs size on resize, and removes the DOM element on destroy |
+
+**Frontend — RTK Query layer**
+
+| File | Change |
+|---|---|
+| `app/api/scenes.ts` | Existing `scenes` query type extended with `search?: string`; new `cloneScene` mutation invalidating the scenes-list tag |
+| `app/api/models-3d.ts` | `Models3DQueryParams` extended with `search?`; new `getScenesUsingModel(modelId)` query returning `SceneListItemResponseDto[]` |
+| `app/api/dto.ts` | Untouched — every new endpoint reuses `SceneListItemResponseDto` |
+
+**Frontend — Search**
+
+| File | Change |
+|---|---|
+| `widgets/SearchInput/SearchInput.tsx` | New — Mantine 9 `Combobox` + `TextInput`, 300 ms debounce via `useDebouncedValue`. Both `useModels3DQuery` and `useScenesQuery` skip until the trimmed query is ≥ 2 chars. Two `Combobox.Group`s with thumbnails, format/scene badges, and a Russian `Combobox.Empty` fallback |
+| `widgets/SearchInput/index.tsx` | Barrel |
+| `widgets/Header/index.tsx` | Slotted `<SearchInput visibleFrom="md">` between `OrgSwitcher` and the auth/user controls (only when authenticated) |
+
+**Frontend — Drag-and-drop upload**
+
+| File | Change |
+|---|---|
+| `pages/UserModels3D/index.tsx` | `document.body` `dragenter`/`dragleave`/`dragover`/`drop` listeners with the enter-counter pattern; accepted-extension filter via `ACCEPTED_3D_MODEL_FILE_TYPES`; renders an animated `<Transition><Overlay>` with `IconUpload` + Russian prompt |
+| `widgets/Upload3DModelModal/useUpload3DModal.ts` | Hook accepts an optional `initialFile?: File` — when set (and changed), calls `setModel(initialFile)` and `open()` exactly once. Existing call sites are unaffected |
+| `widgets/Upload3DModelModal/index.tsx` | Forwards the new prop to the hook |
+
+**Frontend — Viewer toolbar**
+
+| File | Change |
+|---|---|
+| `widgets/Model3DViewer/components/Model3DViewerBottomBar/components/ScreenshotButton/index.tsx` | New — calls `viewer.renderer.getScreenshot()` (existing API), converts the data URL to a Blob, triggers an `<a download>` with filename `${model name}-${timestamp}.png` |
+| `widgets/Model3DViewer/components/Model3DViewerBottomBar/components/DisplayPresetsMenu/index.tsx` | New — Mantine `Menu` listing `DISPLAY_PRESETS` with `Menu.Item description={preset.description}`; click applies via `viewer.renderer.setSettings({ ...preset.rendererConfig, clearColor: preset.backgroundColor })` and `viewer.renderer.setPostProcessing(preset.postProcess ?? {})` (in-session only, no DB persistence) |
+| `widgets/Model3DViewer/components/Model3DViewerBottomBar/components/MeasureToggleButton/index.tsx` | New — local state mirror of mode (Viewer keeps `_mode` private without a reactive getter); click flips between `'measure'` and `'view'`; `variant="light"` + `color="blue"` active style |
+| `widgets/Model3DViewer/components/Model3DViewerBottomBar/index.tsx` | Slots ScreenshotButton, DisplayPresetsMenu, and MeasureToggleButton between AudioToolbar and ToggleFullscreenButton |
+| `pages/SceneEditor/panels/SceneEditorTopBar.tsx` | Added `IconDownload` ActionIcon next to the existing "Capture Thumbnail" button — same `captureScreenshot()` data URL, but downloaded instead of uploaded |
+
+**Frontend — Mesh stats / scene clone / "Used in N scenes"**
+
+| File | Change |
+|---|---|
+| `pages/Editor/components/Navbar/components/SceneTab/components/MeshStatsCard/index.tsx` | New — traverses `viewer.world.scene`, counts meshes / vertices / faces (indexed vs. non-indexed handled), unique materials and textures by id; `Box3.setFromObject` for bounding box. Recomputes on `WorldEventNames.WorldSceneChange` (the same event idiom already consumed by `SceneTab/index.tsx`); rendered as `SimpleGrid cols={2}` of mini `Paper withBorder` cards |
+| `pages/Editor/components/Navbar/components/SceneTab/index.tsx` | Slotted `<MeshStatsCard viewer={viewer} />` after `LayersCheckboxGroup` |
+| `pages/Scenes/ScenesPage.tsx` | Added a three-dot Menu with "Дублировать" item per scene card, wired to `useCloneSceneMutation` with success notification |
+| `pages/UserScenes/UserScenesPage.tsx` | Same "Дублировать" item added to the existing per-card menu |
+| `widgets/Models3DList/components/Model3DCard/index.tsx` | Calls `useGetScenesUsingModelQuery` and renders a `<Badge color="teal">В N сцен(е/ах)</Badge>` near the format badge when the count is > 0 |
+
+**Frontend — Recently opened**
+
+| File | Change |
+|---|---|
+| `shared/utils/recentlyOpened.ts` | `pushRecent(userId, kind, item)` / `getRecent(userId)` / `clearRecent(userId)`; key `@mesh_hub/recent:${userId}`; dedup by id; max 5 each; try/catch around `localStorage` access so a quota / disabled-storage failure never crashes the app |
+| `pages/Editor/index.tsx` | `useEffect` pushes the loaded model to recents (skipped silently if anonymous) |
+| `pages/SceneEditor/SceneEditorPage.tsx` | Same pattern for the scene editor |
+| `pages/PublicScene/PublicScenePage.tsx` | Same pattern; only fires when `currentUser?.id` is set |
+| `pages/OrgDashboard/WorkspaceDashboard.tsx` | Renders a "Недавно открытые" `ScrollArea` row of compact thumbnail cards above existing content; renders nothing when both lists are empty (no empty placeholder) |
+
+### REST API surface added
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/scenes?search=<term>` | JWT | Filter list by case-insensitive name/description match (existing endpoint, new param) |
+| POST | `/api/scenes/:id/clone` | JWT | Deep-clone scene + objects + lights into the same workspace (if editor) or as a personal scene; returns the new `SceneListItemResponseDto` |
+| GET | `/api/scenes/using-model/:modelId` | Public + OptionalUser | List scenes that include a given model as an object, post-filtered for read access |
+
+Plus drive-by: `GET /api/models-3d?search=<term>` — the previously-declared but never-applied `search` DTO field now actually filters via `model.name ILIKE`.
+
+### Design decisions made
+
+1. **No DB migration** — every feature is service / repository / UI only. The clone endpoint reuses existing entity/repository patterns; the search endpoints reuse existing rows.
+2. **HDRI binary not copied on clone** — the cloned scene's `config.environmentHdriPath` is explicitly nulled out. Cross-strategy copies (e.g. workspace S3 source → personal local target) are messy and the file is a re-uploadable asset; users get a clean draft with no file ambiguity. Annotations and comments are likewise dropped — a fresh copy starts with no review threads (spec was silent; this is the safer default).
+3. **`scene.thumbnailPath` not copied on clone** — same reasoning as the HDRI: the user can capture a new thumbnail post-clone.
+4. **Used-in-N-scenes endpoint hosted on `ScenesController`, not `Models3DController`** — keeps the `assertCanReadScene` access-control helpers local. The endpoint is mounted under `/api/scenes/using-model/:modelId` rather than under the model resource so the access-check ownership is unambiguous.
+5. **`displayPresets.ts` field names**: viewer wiring uses `preset.rendererConfig` (mapped through `setSettings`, with `clearColor: preset.backgroundColor` merged in) and `preset.postProcess ?? {}` (mapped through `setPostProcessing`). Descriptions piped 1:1 into Mantine 9 `Menu.Item description`.
+6. **Measure mode tracking on the toolbar uses a local state mirror** because `Viewer._mode` is private without a reactive getter. The button toggles the mirror and calls `viewer.setMode(...)`; if the mode is changed from elsewhere the button can drift, but inside the editor the toolbar is the only producer.
+7. **Per-card "Used in N scenes" query fan-out is accepted as-is** — RTK Query dedupes shared cache keys, the count rarely changes, and lifting the queries up to the parent list would couple `Models3DList` to a scene-domain DTO. Flagged as a follow-up perf concern if model lists grow.
+8. **Recently-opened key is per-user (`@mesh_hub/recent:${userId}`)** — prevents cross-user leakage on shared devices and avoids stale entries after account switching. Per-browser storage is by design; future cross-device sync would need a real backend table.
+9. **Search uses `ILIKE` on `scene.name` + `scene.description`** but `model.name` only — the `Model3dEntity.description` column is `jsonb`, not text, so it's intentionally excluded.
+10. **`CSS2DRenderer` shares the same `place` container** as the WebGL canvas, with `pointer-events: none` and `z-index: 1`. Reused for the measure-tool label; available for any future label-in-3D-space UI.
+11. **Phase A backend changes were re-implemented in the main session** after the first dispatch's edits failed to persist into the working tree — no functional difference in the final result, just a longer path.
 
 ---
 

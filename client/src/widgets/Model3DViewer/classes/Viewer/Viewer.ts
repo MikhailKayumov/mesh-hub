@@ -17,6 +17,7 @@ import { getModel3DFileSrc } from '@/shared/utils/model3d.ts';
 import type { LoadedModel3D, ViewerMode, ViewerModel3D } from '../types';
 import { CameraController } from '../Camera';
 import { Loader } from '../Loader';
+import { MeasureTool } from '../MeasureTool';
 import { Renderer } from '../Renderer';
 import { isMesh, isObject3D, isSkinnedMesh } from '../utils';
 import { World } from '../World';
@@ -28,6 +29,7 @@ export class Viewer {
   public world: World;
   public stats: Stats | null = null;
   public model: ViewerModel3D<Model3DResponseDto> | null = null;
+  public measureTool: MeasureTool;
 
   private _mode: ViewerMode = 'view';
   private _pointerDownHandler: ((e: PointerEvent) => void) | null = null;
@@ -54,6 +56,8 @@ export class Viewer {
       depth: true,
       place: this.place,
     });
+
+    this.measureTool = new MeasureTool(this);
 
     this.createStats();
   }
@@ -113,18 +117,30 @@ export class Viewer {
       this._audioListener = null;
     }
     this.clearSceneAnimations();
+    this.measureTool.dispose();
     this.world.destroy();
     this.camera.off();
     this.renderer.destroy();
   }
 
+  public get mode(): ViewerMode {
+    return this._mode;
+  }
+
   public setMode(mode: ViewerMode): void {
+    const previous = this._mode;
     this._mode = mode;
     const canvas = this.renderer.getCanvas();
     canvas.style.cursor = mode === 'view' ? '' : 'crosshair';
     if (mode === 'view' && this._pointerDownHandler) {
       canvas.removeEventListener('pointerdown', this._pointerDownHandler);
       this._pointerDownHandler = null;
+    }
+    if (previous === 'measure' && mode !== 'measure') {
+      this.measureTool.stop();
+    }
+    if (mode === 'measure' && previous !== 'measure') {
+      this.measureTool.start();
     }
   }
 

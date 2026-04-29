@@ -17,6 +17,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
+    IconCopy,
     IconDots,
     IconEye,
     IconEyeOff,
@@ -25,10 +26,15 @@ import {
     IconPlayerPlay,
     IconTrash,
 } from '@tabler/icons-react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDeleteSceneMutation, useScenesQuery, useUpdateSceneMutation } from '@/app/api/scenes.ts';
-import { SceneListItemResponseDto, SceneVisibility, SceneVisibilityType } from '@/app/api/dto.ts';
+import { notifications } from '@mantine/notifications';
+import {
+    useCloneSceneMutation,
+    useDeleteSceneMutation,
+    useScenesQuery,
+    useUpdateSceneMutation,
+} from '@/app/api/scenes.ts';
+import { SceneVisibility, type SceneListItemResponseDto, type SceneVisibilityType } from '@/app/api/dto.ts';
 import { useDocumentTitle } from '@/shared/hooks';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { buildAbsolutePath } from '@/shared/utils/router';
@@ -64,10 +70,11 @@ interface SceneCardProps {
     scene: SceneListItemResponseDto;
     onOpen: (id: string) => void;
     onDelete: (id: string) => void;
+    onDuplicate: (id: string) => void;
     onVisibilityChange: (id: string, visibility: SceneVisibilityType) => void;
 }
 
-function SceneCard({ scene, onOpen, onDelete, onVisibilityChange }: SceneCardProps) {
+function SceneCard({ scene, onOpen, onDelete, onDuplicate, onVisibilityChange }: SceneCardProps) {
     const [deleteConfirmOpened, { open: openDeleteConfirm, close: closeDeleteConfirm }] = useDisclosure(false);
 
     const modifiedAt = scene.updatedAt ?? scene.createdAt;
@@ -101,6 +108,9 @@ function SceneCard({ scene, onOpen, onDelete, onVisibilityChange }: SceneCardPro
                             <Menu.Dropdown>
                                 <Menu.Item leftSection={<IconPlayerPlay size={14} />} onClick={() => onOpen(scene.id)}>
                                     Открыть в редакторе
+                                </Menu.Item>
+                                <Menu.Item leftSection={<IconCopy size={14} />} onClick={() => onDuplicate(scene.id)}>
+                                    Дублировать
                                 </Menu.Item>
 
                                 <Menu.Divider />
@@ -183,6 +193,7 @@ export function UserScenesPage() {
     const { data: scenes, isLoading } = useScenesQuery({ userId: 'me' });
     const [deleteScene] = useDeleteSceneMutation();
     const [updateScene] = useUpdateSceneMutation();
+    const [cloneScene] = useCloneSceneMutation();
 
     const handleOpen = (sceneId: string) => {
         navigate(buildAbsolutePath([RouterPaths.User, RouterPaths.UserScenes, sceneId]));
@@ -190,6 +201,15 @@ export function UserScenesPage() {
 
     const handleDelete = (sceneId: string) => {
         deleteScene({ sceneId });
+    };
+
+    const handleDuplicate = async (sceneId: string) => {
+        try {
+            await cloneScene({ id: sceneId }).unwrap();
+            notifications.show({ message: 'Сцена скопирована', color: 'green', autoClose: 3000 });
+        } catch {
+            notifications.show({ color: 'red', title: 'Ошибка', message: 'Не удалось скопировать сцену' });
+        }
     };
 
     const handleVisibilityChange = (sceneId: string, visibility: SceneVisibilityType) => {
@@ -222,6 +242,7 @@ export function UserScenesPage() {
                             scene={scene}
                             onOpen={handleOpen}
                             onDelete={handleDelete}
+                            onDuplicate={handleDuplicate}
                             onVisibilityChange={handleVisibilityChange}
                         />
                     ))}

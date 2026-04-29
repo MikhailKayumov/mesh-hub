@@ -3266,6 +3266,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3278,6 +3286,69 @@
                   "items": {
                     "$ref": "#/components/schemas/SceneListItemResponseDto"
                   }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scenes"
+        ]
+      }
+    },
+    "/api/scenes/using-model/{modelId}": {
+      "get": {
+        "operationId": "ScenesController_listScenesUsingModel",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SceneListItemResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "scenes"
+        ]
+      }
+    },
+    "/api/scenes/{id}/clone": {
+      "post": {
+        "operationId": "ScenesController_cloneScene",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SceneListItemResponseDto"
                 }
               }
             }

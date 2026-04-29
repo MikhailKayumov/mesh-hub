@@ -3,6 +3,7 @@ import { IconDotsVertical, IconSettings, IconTrash } from '@tabler/icons-react';
 import { clsx } from 'clsx';
 import { Link } from 'react-router-dom';
 import type { Model3DResponseDto } from '@/app/api/dto.ts';
+import { useGetScenesUsingModelQuery } from '@/app/api/models-3d.ts';
 import { useDeleteModel3D } from '@/pages/Models3D/pages/Model3D/components/Header/components/Controls/useDeleteModel3D.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { getBoolean } from '@/shared/utils/env.ts';
@@ -19,6 +20,8 @@ export interface Model3DCard {
 export function Model3DCard({ model }: Model3DCard) {
   const { onDelete, isDeleting } = useDeleteModel3D(model?.id);
   const fmt = model.file?.originalFormat?.toLowerCase();
+  const { data: usedInScenes } = useGetScenesUsingModelQuery(model.id);
+  const sceneUsageCount = usedInScenes?.length ?? 0;
 
   return (
     <Card withBorder className={clsx(classes.card, isDeleting && classes['card-deleting'])} p={0}>
@@ -43,6 +46,13 @@ export function Model3DCard({ model }: Model3DCard) {
             <Badge size="xs" variant="light" color={FORMAT_COLOR[fmt] ?? 'gray'}>
               {fmt.toUpperCase()}
             </Badge>
+          )}
+          {sceneUsageCount > 0 && (
+            <Tooltip label="Используется в сценах" position="top" openDelay={500}>
+              <Badge size="xs" variant="light" color="teal">
+                В {sceneUsageCount} {sceneUsageCount === 1 ? 'сцене' : 'сценах'}
+              </Badge>
+            </Tooltip>
           )}
         </Group>
         {model.isOwner && getBoolean('VITE_APP_ENABLE_EDITOR') && (

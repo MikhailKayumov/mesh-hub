@@ -4,11 +4,12 @@ import type {
   Model3DResponseDto,
   PaginationDto,
   Model3DUpdateRequestDto,
+  SceneListItemResponseDto,
 } from '@/app/api/dto.ts';
 import { ApiTags } from '@/app/api/tags.ts';
 import { ApiUrls } from '@/app/api/urls.ts';
 
-export type Models3DQueryParams = PaginationDto<any> & { workspaceId?: string };
+export type Models3DQueryParams = PaginationDto<any> & { workspaceId?: string; search?: string };
 
 export const Models3dApi = Api.injectEndpoints({
   endpoints: (build) => ({
@@ -64,6 +65,13 @@ export const Models3dApi = Api.injectEndpoints({
         };
       },
     }),
+    getScenesUsingModel: build.query<SceneListItemResponseDto[], string>({
+      providesTags: (_result, _error, modelId) => [{ type: ApiTags.Scenes, id: `using-model:${modelId}` }],
+      query: (modelId) => ({
+        method: 'GET',
+        url: `${ApiUrls.Scenes}/using-model/${modelId}`,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -75,4 +83,5 @@ export const {
   useModels3DQuery,
   useModel3DQuery,
   useSaveThumbnailFromBase64Mutation,
+  useGetScenesUsingModelQuery,
 } = Models3dApi;

@@ -8,6 +8,7 @@ import { Object3DOutliner } from '@/pages/Editor/components/Object3DOutliner';
 import { type SelectedObject3D } from '@/pages/Editor/components/Object3DOutliner/model.ts';
 import { isBone, isMesh } from '@/widgets/Model3DViewer/classes/utils';
 import { WorldEventNames } from '@/widgets/Model3DViewer/classes/World';
+import { MeshStatsCard } from './components/MeshStatsCard';
 import { type SceneTabProps } from './model.ts';
 import classes from './SceneTab.module.scss';
 
@@ -59,6 +60,7 @@ export function SceneTab({ className, viewer }: SceneTabProps) {
         <Stack p={8} display="flex" gap={8}>
           <Object3DForm selected={selected} />
           <LayersCheckboxGroup defaultOpened viewer={viewer} onChange={updateKey} />
+          <MeshStatsCard viewer={viewer} />
         </Stack>
       </ScrollArea.Autosize>
     </div>

@@ -23,9 +23,14 @@ const onReject = (fileRejections: FileRejection[]) => {
   });
 };
 
-export function Upload3DModelModal() {
+interface Upload3DModelModalProps {
+  initialFile?: File;
+}
+
+export function Upload3DModelModal({ initialFile }: Upload3DModelModalProps = {}) {
   const { isDark } = useCurrentColorScheme();
-  const { opened, model, isLoading, uploadProgress, error, open, close, setModel, onUpload } = useUpload3DModal();
+  const { opened, model, isLoading, uploadProgress, error, open, close, setModel, onUpload } =
+    useUpload3DModal(initialFile);
 
   const showProgress =
     !!model && model.size > PROGRESS_THRESHOLD_BYTES && uploadProgress > 0 && uploadProgress < 100 && !error;

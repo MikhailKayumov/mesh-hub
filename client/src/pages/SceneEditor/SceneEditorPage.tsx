@@ -1,7 +1,10 @@
 import { AppShell, Box, Center, Loader, Text } from '@mantine/core';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useDocumentTitle } from '@/shared/hooks';
 import { useSceneQuery } from '@/app/api/scenes.ts';
+import { useCurrentUser } from '@/entities/user/hooks/useCurrentUser.ts';
+import { useDocumentTitle } from '@/shared/hooks';
+import { pushRecent } from '@/shared/utils/recentlyOpened.ts';
 import { useSceneViewer } from './hooks/useSceneViewer';
 import { SceneNavbar } from './components/Navbar/SceneNavbar';
 import { SceneEditorTopBar } from './panels/SceneEditorTopBar';
@@ -12,8 +15,19 @@ export function SceneEditorPage() {
     const { sceneId } = useParams<{ sceneId: string }>();
 
     const { data: scene, isLoading: isSceneDataLoading } = useSceneQuery({ sceneId: sceneId! }, { skip: !sceneId });
+    const { user } = useCurrentUser();
 
     useDocumentTitle(scene?.name ?? 'Scene Editor');
+
+    useEffect(() => {
+        if (!user?.id || !scene?.id) return;
+        pushRecent(user.id, 'scene', {
+            id: scene.id,
+            name: scene.name,
+            thumbnail: scene.thumbnailPath ?? null,
+            updatedAt: scene.updatedAt,
+        });
+    }, [user?.id, scene?.id, scene?.name, scene?.thumbnailPath, scene?.updatedAt]);
 
     const {
         containerRef,

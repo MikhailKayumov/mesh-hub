@@ -61,8 +61,31 @@ export class ScenesController {
     @User() user: UserEntity,
     @Query('workspaceId') workspaceId?: string,
     @Query('userId') userId?: string,
+    @Query('search') search?: string,
   ): Promise<SceneListItemResponseDto[]> {
-    return this.scenesService.listScenes({ workspaceId, userId }, user);
+    return this.scenesService.listScenes({ workspaceId, userId, search }, user);
+  }
+
+  @Get('using-model/:modelId')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: [SceneListItemResponseDto] })
+  public async listScenesUsingModel(
+    @Param('modelId', ParseUUIDPipe) modelId: string,
+    @OptionalUser() user: UserEntity | undefined,
+  ): Promise<SceneListItemResponseDto[]> {
+    return this.scenesService.listScenesUsingModel(modelId, user ?? null);
+  }
+
+  @Post(':id/clone')
+  @Roles([UserRoles.User])
+  @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse({ type: SceneListItemResponseDto })
+  public async cloneScene(
+    @Param('id', ParseUUIDPipe) id: string,
+    @User() user: UserEntity,
+  ): Promise<SceneListItemResponseDto> {
+    return this.scenesService.cloneScene(id, user);
   }
 
   @Get(':id')

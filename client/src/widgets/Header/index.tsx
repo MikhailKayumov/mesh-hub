@@ -6,6 +6,7 @@ import { RouterPaths } from '@/shared/router/paths.ts';
 import { ColorSchemeSelect } from '../../widgets/ColorSchemeSelect';
 import { Logo } from '../../widgets/Logo';
 import { OrgSwitcher } from '../../widgets/OrgSwitcher';
+import { SearchInput } from '../../widgets/SearchInput';
 import { AuthButtons } from './components/AuthButtons';
 import { User } from './components/User';
 import classes from './Header.module.scss';
@@ -23,6 +24,11 @@ export function Header() {
         <Group gap={rem(16)}>
           <ColorSchemeSelect color={isLight ? 'black' : 'white'} />
           {session && <OrgSwitcher />}
+          {session && (
+            <Group visibleFrom="md" gap={0}>
+              <SearchInput />
+            </Group>
+          )}
           {session ? <User /> : <AuthButtons />}
         </Group>
       </Flex>

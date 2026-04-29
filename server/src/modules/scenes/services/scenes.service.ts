@@ -64,26 +64,108 @@ export class ScenesService {
   }
 
   public async listScenes(
-    query: { workspaceId?: string; userId?: string },
+    query: { workspaceId?: string; userId?: string; search?: string },
     user: UserEntity,
   ): Promise<SceneListItemResponseDto[]> {
     if (query.workspaceId) {
       await this.requireMember(query.workspaceId, user.id);
-      const scenes = await this.sceneRepository.find({
-        where: { workspaceId: query.workspaceId },
-        relations: { objects: true },
-        order: { createdAt: 'DESC' },
+      const scenes = await this.sceneRepository.findScenes({
+        workspaceId: query.workspaceId,
+        search: query.search,
       });
       return scenes.map(SceneMapper.toListItemResponse);
     }
 
     if (query.userId) {
       const resolvedUserId = query.userId === 'me' ? user.id : query.userId;
-      const scenes = await this.sceneRepository.findByUserId(resolvedUserId);
+      const scenes = await this.sceneRepository.findScenes({
+        userId: resolvedUserId,
+        search: query.search,
+      });
       return scenes.map(SceneMapper.toListItemResponse);
     }
 
     throw new BadRequestException('Either workspaceId or userId query param is required');
+  }
+
+  public async listScenesUsingModel(
+    modelId: string,
+    user: UserEntity | null,
+  ): Promise<SceneListItemResponseDto[]> {
+    const candidates = await this.sceneRepository.findScenesUsingModel(modelId);
+    const visible: SceneEntity[] = [];
+    for (const scene of candidates) {
+      try {
+        await this.requireSceneReadAccess(scene, user?.id ?? null);
+        visible.push(scene);
+      } catch {
+        // skip scenes the viewer can't read
+      }
+    }
+    return visible.map(SceneMapper.toListItemResponse);
+  }
+
+  public async cloneScene(sceneId: string, user: UserEntity): Promise<SceneListItemResponseDto> {
+    const source = await this.loadSceneWithRelations(sceneId);
+    await this.requireSceneReadAccess(source, user.id);
+
+    const targetWorkspaceId =
+      source.workspaceId && (await this.isWorkspaceEditor(source.workspaceId, user.id)) ? source.workspaceId : null;
+
+    const cloned = this.sceneRepository.create({
+      name: `${source.name} (copy)`,
+      description: source.description,
+      // HDRI file is intentionally not copied — drop the path; user can re-upload.
+      config: source.config
+        ? { ...JSON.parse(JSON.stringify(source.config)), environmentHdriPath: undefined }
+        : null,
+      thumbnailPath: null,
+      workspaceId: targetWorkspaceId,
+      userId: targetWorkspaceId ? null : user.id,
+      visibility: 'private',
+    });
+    const saved = await this.sceneRepository.save(cloned);
+
+    if (source.objects?.length) {
+      const objects = source.objects.map((o) =>
+        this.sceneObjectRepository.create({
+          sceneId: saved.id,
+          modelId: o.modelId,
+          posX: o.posX,
+          posY: o.posY,
+          posZ: o.posZ,
+          rotX: o.rotX,
+          rotY: o.rotY,
+          rotZ: o.rotZ,
+          scaleX: o.scaleX,
+          scaleY: o.scaleY,
+          scaleZ: o.scaleZ,
+          order: o.order,
+          animationConfig: o.animationConfig ?? null,
+          audioConfig: o.audioConfig ?? null,
+        } as import('typeorm').DeepPartial<import('@/database/entities/scenes/scene-object.entity').SceneObjectEntity>),
+      );
+      await this.sceneObjectRepository.save(objects);
+    }
+
+    if (source.lights?.length) {
+      const lights = source.lights.map((l) =>
+        this.sceneLightRepository.create({
+          sceneId: saved.id,
+          type: l.type,
+          posX: l.posX,
+          posY: l.posY,
+          posZ: l.posZ,
+          color: l.color,
+          intensity: l.intensity,
+          castShadow: l.castShadow,
+        }),
+      );
+      await this.sceneLightRepository.save(lights);
+    }
+
+    saved.objects = saved.objects ?? [];
+    return SceneMapper.toListItemResponse(saved);
   }
 
   public async getScene(sceneId: string, user: UserEntity | null): Promise<SceneResponseDto> {

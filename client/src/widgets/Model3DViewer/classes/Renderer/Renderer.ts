@@ -10,6 +10,7 @@ import {
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { type CameraController } from '../Camera';
 import { type PostProcessConfig, type RenderCallback, type RendererParameters, type RendererSettings } from '../types';
 import { isMesh } from '../utils';
@@ -24,6 +25,7 @@ export class Renderer {
 
   private composer: EffectComposer;
   private renderPass: RenderPass;
+  private css2dRenderer: CSS2DRenderer;
 
   public readonly renderer: WebGLRenderer;
   public readonly clock = new Clock();
@@ -49,6 +51,14 @@ export class Renderer {
     this.renderPass = new RenderPass(this.world.scene, this.cameraController.camera);
     this.composer.addPass(this.renderPass);
     this.composer.addPass(new OutputPass());
+
+    // CSS2D overlay (used by MeasureTool labels and any future world-anchored DOM)
+    this.css2dRenderer = new CSS2DRenderer();
+    this.css2dRenderer.domElement.style.position = 'absolute';
+    this.css2dRenderer.domElement.style.top = '0';
+    this.css2dRenderer.domElement.style.left = '0';
+    this.css2dRenderer.domElement.style.pointerEvents = 'none';
+    this.css2dRenderer.domElement.style.zIndex = '1';
 
     if (place) this.setPlace(place);
   }
@@ -76,6 +86,7 @@ export class Renderer {
 
     this.renderer.clear();
     this.composer.render(delta);
+    this.css2dRenderer.render(this.world.scene, this.cameraController.camera);
   }
 
   public getCanvas(): HTMLCanvasElement {
@@ -91,6 +102,7 @@ export class Renderer {
 
     this.place = place;
     this.place.appendChild(this.renderer.domElement);
+    this.place.appendChild(this.css2dRenderer.domElement);
 
     this.resize();
     this.placeObserver = new ResizeObserver(() => this.resize());
@@ -212,6 +224,7 @@ export class Renderer {
 
     this.renderer.setSize(w, h);
     this.composer.setSize(w, h);
+    this.css2dRenderer.setSize(w, h);
     this.cameraController.resize();
   }
 
@@ -225,6 +238,7 @@ export class Renderer {
     this.renderer.setAnimationLoop(null);
     this.renderer.getRenderTarget()?.dispose();
     this.renderer.dispose();
+    this.css2dRenderer.domElement.remove();
   }
 
   // =====

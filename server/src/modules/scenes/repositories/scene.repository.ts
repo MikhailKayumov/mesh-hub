@@ -19,4 +19,32 @@ export class SceneRepository extends Repository<SceneEntity> {
       order: { createdAt: 'DESC' },
     });
   }
+
+  public findScenes(filters: { workspaceId?: string; userId?: string; search?: string }): Promise<SceneEntity[]> {
+    const qb = this.createQueryBuilder('scene')
+      .leftJoinAndSelect('scene.objects', 'objects')
+      .orderBy('scene.createdAt', 'DESC');
+
+    if (filters.workspaceId) {
+      qb.andWhere('scene.workspaceId = :workspaceId', { workspaceId: filters.workspaceId });
+    }
+    if (filters.userId) {
+      qb.andWhere('scene.userId = :userId', { userId: filters.userId });
+    }
+
+    const term = filters.search?.trim();
+    if (term) {
+      qb.andWhere('(scene.name ILIKE :search OR scene.description ILIKE :search)', { search: `%${term}%` });
+    }
+
+    return qb.getMany();
+  }
+
+  public findScenesUsingModel(modelId: string): Promise<SceneEntity[]> {
+    return this.createQueryBuilder('scene')
+      .innerJoin('scene.objects', 'so', 'so.modelId = :modelId AND so.deletedAt IS NULL', { modelId })
+      .leftJoinAndSelect('scene.objects', 'objects')
+      .orderBy('scene.createdAt', 'DESC')
+      .getMany();
+  }
 }

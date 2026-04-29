@@ -209,7 +209,7 @@ export class Model3dService {
 
   private async find3DModels(
     { size, skip }: PaginationDto,
-    { categories, workspaceId }: Models3dRequestDto,
+    { categories, workspaceId, search }: Models3dRequestDto,
     user: UserEntity | undefined,
     asCurrent = false,
   ) {
@@ -236,6 +236,11 @@ export class Model3dService {
     }
 
     if (categories?.length) qb.andWhere({ categories: In(categories) });
+
+    const term = search?.trim();
+    if (term) {
+      qb.andWhere('model.name ILIKE :search', { search: `%${term}%` });
+    }
 
     if (skip) qb.skip(skip);
     if (size) qb.take(size);

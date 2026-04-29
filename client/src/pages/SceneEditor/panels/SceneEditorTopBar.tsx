@@ -1,5 +1,5 @@
 import { ActionIcon, Anchor, Breadcrumbs, Group, Text, Tooltip } from '@mantine/core';
-import { IconArrowLeft, IconCamera } from '@tabler/icons-react';
+import { IconArrowLeft, IconCamera, IconDownload } from '@tabler/icons-react';
 import { Link, useParams } from 'react-router-dom';
 import type { SceneResponseDto } from '@/app/api/dto.ts';
 import { useUploadSceneThumbnailMutation } from '@/app/api/scenes.ts';
@@ -22,6 +22,18 @@ export function SceneEditorTopBar({ scene, captureScreenshot }: Props) {
         await uploadThumbnail({ sceneId: scene.id, thumbnail: base64 }).unwrap().catch(() => { });
     };
 
+    const handleDownloadScreenshot = async () => {
+        const dataUrl = captureScreenshot();
+        if (!dataUrl) return;
+        const blob = await (await fetch(dataUrl)).blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${scene.name ?? 'scene'}-${Date.now()}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <Group h="100%" px="md" justify="space-between">
             <Group>
@@ -38,16 +50,27 @@ export function SceneEditorTopBar({ scene, captureScreenshot }: Props) {
                 </Breadcrumbs>
             </Group>
 
-            <Tooltip label="Capture thumbnail">
-                <ActionIcon
-                    variant="default"
-                    loading={isLoading}
-                    onClick={handleCapture}
-                    aria-label="Capture thumbnail"
-                >
-                    <IconCamera size={16} />
-                </ActionIcon>
-            </Tooltip>
+            <Group gap="xs">
+                <Tooltip label="Сохранить скриншот">
+                    <ActionIcon
+                        variant="default"
+                        onClick={handleDownloadScreenshot}
+                        aria-label="Download screenshot"
+                    >
+                        <IconDownload size={16} />
+                    </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Capture thumbnail">
+                    <ActionIcon
+                        variant="default"
+                        loading={isLoading}
+                        onClick={handleCapture}
+                        aria-label="Capture thumbnail"
+                    >
+                        <IconCamera size={16} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
         </Group>
     );
 }

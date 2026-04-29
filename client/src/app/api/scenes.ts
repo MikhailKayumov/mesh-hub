@@ -13,16 +13,17 @@ import { ApiUrls } from './urls.ts';
 export const ScenesApi = Api.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    scenes: build.query<SceneListItemResponseDto[], { workspaceId?: string; userId?: string }>({
+    scenes: build.query<SceneListItemResponseDto[], { workspaceId?: string; userId?: string; search?: string }>({
       providesTags: (_result, _error, { workspaceId, userId }) => [
         { type: ApiTags.Scenes, id: workspaceId ?? userId ?? 'personal' },
       ],
-      query: ({ workspaceId, userId }) => ({
+      query: ({ workspaceId, userId, search }) => ({
         method: 'GET',
         url: ApiUrls.Scenes,
         params: {
           ...(workspaceId ? { workspaceId } : {}),
           ...(userId ? { userId } : {}),
+          ...(search ? { search } : {}),
         },
       }),
     }),
@@ -138,6 +139,14 @@ export const ScenesApi = Api.injectEndpoints({
         body: { thumbnail },
       }),
     }),
+
+    cloneScene: build.mutation<SceneListItemResponseDto, { id: string }>({
+      invalidatesTags: (result) => [{ type: ApiTags.Scenes, id: result?.workspaceId ?? result?.userId ?? 'personal' }],
+      query: ({ id }) => ({
+        method: 'POST',
+        url: `${ApiUrls.Scenes}/${id}/clone`,
+      }),
+    }),
   }),
 });
 
@@ -155,4 +164,5 @@ export const {
   useRemoveSceneLightMutation,
   useUploadSceneHdriMutation,
   useUploadSceneThumbnailMutation,
+  useCloneSceneMutation,
 } = ScenesApi;

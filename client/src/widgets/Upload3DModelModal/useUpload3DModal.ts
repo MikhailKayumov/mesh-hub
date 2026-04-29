@@ -11,7 +11,7 @@ import { RouterPaths } from '@/shared/router/paths.ts';
 import { buildAbsolutePath } from '@/shared/utils/router';
 import type { FileWithPath } from 'react-dropzone-esm';
 
-export function useUpload3DModal() {
+export function useUpload3DModal(initialFile?: File) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [opened, { open, close }] = useDisclosure(false);
@@ -30,6 +30,14 @@ export function useUpload3DModal() {
       });
     }
   }, [opened]);
+
+  // "Previous prop" pattern: compare against state, only react when initialFile reference changes.
+  const [lastInitialFile, setLastInitialFile] = useState<File | undefined>(undefined);
+  if (initialFile && initialFile !== lastInitialFile) {
+    setLastInitialFile(initialFile);
+    setModel(initialFile as FileWithPath);
+    open();
+  }
 
   return {
     opened,

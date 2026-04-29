@@ -61,7 +61,7 @@ export function OrgCreatePage() {
 
     const result = await createOrganization({ name: name.trim(), slug: slug.trim() });
 
-    if ('data' in result) {
+    if ('data' in result && result.data) {
       dispatch(orgActions.setCurrentOrg(result.data.id));
       navigate(buildAbsolutePath([RouterPaths.Org, result.data.id]));
     }

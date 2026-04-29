@@ -2,9 +2,9 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ModelVisibility } from '@/constants';
+import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { ModelDisplayConfigEntity } from '@/database/entities/models-3d/model-display-config.entity';
 import { ModelLightEntity } from '@/database/entities/models-3d/model-light.entity';
-import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { FilesService } from '@/modules/files/files.service';
@@ -35,7 +35,11 @@ export class DisplayConfigService {
     return this.toResponse(config, lights);
   }
 
-  public async update(modelId: string, user: UserEntity, dto: DisplayConfigUpdateDto): Promise<DisplayConfigResponseDto> {
+  public async update(
+    modelId: string,
+    user: UserEntity,
+    dto: DisplayConfigUpdateDto,
+  ): Promise<DisplayConfigResponseDto> {
     await this.loadModel(modelId, user);
     let config = await this.displayConfigRepository.findByModelId(modelId);
     if (!config) {

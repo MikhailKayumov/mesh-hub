@@ -1,5 +1,5 @@
-import { IsBoolean, IsHexColor, IsIn, IsNumber, IsObject, IsOptional, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsHexColor, IsIn, IsNumber, IsObject, IsOptional, Max, Min } from 'class-validator';
 
 export class DisplayConfigUpdateDto {
   @IsOptional()

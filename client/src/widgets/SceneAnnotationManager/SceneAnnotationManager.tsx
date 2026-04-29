@@ -161,7 +161,7 @@ function SortableAnnotationCard({
             )}
           </Group>
           {annotation.body && (
-            <Collapse in={expanded}>
+            <Collapse expanded={expanded}>
               <Text size="xs" c="dimmed" mt={4} style={{ whiteSpace: 'pre-wrap' }}>
                 {annotation.body}
               </Text>

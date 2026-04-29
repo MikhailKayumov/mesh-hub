@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AnimationClip, AnimationMixer } from 'three';
 import type { SceneLightResponseDto, SceneResponseDto } from '@/app/api/dto.ts';
 import { Viewer } from '@/widgets/Model3DViewer/classes/Viewer';
 import type { SelectionState } from './model.ts';
+import type { AnimationClip, AnimationMixer } from 'three';
 
 interface UseSceneViewerOptions {
   scene: SceneResponseDto | undefined;
@@ -11,44 +11,63 @@ interface UseSceneViewerOptions {
 export function useSceneViewer({ scene }: UseSceneViewerOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer | null>(null);
-  const [isViewerReady, setIsViewerReady] = useState(false);
-  const [isSceneLoading, setIsSceneLoading] = useState(false);
+  const [viewer, setViewer] = useState<Viewer | null>(null);
+  const [loadedScene, setLoadedScene] = useState<SceneResponseDto | undefined>(undefined);
   const [selectionState, setSelectionState] = useState<SelectionState>(null);
+
+  // Derived during render: any time the prop scene differs from the most recently loaded one,
+  // we're mid-load. Avoids a synchronous setState inside the effect body.
+  const isSceneLoading = !!viewer && !!scene && scene !== loadedScene;
 
   // init viewer
   useEffect(() => {
     const container = containerRef.current;
     if (!container || viewerRef.current) return;
 
-    const viewer = new Viewer(container);
-    viewer.init().run();
-    viewerRef.current = viewer;
-    setIsViewerReady(true);
+    const next = new Viewer(container);
+    next.init().run();
+    viewerRef.current = next;
+    setViewer(next);
 
     return () => {
-      viewer.destroy();
+      next.destroy();
       viewerRef.current = null;
-      setIsViewerReady(false);
+      setViewer(null);
     };
   }, []);
 
   // load scene when data is ready
   useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer || !scene || !isViewerReady) return;
+    if (!viewer || !scene) return;
 
     let cancelled = false;
 
-    setIsSceneLoading(true);
     viewer.loadScene(scene).then(() => {
       if (!cancelled) {
-        setIsSceneLoading(false);
+        setLoadedScene(scene);
         // Auto-play audio for scene objects that have autoplay configured
         for (const obj of scene.objects) {
-          const cfg = obj.audioConfig as { audioId?: string; autoplay?: boolean; loop?: boolean; volume?: number } | null | undefined;
+          const cfg = obj.audioConfig as
+            | {
+                audioId?: string;
+                autoplay?: boolean;
+                loop?: boolean;
+                volume?: number;
+                positional?: boolean;
+                maxDistance?: number;
+              }
+            | null
+            | undefined;
           if (cfg?.autoplay && cfg.audioId && obj.model.id) {
             const audioUrl = `/api/models-3d/${obj.model.id}/audio/${cfg.audioId}/stream`;
-            viewer.playAudio(audioUrl, { loop: cfg.loop ?? false, volume: cfg.volume ?? 1 });
+            const attachTo = cfg.positional ? viewer.getSceneObjectGroup(obj.id) : undefined;
+            viewer.playAudio(audioUrl, {
+              loop: cfg.loop ?? false,
+              volume: cfg.volume ?? 1,
+              positional: cfg.positional ?? false,
+              maxDistance: cfg.maxDistance,
+              attachTo,
+            });
           }
         }
       }
@@ -57,7 +76,7 @@ export function useSceneViewer({ scene }: UseSceneViewerOptions) {
     return () => {
       cancelled = true;
     };
-  }, [scene, isViewerReady]);
+  }, [scene, viewer]);
 
   const selectObject = useCallback((sceneObjectId: string | null) => {
     setSelectionState(sceneObjectId ? { type: 'object', id: sceneObjectId } : null);
@@ -103,7 +122,7 @@ export function useSceneViewer({ scene }: UseSceneViewerOptions) {
 
   return {
     containerRef,
-    viewer: viewerRef.current,
+    viewer,
     isSceneLoading,
     selectionState,
     selectObject,

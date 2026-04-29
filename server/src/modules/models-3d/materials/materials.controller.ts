@@ -1,3 +1,5 @@
+import { createReadStream, existsSync } from 'fs';
+import { resolve } from 'path';
 import {
   Body,
   Controller,
@@ -24,8 +26,6 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { createReadStream, existsSync } from 'fs';
-import { extname, resolve } from 'path';
 import { UserRoles } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
@@ -48,9 +48,7 @@ export class MaterialsController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: MaterialOverrideResponseDto, isArray: true })
-  public async listMaterials(
-    @Param('modelId', ParseUUIDPipe) modelId: string,
-  ): Promise<MaterialOverrideResponseDto[]> {
+  public async listMaterials(@Param('modelId', ParseUUIDPipe) modelId: string): Promise<MaterialOverrideResponseDto[]> {
     return this.materialsService.listMaterials(modelId);
   }
 
@@ -96,21 +94,12 @@ export class MaterialsController {
     @UploadedFile(
       new ParseFilePipe({
         fileIsRequired: true,
-        validators: [
-          new FileSizeValidator(MAX_TEXTURE_SIZE),
-          new FileTypeValidator(ALLOWED_TEXTURE_TYPES),
-        ],
+        validators: [new FileSizeValidator(MAX_TEXTURE_SIZE), new FileTypeValidator(ALLOWED_TEXTURE_TYPES)],
       }),
     )
     file: Express.Multer.File,
   ): Promise<MaterialOverrideResponseDto> {
-    return this.materialsService.uploadTexture(
-      modelId,
-      decodeURIComponent(meshName),
-      user,
-      type,
-      file,
-    );
+    return this.materialsService.uploadTexture(modelId, decodeURIComponent(meshName), user, type, file);
   }
 
   @Delete(':meshName/texture/:type')
@@ -147,4 +136,3 @@ export class MaterialsController {
     return new StreamableFile(stream, { type: result.mimeType });
   }
 }
-

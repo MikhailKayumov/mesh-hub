@@ -1,5 +1,5 @@
-import { IsBoolean, IsHexColor, IsIn, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsBoolean, IsHexColor, IsIn, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 const LIGHT_TYPES = ['ambient', 'directional', 'point', 'spot'] as const;
 

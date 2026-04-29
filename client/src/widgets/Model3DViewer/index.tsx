@@ -1,7 +1,7 @@
 import { Box, Button, Overlay } from '@mantine/core';
 import { useFullscreenElement } from '@mantine/hooks';
 import { IconVolume } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useListModelAudioQuery } from '@/app/api/audio.ts';
 import { Model3DViewerBottomBar } from './components/Model3DViewerBottomBar';
 import { Model3DViewerTopBar } from './components/Model3DViewerTopBar';
@@ -12,30 +12,31 @@ import classes from './Viewer.module.scss';
 
 export type Model3DPageViewerProps = UseViewerProps;
 
+function useAudioContextState(ctx: AudioContext | null): AudioContextState | null {
+  return useSyncExternalStore(
+    (notify) => {
+      if (!ctx) return () => undefined;
+      ctx.addEventListener('statechange', notify);
+      return () => ctx.removeEventListener('statechange', notify);
+    },
+    () => ctx?.state ?? null,
+    () => null,
+  );
+}
+
 export function Model3DViewer(props: Model3DPageViewerProps) {
   const { onMouseEnter, onMouseLeave } = usePreventMiddleClick();
   const { placeRef, viewer } = useViewer(props);
   const { ref: rootRef, toggle: toggleFullscreen, fullscreen } = useFullscreenElement();
   const modelId = props.model?.id;
-  const [audioSuspended, setAudioSuspended] = useState(false);
 
-  const { data: audioTracks = [] } = useListModelAudioQuery(
-    { modelId: modelId! },
-    { skip: !modelId },
-  );
+  const { data: audioTracks = [] } = useListModelAudioQuery({ modelId: modelId! }, { skip: !modelId });
 
-  // Check if AudioContext is suspended after viewer is ready
-  useEffect(() => {
-    if (!viewer || audioTracks.length === 0) return;
-    const ctx = viewer.audioContext;
-    if (ctx?.state === 'suspended') {
-      setAudioSuspended(true);
-    }
-  }, [viewer, audioTracks]);
+  const audioState = useAudioContextState(viewer?.audioContext ?? null);
+  const audioSuspended = audioState === 'suspended' && audioTracks.length > 0;
 
   const handleUnlockAudio = () => {
     viewer?.audioContext?.resume();
-    setAudioSuspended(false);
   };
 
   return (

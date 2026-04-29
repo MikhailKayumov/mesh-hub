@@ -18,10 +18,7 @@ export class MaterialOverrideRepository {
     return this.repo.find({ where: { modelId } });
   }
 
-  public async findByModelAndMesh(
-    modelId: string,
-    meshName: string,
-  ): Promise<ModelMaterialOverrideEntity | null> {
+  public async findByModelAndMesh(modelId: string, meshName: string): Promise<ModelMaterialOverrideEntity | null> {
     return this.repo.findOne({ where: { modelId, meshName } });
   }
 

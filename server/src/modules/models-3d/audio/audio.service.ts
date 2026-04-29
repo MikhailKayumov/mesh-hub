@@ -7,8 +7,8 @@ import { ModelVisibility } from '@/constants';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
-import { FilesService } from '@/modules/files/files.service';
 import { ConfigService } from '@/modules/config/config.service';
+import { FilesService } from '@/modules/files/files.service';
 import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.repository';
 import { ModelAudioResponseDto } from './dto/model-audio.response.dto';
 import { ModelAudioRepository } from './model-audio.repository';
@@ -29,11 +29,7 @@ export class AudioService {
     return tracks.map((t) => this.toResponse(t));
   }
 
-  public async upload(
-    modelId: string,
-    user: UserEntity,
-    file: Express.Multer.File,
-  ): Promise<ModelAudioResponseDto> {
+  public async upload(modelId: string, user: UserEntity, file: Express.Multer.File): Promise<ModelAudioResponseDto> {
     const model = await this.loadModel(modelId, user);
     const orgId = await this.resolveOrgId(model);
 
@@ -75,7 +71,10 @@ export class AudioService {
       track.filename,
     );
     if (!existsSync(filePath)) throw new NotFoundException('Audio file not found on disk');
-    return new StreamableFile(createReadStream(filePath), { type: 'audio/mpeg', disposition: `inline; filename="${track.filename}"` });
+    return new StreamableFile(createReadStream(filePath), {
+      type: 'audio/mpeg',
+      disposition: `inline; filename="${track.filename}"`,
+    });
   }
 
   public async remove(modelId: string, audioId: string, user: UserEntity): Promise<void> {
@@ -118,7 +117,14 @@ export class AudioService {
     return workspace?.orgId ?? null;
   }
 
-  private toResponse(track: { id: string; modelId: string; filename: string; originalName: string; durationS?: number | null; createdAt: Date }): ModelAudioResponseDto {
+  private toResponse(track: {
+    id: string;
+    modelId: string;
+    filename: string;
+    originalName: string;
+    durationS?: number | null;
+    createdAt: Date;
+  }): ModelAudioResponseDto {
     return {
       id: track.id,
       modelId: track.modelId,

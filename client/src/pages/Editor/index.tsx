@@ -36,11 +36,15 @@ export function EditorPage() {
       <AppShell h="100%" padding="md" header={headerConfig} footer={footerConfig} navbar={navbarConfig}>
         <Header className={classes.header} viewer={viewer} />
         <Navbar className={classes.navbar} viewer={viewer} modelId={id} />
-        <Main model={model3d} displayConfig={displayConfig} materialOverrides={materialOverrides} onViewerReady={onViewerReady} />
+        <Main
+          model={model3d}
+          displayConfig={displayConfig}
+          materialOverrides={materialOverrides}
+          onViewerReady={onViewerReady}
+        />
         <Footer className={classes.footer} viewer={viewer} />
       </AppShell>
       <LoadingOverlay visible={isModelLoading || isViewerLoading} className={classes.loader} />
     </Model3DContextProvider>
   );
 }
-

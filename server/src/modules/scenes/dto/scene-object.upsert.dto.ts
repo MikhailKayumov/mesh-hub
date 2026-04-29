@@ -1,13 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUUID,
-  ValidateNested,
-} from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 
 export class AnimationSequenceItemDto {
   @ApiProperty()

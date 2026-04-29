@@ -12,7 +12,7 @@ import {
   MathUtils,
   Mesh,
   MeshBasicMaterial,
-  MeshStandardMaterial,
+  type MeshStandardMaterial,
   Object3D,
   PlaneGeometry,
   PointLight,
@@ -23,10 +23,16 @@ import {
   TextureLoader,
   Vector3,
 } from 'three';
+import type { MaterialOverrideResponseDto, SceneLightResponseDto } from '@/app/api/dto.ts';
 import { Destroyer } from '../Destroyer';
 import { buildAmbientLight, buildDirectionalLight } from '../Lights';
-import type { MaterialOverrideResponseDto, SceneLightResponseDto } from '@/app/api/dto.ts';
-import { type FogConfig, type WorldEventListener, type WorldObject3D, type WorldObjects3D, type WorldSpawnOptions } from '../types';
+import {
+  type FogConfig,
+  type WorldEventListener,
+  type WorldObject3D,
+  type WorldObjects3D,
+  type WorldSpawnOptions,
+} from '../types';
 import { isLight, isObject3D } from '../utils';
 import { DEFAULT_LAYER, type WorldEvent, WorldEventNames } from './constants.ts';
 import { WorldHelpers } from './WorldHelpers.ts';
@@ -404,25 +410,43 @@ export class World extends EventTarget {
       if (override.metalness !== undefined && override.metalness !== null) mat.metalness = override.metalness;
       if (override.roughness !== undefined && override.roughness !== null) mat.roughness = override.roughness;
       if (override.emissiveHex) mat.emissive.set(override.emissiveHex);
-      if (override.emissiveIntensity !== undefined && override.emissiveIntensity !== null) mat.emissiveIntensity = override.emissiveIntensity;
+      if (override.emissiveIntensity !== undefined && override.emissiveIntensity !== null)
+        mat.emissiveIntensity = override.emissiveIntensity;
       if (override.opacity !== undefined && override.opacity !== null) {
         mat.opacity = override.opacity;
         mat.transparent = override.opacity < 1;
       }
       mat.wireframe = override.wireframe;
 
-      if (override.textureMapUrl) mat.map = loader.load(override.textureMapUrl, () => { mat.needsUpdate = true; });
-      if (override.normalMapUrl) mat.normalMap = loader.load(override.normalMapUrl, () => { mat.needsUpdate = true; });
-      if (override.roughnessMapUrl) mat.roughnessMap = loader.load(override.roughnessMapUrl, () => { mat.needsUpdate = true; });
-      if (override.metalnessMapUrl) mat.metalnessMap = loader.load(override.metalnessMapUrl, () => { mat.needsUpdate = true; });
-      if (override.emissiveMapUrl) mat.emissiveMap = loader.load(override.emissiveMapUrl, () => { mat.needsUpdate = true; });
+      if (override.textureMapUrl)
+        mat.map = loader.load(override.textureMapUrl, () => {
+          mat.needsUpdate = true;
+        });
+      if (override.normalMapUrl)
+        mat.normalMap = loader.load(override.normalMapUrl, () => {
+          mat.needsUpdate = true;
+        });
+      if (override.roughnessMapUrl)
+        mat.roughnessMap = loader.load(override.roughnessMapUrl, () => {
+          mat.needsUpdate = true;
+        });
+      if (override.metalnessMapUrl)
+        mat.metalnessMap = loader.load(override.metalnessMapUrl, () => {
+          mat.needsUpdate = true;
+        });
+      if (override.emissiveMapUrl)
+        mat.emissiveMap = loader.load(override.emissiveMapUrl, () => {
+          mat.needsUpdate = true;
+        });
       // aoMap needs a uv2 attribute on the geometry — backfill from uv if missing
       if (override.aoMapUrl) {
         if (!obj.geometry.attributes.uv2 && obj.geometry.attributes.uv) {
           obj.geometry.setAttribute('uv2', obj.geometry.attributes.uv);
         }
         if (obj.geometry.attributes.uv2) {
-          mat.aoMap = loader.load(override.aoMapUrl, () => { mat.needsUpdate = true; });
+          mat.aoMap = loader.load(override.aoMapUrl, () => {
+            mat.needsUpdate = true;
+          });
         } else {
           console.warn(`aoMap skipped for mesh "${obj.name}": no UV channel`);
         }

@@ -309,9 +309,7 @@ export class S3FileStorageStrategy implements IFileStorageStrategy {
     // Delete all extensions for the given type
     const extensions = ['.png', '.jpg', '.jpeg', '.webp'];
     await Promise.all(
-      extensions.map((ext) =>
-        this.deleteKey(`models-3d/${modelId}/materials/${overrideId}/${type}${ext}`, true),
-      ),
+      extensions.map((ext) => this.deleteKey(`models-3d/${modelId}/materials/${overrideId}/${type}${ext}`, true)),
     );
   }
 

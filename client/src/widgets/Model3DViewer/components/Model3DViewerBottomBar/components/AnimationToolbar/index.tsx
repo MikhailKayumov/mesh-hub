@@ -17,7 +17,11 @@ const SPEED_DATA = [
   { value: '2', label: '2×' },
 ];
 
-const LOOP_MODES: { mode: AnimationActionLoopStyles; icon: React.FC<{ style?: React.CSSProperties }>; label: string }[] = [
+const LOOP_MODES: {
+  mode: AnimationActionLoopStyles;
+  icon: React.FC<{ style?: React.CSSProperties }>;
+  label: string;
+}[] = [
   { mode: LoopRepeat, icon: IconRepeat, label: 'Repeat' },
   { mode: LoopOnce, icon: IconRepeatOff, label: 'Play Once' },
   { mode: LoopPingPong, icon: IconArrowsLeftRight, label: 'Ping-Pong' },
@@ -38,7 +42,17 @@ export function AnimationToolbar({ className, ...props }: AnimationToolbarProps)
       <AnimationList animations={animations} />
       {animations.clip?.duration && (
         <>
-          <Badge variant="light" maw={120} lineClamp={1} mr={4} style={{ cursor: 'default' }}>
+          <Badge
+            variant="light"
+            maw={120}
+            mr={4}
+            style={{
+              cursor: 'default',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {animations.clip.name}
           </Badge>
           <AnimationToggleStateButton animations={animations} />
@@ -51,11 +65,7 @@ export function AnimationToolbar({ className, ...props }: AnimationToolbarProps)
             data={SPEED_DATA}
           />
           <Tooltip label={loopEntry.label}>
-            <ActionIcon
-              c="dimmed"
-              variant="transparent"
-              onClick={() => animations.setLoopMode(nextLoopMode)}
-            >
+            <ActionIcon c="dimmed" variant="transparent" onClick={() => animations.setLoopMode(nextLoopMode)}>
               <LoopIcon style={iconStyle} />
             </ActionIcon>
           </Tooltip>

@@ -21,7 +21,7 @@ export const CollapseSection = ({ title, children, defaultOpened = false, classN
       >
         {title}
       </Button>
-      <Collapse in={opened}>
+      <Collapse expanded={opened}>
         <Box mt={6} px={4} pt={0} pb={8} className={classes.collapsed}>
           {children}
         </Box>

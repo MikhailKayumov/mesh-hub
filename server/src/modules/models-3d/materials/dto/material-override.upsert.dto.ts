@@ -1,12 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsHexColor,
-  IsNumber,
-  IsOptional,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsHexColor, IsNumber, IsOptional, Max, Min } from 'class-validator';
 
 export class MaterialOverrideUpsertDto {
   @IsOptional()

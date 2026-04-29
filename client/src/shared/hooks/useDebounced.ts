@@ -20,7 +20,9 @@ export function useDebouncedCallback<A extends any[]>(callback: (...args: A) => 
   const argsRef = useRef<A | undefined>(undefined);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const cleanup = () => timeout.current && clearTimeout(timeout.current);
+  const cleanup = () => {
+    if (timeout.current) clearTimeout(timeout.current);
+  };
 
   useEffect(() => cleanup, []);
 

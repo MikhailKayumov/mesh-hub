@@ -1,6 +1,6 @@
 import { type TabValue } from './model.ts';
 
-export const TabValues: Record<Capitalize<TabValue>, TabValue> = {
+export const TabValues = {
   DisplayConfig: 'display-config',
   Scene: 'scene',
   Lights: 'lights',
@@ -9,4 +9,4 @@ export const TabValues: Record<Capitalize<TabValue>, TabValue> = {
   Versions: 'versions',
   Materials: 'materials',
   Audio: 'audio',
-} as const;
+} as const satisfies Record<string, TabValue>;

@@ -15,16 +15,16 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBadRequestResponse, ApiConsumes, ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { UserRoles } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { OptionalUser, User } from '@/decorators/user/user.decorator';
 import { FileSizeValidator } from '@/pipes/file-size-validator.pipe';
-import { ModelAudioResponseDto } from './dto/model-audio.response.dto';
 import { AudioService } from './audio.service';
+import { ModelAudioResponseDto } from './dto/model-audio.response.dto';
 
 const MAX_AUDIO_SIZE = 20 * 1024 * 1024; // 20 MB
 const AUDIO_MIME_PATTERN = /^audio\/(mpeg|mp3|ogg|wav|x-wav|wave)$/;

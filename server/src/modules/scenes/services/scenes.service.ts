@@ -88,10 +88,7 @@ export class ScenesService {
     throw new BadRequestException('Either workspaceId or userId query param is required');
   }
 
-  public async listScenesUsingModel(
-    modelId: string,
-    user: UserEntity | null,
-  ): Promise<SceneListItemResponseDto[]> {
+  public async listScenesUsingModel(modelId: string, user: UserEntity | null): Promise<SceneListItemResponseDto[]> {
     const candidates = await this.sceneRepository.findScenesUsingModel(modelId);
     const visible: SceneEntity[] = [];
     for (const scene of candidates) {
@@ -116,9 +113,7 @@ export class ScenesService {
       name: `${source.name} (copy)`,
       description: source.description,
       // HDRI file is intentionally not copied — drop the path; user can re-upload.
-      config: source.config
-        ? { ...JSON.parse(JSON.stringify(source.config)), environmentHdriPath: undefined }
-        : null,
+      config: source.config ? { ...JSON.parse(JSON.stringify(source.config)), environmentHdriPath: undefined } : null,
       thumbnailPath: null,
       workspaceId: targetWorkspaceId,
       userId: targetWorkspaceId ? null : user.id,

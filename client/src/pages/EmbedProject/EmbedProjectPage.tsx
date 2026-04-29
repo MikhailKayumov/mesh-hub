@@ -58,7 +58,7 @@ export function EmbedProjectPage() {
   }
 
   async function handleSaveBranding() {
-    if (!projectId) return;
+    if (!projectId || !project) return;
     if (logoFile) {
       await uploadLogo({ id: projectId, file: logoFile });
       setLogoFile(null);

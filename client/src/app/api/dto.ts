@@ -779,5 +779,3 @@ export interface ModelAudioResponseDto {
   durationS?: number | null;
   createdAt: string;
 }
-
-

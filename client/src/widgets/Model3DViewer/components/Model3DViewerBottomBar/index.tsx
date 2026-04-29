@@ -1,5 +1,5 @@
 import { Group } from '@mantine/core';
-import type { Audio as ThreeAudio } from 'three';
+import type { Audio as ThreeAudio, PositionalAudio } from 'three';
 import classes from './BottomBar.module.scss';
 import { AnimationToolbar } from './components/AnimationToolbar';
 import { AudioToolbar } from './components/AudioToolbar';
@@ -9,7 +9,7 @@ import { ScreenshotButton } from './components/ScreenshotButton';
 import { ToggleFullscreenButton } from './components/ToggleFullscreenButton';
 
 interface AudioViewer {
-  playAudio: (url: string, opts?: { loop?: boolean; volume?: number }) => ThreeAudio;
+  playAudio: (url: string, opts?: { loop?: boolean; volume?: number }) => ThreeAudio | PositionalAudio;
   stopAllAudio: () => void;
   audioContext: AudioContext | null;
 }
@@ -25,9 +25,7 @@ export function Model3DViewerBottomBar({ fullscreen, toggleFullscreen, modelId, 
   return (
     <Group className={classes.root} gap={0}>
       <AnimationToolbar autorun className={classes.animations} />
-      {modelId && (
-        <AudioToolbar modelId={modelId} viewer={viewer} className={classes.audio} />
-      )}
+      {modelId && <AudioToolbar modelId={modelId} viewer={viewer} className={classes.audio} />}
       {/* Phase C2 buttons start */}
       <DisplayPresetsMenu />
       <ScreenshotButton />

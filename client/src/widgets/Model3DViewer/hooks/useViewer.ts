@@ -3,8 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import type { DisplayConfigResponseDto, MaterialOverrideResponseDto, Model3DResponseDto } from '@/app/api/dto.ts';
 import { getModel3DVersionFileSrc } from '@/shared/utils/model3d.ts';
 import { sleep } from '@/shared/utils/sleep.ts';
-import { Viewer } from '../classes/Viewer';
 import type { PostProcessConfig } from '../classes/types';
+import { Viewer } from '../classes/Viewer';
 
 export interface UseViewerProps {
   model: Model3DResponseDto | null;

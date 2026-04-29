@@ -1,13 +1,9 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
 import { extname } from 'path';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { ModelMaterialOverrideEntity } from '@/database/entities/models-3d/model-material-override.entity';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
+import { ModelMaterialOverrideEntity } from '@/database/entities/models-3d/model-material-override.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { FilesService } from '@/modules/files/files.service';
@@ -58,11 +54,7 @@ export class MaterialsService {
     return this.toResponse(saved, modelId);
   }
 
-  public async deleteMaterial(
-    modelId: string,
-    meshName: string,
-    user: UserEntity,
-  ): Promise<void> {
+  public async deleteMaterial(modelId: string, meshName: string, user: UserEntity): Promise<void> {
     const model = await this.loadModel(modelId, user);
     const override = await this.materialOverrideRepository.findByModelAndMesh(modelId, meshName);
     if (!override) throw new NotFoundException('Material override not found');
@@ -100,12 +92,24 @@ export class MaterialsService {
     const path = `models-3d/${modelId}/materials/${override.id}/${type}${ext}`;
 
     switch (type as TextureType) {
-      case 'map': override.textureMapPath = path; break;
-      case 'normal': override.normalMapPath = path; break;
-      case 'roughness': override.roughnessMapPath = path; break;
-      case 'metalness': override.metalnessMapPath = path; break;
-      case 'emissive': override.emissiveMapPath = path; break;
-      case 'ao': override.aoMapPath = path; break;
+      case 'map':
+        override.textureMapPath = path;
+        break;
+      case 'normal':
+        override.normalMapPath = path;
+        break;
+      case 'roughness':
+        override.roughnessMapPath = path;
+        break;
+      case 'metalness':
+        override.metalnessMapPath = path;
+        break;
+      case 'emissive':
+        override.emissiveMapPath = path;
+        break;
+      case 'ao':
+        override.aoMapPath = path;
+        break;
     }
 
     const saved = await this.materialOverrideRepository.save(override);
@@ -127,12 +131,24 @@ export class MaterialsService {
     await this.filesService.deleteModelMaterialTexture(orgId, modelId, override.id, type).catch(() => undefined);
 
     switch (type as TextureType) {
-      case 'map': override.textureMapPath = undefined; break;
-      case 'normal': override.normalMapPath = undefined; break;
-      case 'roughness': override.roughnessMapPath = undefined; break;
-      case 'metalness': override.metalnessMapPath = undefined; break;
-      case 'emissive': override.emissiveMapPath = undefined; break;
-      case 'ao': override.aoMapPath = undefined; break;
+      case 'map':
+        override.textureMapPath = undefined;
+        break;
+      case 'normal':
+        override.normalMapPath = undefined;
+        break;
+      case 'roughness':
+        override.roughnessMapPath = undefined;
+        break;
+      case 'metalness':
+        override.metalnessMapPath = undefined;
+        break;
+      case 'emissive':
+        override.emissiveMapPath = undefined;
+        break;
+      case 'ao':
+        override.aoMapPath = undefined;
+        break;
     }
 
     const saved = await this.materialOverrideRepository.save(override);
@@ -149,18 +165,35 @@ export class MaterialsService {
 
     let filePath: string | undefined;
     switch (type as TextureType) {
-      case 'map': filePath = override.textureMapPath; break;
-      case 'normal': filePath = override.normalMapPath; break;
-      case 'roughness': filePath = override.roughnessMapPath; break;
-      case 'metalness': filePath = override.metalnessMapPath; break;
-      case 'emissive': filePath = override.emissiveMapPath; break;
-      case 'ao': filePath = override.aoMapPath; break;
+      case 'map':
+        filePath = override.textureMapPath;
+        break;
+      case 'normal':
+        filePath = override.normalMapPath;
+        break;
+      case 'roughness':
+        filePath = override.roughnessMapPath;
+        break;
+      case 'metalness':
+        filePath = override.metalnessMapPath;
+        break;
+      case 'emissive':
+        filePath = override.emissiveMapPath;
+        break;
+      case 'ao':
+        filePath = override.aoMapPath;
+        break;
     }
 
     if (!filePath) return null;
 
     const ext = filePath.split('.').pop()?.toLowerCase() ?? 'png';
-    const mimeMap: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp' };
+    const mimeMap: Record<string, string> = {
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      webp: 'image/webp',
+    };
     return { path: filePath, mimeType: mimeMap[ext] ?? 'image/png' };
   }
 

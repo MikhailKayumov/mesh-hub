@@ -1,9 +1,18 @@
-import { IconBulb, IconClockHour4, IconCube, IconMapPin, IconMessageCircle, IconPalette, IconPhotoEdit, IconVolume } from '@tabler/icons-react';
+import {
+  IconBulb,
+  IconClockHour4,
+  IconCube,
+  IconMapPin,
+  IconMessageCircle,
+  IconPalette,
+  IconPhotoEdit,
+  IconVolume,
+} from '@tabler/icons-react';
+import { AudioTab } from '@/pages/Editor/components/Navbar/components/AudioTab';
 import { DisplayConfigTab } from '@/pages/Editor/components/Navbar/components/DisplayConfigTab';
-import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { LightsTab } from '@/pages/Editor/components/Navbar/components/LightsTab';
 import { MaterialsTab } from '@/pages/Editor/components/Navbar/components/MaterialsTab';
-import { AudioTab } from '@/pages/Editor/components/Navbar/components/AudioTab';
+import { SceneTab } from '@/pages/Editor/components/Navbar/components/SceneTab';
 import { TabValues } from '@/pages/Editor/components/Navbar/constants.ts';
 import { AnnotationManager } from '@/widgets/AnnotationManager';
 import { type Viewer } from '@/widgets/Model3DViewer/classes/Viewer';

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ModelAudioEntity } from '@/database/entities/models-3d/model-audio.entity';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
+import { ModelAudioEntity } from '@/database/entities/models-3d/model-audio.entity';
 import { FilesService } from '@/modules/files/files.service';
 import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.repository';
 import { AudioController } from './audio.controller';

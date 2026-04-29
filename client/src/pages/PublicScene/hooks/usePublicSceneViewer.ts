@@ -52,12 +52,26 @@ export function usePublicSceneViewer({ scene }: UsePublicSceneViewerOptions) {
       // Auto-play audio for scene objects that have autoplay configured
       for (const obj of scene.objects) {
         const cfg = obj.audioConfig as
-          | { audioId?: string; autoplay?: boolean; loop?: boolean; volume?: number }
+          | {
+              audioId?: string;
+              autoplay?: boolean;
+              loop?: boolean;
+              volume?: number;
+              positional?: boolean;
+              maxDistance?: number;
+            }
           | null
           | undefined;
         if (cfg?.autoplay && cfg.audioId && obj.model.id) {
           const audioUrl = `/api/models-3d/${obj.model.id}/audio/${cfg.audioId}/stream`;
-          v.playAudio(audioUrl, { loop: cfg.loop ?? false, volume: cfg.volume ?? 1 });
+          const attachTo = cfg.positional ? v.getSceneObjectGroup(obj.id) : undefined;
+          v.playAudio(audioUrl, {
+            loop: cfg.loop ?? false,
+            volume: cfg.volume ?? 1,
+            positional: cfg.positional ?? false,
+            maxDistance: cfg.maxDistance,
+            attachTo,
+          });
         }
       }
     });

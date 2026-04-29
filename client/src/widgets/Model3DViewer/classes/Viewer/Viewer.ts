@@ -7,6 +7,7 @@ import {
   AnimationObjectGroup,
   Box3,
   type Object3D,
+  PositionalAudio,
   Raycaster,
   Vector2,
   Vector3,
@@ -38,7 +39,7 @@ export class Viewer {
     { clips: AnimationClip[]; mixer: AnimationMixer; cleanup: () => void }
   >();
   private _audioListener: AudioListener | null = null;
-  private _audioObjects: ThreeAudio[] = [];
+  private _audioObjects: (ThreeAudio | PositionalAudio)[] = [];
 
   public constructor(place?: HTMLDivElement) {
     this.place = place;
@@ -258,10 +259,7 @@ export class Viewer {
   public setSelectedObject(sceneObjectId: string | null): void {
     this.world.clearHighlight();
     if (!sceneObjectId) return;
-    let target: import('three').Object3D | undefined;
-    this.world.scene.traverse((obj) => {
-      if (obj.userData.sceneObjectId === sceneObjectId) target = obj;
-    });
+    const target = this.getSceneObjectGroup(sceneObjectId);
     if (target) this.world.highlightObject(target);
   }
 
@@ -281,11 +279,32 @@ export class Viewer {
     return this._audioListener?.context ?? null;
   }
 
-  public playAudio(url: string, opts: { loop?: boolean; volume?: number } = {}): ThreeAudio {
+  public playAudio(
+    url: string,
+    opts: {
+      loop?: boolean;
+      volume?: number;
+      positional?: boolean;
+      maxDistance?: number;
+      refDistance?: number;
+      attachTo?: Object3D;
+    } = {},
+  ): ThreeAudio | PositionalAudio {
     if (!this._audioListener) throw new Error('AudioListener not initialized');
-    const audio = new ThreeAudio(this._audioListener);
+
+    const usePositional = !!(opts.positional && opts.attachTo);
+    const audio = usePositional ? new PositionalAudio(this._audioListener) : new ThreeAudio(this._audioListener);
     audio.setVolume(opts.volume ?? 1);
     audio.setLoop(opts.loop ?? false);
+
+    if (audio instanceof PositionalAudio) {
+      audio.setRefDistance(opts.refDistance ?? 1);
+      audio.setMaxDistance(opts.maxDistance ?? 100);
+      audio.setRolloffFactor(1);
+      audio.setDistanceModel('linear');
+      opts.attachTo!.add(audio);
+    }
+
     const loader = new AudioLoader();
     loader.load(url, (buffer: AudioBuffer) => {
       audio.setBuffer(buffer);
@@ -295,10 +314,19 @@ export class Viewer {
     return audio;
   }
 
+  public getSceneObjectGroup(sceneObjectId: string): Object3D | undefined {
+    let target: Object3D | undefined;
+    this.world.scene.traverse((obj) => {
+      if (obj.userData.sceneObjectId === sceneObjectId) target = obj;
+    });
+    return target;
+  }
+
   public stopAllAudio(): void {
     this._audioObjects.forEach((a) => {
       if (a.isPlaying) a.stop();
       a.disconnect();
+      if (a.parent) a.parent.remove(a);
     });
     this._audioObjects = [];
   }

@@ -78,7 +78,10 @@ export function useAnimations({ blends, autorun = false }: UseAnimationsProps): 
       prev.fadeOut(0.3);
       action.reset().fadeIn(0.3).play();
     } else {
-      action.reset().fadeIn(blends?.fadeInDuration ?? 0.25).play();
+      action
+        .reset()
+        .fadeIn(blends?.fadeInDuration ?? 0.25)
+        .play();
       setState(autorun ? 'play' : 'pause');
     }
 
@@ -105,7 +108,7 @@ export function useAnimations({ blends, autorun = false }: UseAnimationsProps): 
     if (!action) return;
     // eslint-disable-next-line react-hooks/immutability
     action.loop = loopMode;
-    // eslint-disable-next-line react-hooks/immutability
+
     action.clampWhenFinished = loopMode === LoopOnce;
   }, [action, loopMode]);
 

@@ -34,4 +34,3 @@ export function Main({ model, displayConfig, materialOverrides, isLoading, onVie
     </AppShell.Main>
   );
 }
-

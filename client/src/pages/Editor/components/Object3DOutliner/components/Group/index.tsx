@@ -67,9 +67,7 @@ export function TreeGroup({ item, level, selected, selectedSet, selectNode, filt
         </Group>
       </UnstyledButton>
 
-      <Collapse in={opened} title={`${item.name} (${item.type})`}>
-        {children}
-      </Collapse>
+      <Collapse expanded={opened}>{children}</Collapse>
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import { type Material, type Object3D, type Texture } from 'three';
+import { type LightShadow, type Material, type Object3D, type Texture } from 'three';
 import { isDisposableObject3D, isLight, isWithGeometryObject3D, isWithMaterialObject3D } from '../utils';
 import { MATERIAL_TEXTURE_MAP_FIELDS } from './constants.ts';
 
@@ -7,9 +7,13 @@ export class Destroyer {
 
   public static destroyObject(object: Object3D) {
     if (isLight(object)) {
-      object.shadow?.map?.dispose();
-      object.shadow?.mapPass?.dispose();
-      object.shadow?.dispose();
+      // Only `DirectionalLight` / `PointLight` / `SpotLight` carry a `shadow`; the base `Light` type does not.
+      const shadow = (object as { shadow?: LightShadow }).shadow;
+      if (shadow) {
+        shadow.map?.dispose();
+        shadow.mapPass?.dispose();
+        shadow.dispose();
+      }
     }
 
     if (isWithGeometryObject3D(object)) {

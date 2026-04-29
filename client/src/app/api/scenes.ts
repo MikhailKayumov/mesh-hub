@@ -55,9 +55,7 @@ export const ScenesApi = Api.injectEndpoints({
     }),
 
     deleteScene: build.mutation<void, { sceneId: string; workspaceId?: string }>({
-      invalidatesTags: (_result, _error, { workspaceId }) => [
-        { type: ApiTags.Scenes, id: workspaceId ?? 'personal' },
-      ],
+      invalidatesTags: (_result, _error, { workspaceId }) => [{ type: ApiTags.Scenes, id: workspaceId ?? 'personal' }],
       query: ({ sceneId }) => ({
         method: 'DELETE',
         url: `${ApiUrls.Scenes}/${sceneId}`,

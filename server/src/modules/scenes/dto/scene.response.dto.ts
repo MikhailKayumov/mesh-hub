@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { SceneVisibility } from '@/database/entities/scenes/scene.entity';
 import type { SceneConfig } from '@/database/entities/scenes/scene-config.type';
 import { LightType } from '@/database/entities/scenes/scene-light.entity';
+import type { SceneVisibility } from '@/database/entities/scenes/scene.entity';
 
 export class SceneObjectFileDto {
   @ApiProperty({ nullable: true })

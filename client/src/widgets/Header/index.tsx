@@ -5,6 +5,7 @@ import { useCurrentColorScheme } from '@/shared/hooks/useCurrentColorScheme.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { ColorSchemeSelect } from '../../widgets/ColorSchemeSelect';
 import { Logo } from '../../widgets/Logo';
+import { NotificationBell } from '../../widgets/NotificationBell';
 import { OrgSwitcher } from '../../widgets/OrgSwitcher';
 import { SearchInput } from '../../widgets/SearchInput';
 import { AuthButtons } from './components/AuthButtons';
@@ -29,6 +30,7 @@ export function Header() {
               <SearchInput />
             </Group>
           )}
+          {session && <NotificationBell />}
           {session ? <User /> : <AuthButtons />}
         </Group>
       </Flex>

@@ -64,7 +64,6 @@
       "Read(id_rsa)",
       "Read(id_ed25519)",
       "Read(**/*token*)",
-      "Read(**/*key*)",
       "Write(**/.env*)",
       "Write(**/secrets/**)"
     ],
@@ -89,7 +88,8 @@
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
       "Bash(npm.cmd install:*)",
-      "Bash(npm.cmd uninstall:*)"
+      "Bash(npm.cmd uninstall:*)",
+      "Read(**/*key*)"
     ]
   }
 }

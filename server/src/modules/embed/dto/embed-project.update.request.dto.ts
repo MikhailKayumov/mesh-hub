@@ -27,6 +27,10 @@ export class EmbedProjectUpdateRequestDto {
   @IsOptional()
   public modelId?: string | null;
 
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  public sceneId?: string | null;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()

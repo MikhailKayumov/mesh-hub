@@ -14,6 +14,9 @@ export class EmbedProjectResponseDto {
   @ApiProperty({ nullable: true })
   public modelId: string | null;
 
+  @ApiProperty({ nullable: true })
+  public sceneId: string | null;
+
   @ApiProperty()
   public autoRotate: boolean;
 

@@ -108,6 +108,15 @@ Frontend components are `PascalCase.tsx` with named exports; hooks `useCamelCase
 
 ## Working Guidelines
 
+### Always respond in English
+- All reasoning/thinking and user-facing responses must be written in English, regardless of the language of the user's prompt.
+- This applies to commit messages, PR descriptions, code comments, and any other written output.
+
+### Use context7 for library documentation
+- When a task involves library/framework/SDK/API/CLI specifics (syntax, configuration, version migration, setup, CLI usage), fetch current docs via the `context7` MCP server (`resolve-library-id` → `query-docs`) instead of relying on training data.
+- Applies even to well-known libraries used here (Next.js, React, NestJS, TypeORM, Tailwind, Mantine, TanStack Query, BullMQ, etc.) — versions move faster than model knowledge.
+- Prefer context7 over web search for library docs. Skip it for refactoring, business-logic debugging, code review, or general programming concepts.
+
 ### Clarify before coding
 - Ask when the ambiguity would **materially change the implementation** (scope, contract, side effects, file location, public API). For cosmetic or local choices, state the assumption inline and proceed — don't stop the work to ask.
 - If multiple interpretations exist that affect the result, present them — don't pick silently.

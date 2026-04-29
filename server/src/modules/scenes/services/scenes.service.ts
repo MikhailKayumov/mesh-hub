@@ -17,6 +17,7 @@ import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceMemberRole } from '@/database/entities/workspaces/workspace-member.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
 import { FilesService } from '@/modules/files/files.service';
+import { WebhookDeliveryService } from '@/modules/organizations/webhooks/services/webhook-delivery.service';
 import { WorkspaceMemberRepository } from '@/modules/workspaces/repositories/workspace-member.repository';
 import { SceneLightUpsertDto } from '../dto/scene-light.upsert.dto';
 import { SceneObjectUpsertDto } from '../dto/scene-object.upsert.dto';
@@ -38,6 +39,7 @@ export class ScenesService {
     private readonly sceneLightRepository: SceneLightRepository,
     private readonly workspaceMemberRepository: WorkspaceMemberRepository,
     private readonly filesService: FilesService,
+    private readonly webhookDeliveryService: WebhookDeliveryService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
@@ -60,7 +62,23 @@ export class ScenesService {
     const saved = await this.sceneRepository.save(scene);
     saved.objects = [];
     saved.lights = [];
+
+    if (saved.workspaceId) {
+      void this.fireSceneCreatedWebhook(saved.id, saved.name, saved.workspaceId);
+    }
+
     return SceneMapper.toResponse(saved);
+  }
+
+  private async fireSceneCreatedWebhook(sceneId: string, name: string, workspaceId: string): Promise<void> {
+    try {
+      const orgId = await this.resolveWorkspaceOrgId(workspaceId);
+      if (orgId) {
+        await this.webhookDeliveryService.dispatch(orgId, 'scene.created', { sceneId, name, workspaceId });
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to dispatch scene.created webhook for scene ${sceneId}: ${String(err)}`);
+    }
   }
 
   public async listScenes(
@@ -394,6 +412,11 @@ export class ScenesService {
     return this.loadScene(sceneId);
   }
 
+  public async getSceneForEmbed(sceneId: string): Promise<SceneResponseDto> {
+    const scene = await this.loadSceneWithRelations(sceneId);
+    return SceneMapper.toResponse(scene);
+  }
+
   public async assertCanReadScene(sceneId: string, userId: string | null): Promise<SceneEntity> {
     const scene = await this.loadScene(sceneId);
     await this.requireSceneReadAccess(scene, userId);
@@ -404,6 +427,12 @@ export class ScenesService {
     const scene = await this.loadScene(sceneId);
     await this.requireSceneWriteAccess(scene, userId);
     return scene;
+  }
+
+  /** Resolve org id from workspace id, or null if workspace not found. Public — used by scene-comments triggers. */
+  public async resolveWorkspaceOrgId(workspaceId: string): Promise<string | null> {
+    const workspace = await this.dataSource.getRepository(WorkspaceEntity).findOne({ where: { id: workspaceId } });
+    return workspace?.orgId ?? null;
   }
 
   public async isWorkspaceEditor(workspaceId: string, userId: string): Promise<boolean> {

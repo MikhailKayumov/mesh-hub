@@ -7,6 +7,7 @@ export class ApiKeyMapper {
     dto.id = entity.id;
     dto.name = entity.name;
     dto.prefix = entity.prefix;
+    dto.scopes = entity.scopes;
     dto.lastUsedAt = entity.lastUsedAt;
     dto.expiresAt = entity.expiresAt;
     dto.revokedAt = entity.revokedAt;

@@ -10,6 +10,9 @@ export class ApiKeyResponseDto {
   @ApiProperty()
   public prefix: string;
 
+  @ApiProperty({ type: String, isArray: true })
+  public scopes: string[];
+
   @ApiProperty({ nullable: true })
   public lastUsedAt: Date | null;
 

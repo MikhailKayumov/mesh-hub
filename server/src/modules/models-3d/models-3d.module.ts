@@ -11,6 +11,7 @@ import { Model3dFileRepository } from '@/modules/models-3d/repositories/model-3d
 import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.repository';
 import { Model3dService } from '@/modules/models-3d/services/model-3d.service';
 import { VersionsModule } from '@/modules/models-3d/versions/versions.module';
+import { WebhooksModule } from '@/modules/organizations/webhooks/webhooks.module';
 import { StorageQuotaModule } from '@/modules/storage-quota/storage-quota.module';
 import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
 
@@ -23,6 +24,7 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
     DisplayConfigModule,
     MaterialsModule,
     AudioModule,
+    WebhooksModule,
   ],
   providers: [Model3dService, Model3dRepository, Model3dFileRepository],
   exports: [Model3dService, Model3dRepository, Model3dFileRepository],

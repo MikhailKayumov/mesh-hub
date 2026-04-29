@@ -18,7 +18,7 @@ This plan covers the product roadmap from foundation to full platform. Each iter
 | [ITER-6](ITER-6.md) | Multi-Format Support | ✅ Done | FBX / OBJ+MTL / DAE / STL loader registry, `original_format` column, format badge, upload progress |
 | [ITER-7](ITER-7.md) | Review & Annotations: Scenes + Access Control | ✅ Done | Scene annotations/comments, `@OptionalUser` access control, public scene page |
 | [ITER-8](ITER-8.md) | Discovery & UX Polish | ✅ Done | Search, DnD upload, presets menu, measure tool, screenshot, scene clone |
-| [ITER-9](ITER-9.md) | Embed & Integrations | 🔲 Pending | Scene embed, in-app notifications, webhooks, API key scopes |
+| [ITER-9](ITER-9.md) | Embed & Integrations | ✅ Done | Scene embed, in-app notifications, webhooks, API key scopes |
 | [ITER-10](ITER-10.md) | Migration Consolidation | 🔲 Pending | All migrations collapsed into one `InitAll` file before first deploy |
 
 ---
@@ -714,6 +714,115 @@ Plus drive-by: `GET /api/models-3d?search=<term>` — the previously-declared bu
 9. **Search uses `ILIKE` on `scene.name` + `scene.description`** but `model.name` only — the `Model3dEntity.description` column is `jsonb`, not text, so it's intentionally excluded.
 10. **`CSS2DRenderer` shares the same `place` container** as the WebGL canvas, with `pointer-events: none` and `z-index: 1`. Reused for the measure-tool label; available for any future label-in-3D-space UI.
 11. **Phase A backend changes were re-implemented in the main session** after the first dispatch's edits failed to persist into the working tree — no functional difference in the final result, just a longer path.
+
+---
+
+## ITER 9 SUMMARY
+
+**Status:** ✅ Completed
+
+**Scope:** Embed scenes (in addition to models), in-app notifications with header bell, organization webhooks (HMAC-signed via Bull queue), and API-key scope expansion. Adds 4 migrations (1 new schema, 2 new tables, 2 column additions), introduces Redis as a dev dependency for the Bull queue, and ships 4 new frontend tabs/widgets (NotificationBell, WebhooksTab, ApiKeysTab, scene-aware EmbedViewer).
+
+### What was implemented
+
+**Migrations**
+
+| File | Change |
+|---|---|
+| `migrations/embed/1777700200000-AddEmbedProjectSceneId.ts` | Adds `scene_id uuid` FK on `embed.embed_project` (ON DELETE SET NULL); adds `embed_project_target_check CHECK (num_nonnulls(model_id, scene_id) = 1)` so DB enforces exactly-one target |
+| `migrations/notifications/1777700300000-InitNotifications.ts` | New `notifications` schema; `notification` table with `(user_id, is_read)` index, `payload jsonb`, soft-delete columns from base entity |
+| `migrations/organizations/1777700400000-AddWebhooks.ts` | `organizations.webhook` (`url`, `events text[]`, `secret` AES ciphertext, `is_active`) and `organizations.webhook_delivery_log` (`event`, `payload`, `response_status`, `delivered_at`, `failed_at`) |
+| `migrations/embed/1777700500000-AddApiKeyScopes.ts` | `ALTER TABLE embed.api_key ADD COLUMN scopes text[] NOT NULL DEFAULT ARRAY['embed:read']` — existing keys remain authorized for the embed viewer |
+
+**Backend (NestJS / TypeORM)**
+
+| File | Change |
+|---|---|
+| `database/constants.ts` | Added `DatabaseSchemas.Notifications`, `NotificationsSchemaTables.Notification`, `OrganizationsSchemaTables.Webhook`/`WebhookDeliveryLog` |
+| `modules/config/config.service.ts` | Added `redis` getter reading `REDIS_HOST` / `REDIS_PORT` / `REDIS_USER` / `REDIS_PASSWORD` from env |
+| `app.module.ts` | Registered `BullModule.forRootAsync` (Redis credentials from `ConfigService`); imported `WebhooksModule` |
+| `modules/notifications/` | Existing `@Global` email module **extended** (not replaced) with parallel `InAppNotificationsService` — repository, mapper, DTO, controller. New entity `database/entities/notifications/notification.entity.ts` extending `GuidIdEntityBase` with `NotificationTypes` const map |
+| `modules/notifications/controllers/in-app-notifications.controller.ts` | `GET /notifications`, `GET /notifications/unread-count`, `PATCH /notifications/:id/read`, `PATCH /notifications/read-all` — all JWT-gated, scoped to `@User().id` |
+| `modules/organizations/webhooks/` | Brand-new submodule: entities (`WebhookEntity`, `WebhookDeliveryLogEntity`), repos, mappers, DTOs, services (`WebhooksService`, `WebhookCryptoService`, `WebhookDeliveryService`), `WebhookProcessor` (`@Processor('webhooks')` → decrypt-then-HMAC-sign-then-POST → save delivery log with retry/backoff) |
+| `modules/organizations/webhooks/services/webhook-crypto.service.ts` | Wraps `encryptAes256` / `decryptAes256` from `utils/encryption.ts` using `ConfigService.storageEncryptionKey` — same key as `org_subscription` S3 creds; no new env var |
+| `modules/organizations/webhooks/processors/webhook.processor.ts` | `decrypt(secret)` → `crypto.createHmac('sha256', rawSecret).update(body).digest('hex')` → POST with `X-Webhook-Signature: sha256=<hex>`; AbortController for 10s timeout; throws on non-2xx so Bull retries (3 attempts, exponential backoff) |
+| `modules/organizations/webhooks/controllers/webhooks.controller.ts` | All 4 endpoints gated by `@OrgMemberRole(OrgMemberRoleEnum.Admin)` + `OrgMemberGuard`; cross-org leakage blocked via `findOneForOrg(orgId, webhookId)` |
+| `modules/embed/` | `EmbedProjectEntity` gains `sceneId` + `scene` ManyToOne; create/update DTOs accept either `modelId` or `sceneId`; `EmbedViewerResponseDto` adds `type: 'model' \| 'scene'` discriminator + optional `scene?: SceneResponseDto`; `EmbedService.getEmbedViewer` branches on type; `EmbedService.createProject`/`updateProject` enforce XOR + read-access |
+| `modules/embed/controllers/embed.controller.ts` | Public viewer route renamed `:modelId` → `:targetId` (resolves either column); `@RequiredScope('embed:read')` annotation added |
+| `modules/scenes/services/scenes.service.ts` | New public `getSceneForEmbed(sceneId)` helper bypassing visibility checks (embed surface is auth'd by API key + domain whitelist; called only from `EmbedService.getEmbedViewer`) |
+| `modules/api-keys/api-key.constants.ts` | New `ApiKeyScopes = ['embed:read', 'read:models', 'read:scenes'] as const` + `ApiKeyScope` union |
+| `modules/api-keys/decorators/required-scope.decorator.ts` | New `@RequiredScope(scope)` decorator + `REQUIRED_SCOPE_KEY` metadata key |
+| `modules/api-keys/guards/api-key.guard.ts` | Injected `Reflector`; reads `REQUIRED_SCOPE_KEY` via `getAllAndOverride` and throws `AppHttpException(..., HttpStatus.FORBIDDEN)` when missing — auth flow unchanged when no scope is required |
+| `modules/api-keys/dto/api-key.create.request.dto.ts` | Added required `scopes: ApiKeyScope[]` (`@IsArray`, `@ArrayMinSize(1)`, `@IsIn(ApiKeyScopes, { each: true })`) |
+| `modules/api-keys/dto/api-key.response.dto.ts`, `mappers/api-key.mapper.ts`, `services/api-key.service.ts` | Persist + propagate `scopes` |
+| `database/entities/embed/api-key.entity.ts` | Added `scopes: string[]` column (`text[]`, NOT NULL, default `ARRAY['embed:read']`) |
+
+**Cross-module trigger wiring (non-blocking, fire-and-forget)**
+
+| File | Trigger |
+|---|---|
+| `modules/reviews/services/reviews.service.ts` | Comment on model → notify model owner (skip self) + dispatch `comment.added` webhook to model's workspace org |
+| `modules/scenes/comments/scene-comments.service.ts` | Comment on scene → notify `scene.userId` (skip self) + dispatch `comment.added` webhook to scene's workspace org |
+| `modules/organizations/services/organization.service.ts` | Invite accepted → notify org owner (resolved via `OrgMemberRepository.findOne({ orgId, role: Owner })`) |
+| `modules/models-3d/services/model-3d.service.ts` | Model uploaded → dispatch `model.uploaded` webhook to workspace org |
+| `modules/scenes/services/scenes.service.ts` | Scene created → dispatch `scene.created` webhook to workspace org via new `resolveWorkspaceOrgId` helper |
+
+**Frontend (React / RTK Query)**
+
+| File | Change |
+|---|---|
+| `app/api/dto.ts` | Added `NotificationDto`, `UnreadCountResponseDto`, `WEBHOOK_EVENTS` + `WebhookEvent`, `WebhookCreateRequestDto`, `WebhookResponseDto`, `WebhookCreateResponseDto` (one-time `secret`), `WebhookDeliveryLogDto`, `API_KEY_SCOPES` + `ApiKeyScope`, `ApiKeyCreateRequestDto`, `ApiKeyResponseDto`. Embed DTOs gained `sceneId?` and `EmbedViewerResponseDto.type` discriminator + `scene?: SceneResponseDto` |
+| `app/api/tags.ts` | Added `Notification`, `NotificationCount`, `Webhook`, `WebhookDeliveries`, `ApiKey` |
+| `app/api/notifications.ts`, `app/api/webhooks.ts`, `app/api/api-keys.ts` | New RTK Query endpoint files via `Api.injectEndpoints({ overrideExisting: true })` |
+| `widgets/NotificationBell/NotificationBell.tsx` | New widget — Mantine `Indicator` + `Popover` (360px), `ScrollArea mah={400}`, type-icon, `dayjs.fromNow()` (existing global plugin), navigates by payload (`sceneId` → `/scenes/:id`, `modelId` → `/models-3d/:id`, `orgId` → `/org/:id`); polls `unreadCount` every 60s |
+| `widgets/Header/index.tsx` | Mounted `<NotificationBell />` between `<SearchInput>` and the user/auth slot, gated by the same session check |
+| `pages/EmbedViewer/EmbedViewerPage.tsx` | Branches on `embed.type`; for `'scene'` mounts `usePublicSceneViewer` (the same hook used by `pages/PublicScene/`); brandingConfig applies to both branches |
+| `pages/OrgDashboard/OrgDashboard.tsx` | Embed-create modal extended with `Radio.Group` + `Radio.Card` (Model / Scene) selector; conditional model vs. scene Combobox; empty state replaced with `EmptyData` + "Новое встраивание" CTA. Added `webhooks` and `apiKeys` admin/owner-only tabs |
+| `pages/OrgDashboard/components/WebhooksTab.tsx` | List of webhooks (URL, events, status, revoke); "Add Webhook" modal with URL + `Checkbox.Group` of events; on success, switches to one-time secret-reveal view (`Code` + `CopyButton`, modal close disabled until acknowledged); per-webhook deliveries modal showing last 20 |
+| `pages/OrgDashboard/components/ApiKeysTab.tsx` | List of API keys with scope chips, last-used, revoke; "Create API Key" modal with name + `Checkbox.Group` over `API_KEY_SCOPES`; one-time raw-key reveal with same secret-reveal pattern |
+
+**Infrastructure**
+
+| File | Change |
+|---|---|
+| `docker-compose.dev.yml` | Added `redis:8.6.2` service with ACL-based auth (`REDIS_USER`/`REDIS_PASSWORD`), persistent volume `./.data/redis`, healthcheck (`redis-cli incr ping`) |
+
+> **Manual follow-up:** add `REDIS_HOST`, `REDIS_PORT`, `REDIS_USER`, `REDIS_PASSWORD` to `server/.env` and `server/.env.example` — these files are write-protected by the Claude permission rules and were not committed by automation.
+
+### REST API surface added
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/notifications` | JWT | Current user's notifications, unread first |
+| GET | `/api/notifications/unread-count` | JWT | `{ count: number }` |
+| PATCH | `/api/notifications/:id/read` | JWT (ownership-checked) | Mark single as read |
+| PATCH | `/api/notifications/read-all` | JWT | Mark all current user's notifications as read |
+| POST | `/api/organizations/:id/webhooks` | JWT + Org Admin | Create webhook; returns raw secret ONCE |
+| GET | `/api/organizations/:id/webhooks` | JWT + Org Admin | List webhooks (no secret) |
+| DELETE | `/api/organizations/:id/webhooks/:webhookId` | JWT + Org Admin | Revoke (cross-org guarded) |
+| GET | `/api/organizations/:id/webhooks/:webhookId/deliveries` | JWT + Org Admin | Last 20 delivery log rows |
+
+Plus contract changes:
+- `GET /api/embed/:targetId` (was `/embed/:modelId`) — now requires API key with `embed:read` scope; returns `{ type: 'model' \| 'scene', model?, scene?, ... }` discriminated union.
+- `POST /api/embed-projects` — accepts either `modelId` or `sceneId` (XOR enforced server-side + DB CHECK).
+- `POST /api/api-keys` — request now requires `scopes: ApiKeyScope[]` (min 1).
+
+### Design decisions made
+
+1. **Notifications module extension, not duplication** — the existing `modules/notifications/` (email gateway) was kept `@Global` and extended with `InAppNotificationsService` alongside `NotificationsService`. Avoids a second `NotificationsModule` symbol and a noisy rename of the email service.
+2. **AES key reuse, not a new env var** — webhook secrets encrypt with the same `ConfigService.storageEncryptionKey` already used for `org_subscription` S3 credentials. Single key per environment; no drift risk.
+3. **Decrypt-then-sign HMAC** — `WebhookProcessor` calls `cryptoService.decrypt(webhook.secret)` before passing the raw secret to `crypto.createHmac`. Encrypted ciphertext is never the HMAC key. Spec called this out at lines 224–234 of ITER-9.md; security audit confirmed.
+4. **Bull queue + Redis as new infra** — first Bull use in the repo. Redis added to `docker-compose.dev.yml` with ACL auth (`REDIS_USER` + `REDIS_PASSWORD`); `BullModule.forRootAsync` reads creds via `ConfigService.redis` (`host`/`port`/`username`/`password`). `BullModule.registerQueue({ name: 'webhooks' })` is module-local so other features can register their own queues later without touching root config.
+5. **DB-level CHECK for embed XOR** — `CHECK (num_nonnulls(model_id, scene_id) = 1)` on `embed.embed_project` is the authoritative truth. Service-level XOR check (in `createProject`/`updateProject`) is a parallel guard for clearer error messages, not a substitute.
+6. **`type: 'model' \| 'scene'` discriminator on the public viewer response** — the embed viewer page can branch cleanly without inspecting which fields are populated. Existing model embeds keep their full payload; scene embeds get a `SceneResponseDto`.
+7. **`getSceneForEmbed` bypasses scene-visibility checks** — only the embed module can call it, and only after the API key has been validated against `apiKey.orgId === project.orgId` and the request origin against the project's domain whitelist. The bypass is necessary because private scenes referenced by an embed must still load, but it's narrowly contained.
+8. **`@RequiredScope` decorator + reflector check inside `ApiKeyGuard`** — keeps scope enforcement in one place. Missing scope → 403 (not 401). Existing keys default to `['embed:read']` from the migration so they remain authorized; new keys must explicitly request scopes.
+9. **Public embed viewer route renamed `:modelId` → `:targetId`** — both columns now resolve through it. Existing client URL builders that hardcoded `:modelId` continue to work because route matching is positional.
+10. **Trigger sites are fire-and-forget** — every notification/webhook dispatch is wrapped `void this.fire…(...)` with try/catch + `Logger.warn` inside; a notification or webhook failure never fails the parent request. Recipient `userId` and `orgId` are always derived from server-side entity relations (model owner, scene `userId`, workspace → org, org-member with `role: Owner`).
+11. **Module name choice for in-app notifications** — accepted "two services, one module" rather than rename the email service to `EmailNotificationsService`. Smaller blast radius (no callsite churn); the parallel naming is documented at the module boundary.
+12. **Hand-edited `dto.ts`** — single consolidated edit covering all 4 tracks, before any FE track started, to avoid race conditions on the file.
+13. **Webhook URL hardening deferred** — security audit flagged SSRF risk (private/loopback IPs accepted) and lack of `X-Webhook-Timestamp` for replay protection as Medium/Low. Both are tracked as follow-ups; AES-256-CBC was kept (parity with `org_subscription`) rather than migrated to AES-256-GCM in this iteration.
+14. **Scene-embed view logging skipped** — `model_view_log.model_id` is `NOT NULL`, so scene embeds do not write a view-log row. Tracked as a follow-up: either make the column nullable, or introduce a separate `scene_view_log` table.
 
 ---
 

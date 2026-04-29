@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -16,6 +17,7 @@ import { FileStorageModule } from '@/modules/files/files.module';
 import { Models3dModule } from '@/modules/models-3d/models-3d.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { OrganizationsModule } from '@/modules/organizations/organizations.module';
+import { WebhooksModule } from '@/modules/organizations/webhooks/webhooks.module';
 import { ResourcesModule } from '@/modules/resources/resources.module';
 import { ReviewsModule } from '@/modules/reviews/reviews.module';
 import { SceneAnnotationsModule } from '@/modules/scenes/annotations/scene-annotations.module';
@@ -37,12 +39,24 @@ import { WorkspacesModule } from '@/modules/workspaces/workspaces.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.throttlerConfig,
     }),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        redis: {
+          host: config.redis.host,
+          port: config.redis.port,
+          username: config.redis.username || undefined,
+          password: config.redis.password || undefined,
+        },
+      }),
+    }),
     ScheduleModule.forRoot(),
     ResourcesModule,
     UserModule,
     AuthModule,
     Models3dModule,
     OrganizationsModule,
+    WebhooksModule,
     WorkspacesModule,
     ApiKeysModule,
     EmbedModule,

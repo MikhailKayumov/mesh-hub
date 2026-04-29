@@ -11,6 +11,7 @@ import { ModelViewLogRepository } from '@/modules/embed/repositories/model-view-
 import { EmbedService } from '@/modules/embed/services/embed.service';
 import { Models3dModule } from '@/modules/models-3d/models-3d.module';
 import { OrganizationsModule } from '@/modules/organizations/organizations.module';
+import { ScenesModule } from '@/modules/scenes/scenes.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { OrganizationsModule } from '@/modules/organizations/organizations.modul
     ApiKeysModule,
     Models3dModule,
     OrganizationsModule,
+    ScenesModule,
   ],
   providers: [EmbedService, EmbedProjectRepository, EmbedDomainWhitelistRepository, ModelViewLogRepository],
   controllers: [EmbedController],

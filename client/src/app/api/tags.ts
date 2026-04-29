@@ -24,6 +24,11 @@ export const ApiTags = {
   DisplayConfig: 'DisplayConfig',
   Materials: 'Materials',
   ModelAudio: 'ModelAudio',
+  Notification: 'Notification',
+  NotificationCount: 'NotificationCount',
+  Webhook: 'Webhook',
+  WebhookDeliveries: 'WebhookDeliveries',
+  ApiKey: 'ApiKey',
 } as const;
 
 export type ApiTag = keyof typeof ApiTags;

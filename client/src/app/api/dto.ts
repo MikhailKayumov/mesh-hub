@@ -290,6 +290,7 @@ export interface EmbedProjectResponseDto {
   orgId: string;
   name: string;
   modelId: string | null;
+  sceneId: string | null;
   autoRotate: boolean;
   brandingConfig: BrandingConfigDto | null;
   allowedOrigins: string[];
@@ -301,18 +302,24 @@ export interface EmbedProjectCreateRequestDto {
   orgId: string;
   name: string;
   modelId?: string;
+  sceneId?: string | null;
   autoRotate?: boolean;
 }
 
 export interface EmbedProjectUpdateRequestDto {
   name?: string;
   modelId?: string | null;
+  sceneId?: string | null;
   autoRotate?: boolean;
   brandingConfig?: BrandingConfigDto;
 }
 
 export interface EmbedViewerResponseDto {
-  model: Model3DResponseDto;
+  type: 'model' | 'scene';
+  model?: Model3DResponseDto;
+  scene?: SceneResponseDto;
+  modelId?: string;
+  sceneId?: string;
   brandingConfig: BrandingConfigDto | null;
   autoRotate: boolean;
   allowedOrigins: string[];
@@ -778,4 +785,76 @@ export interface ModelAudioResponseDto {
   originalName: string;
   durationS?: number | null;
   createdAt: string;
+}
+
+/**
+ * Notifications
+ */
+export interface NotificationDto {
+  id: string;
+  type: string;
+  payload: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface UnreadCountResponseDto {
+  count: number;
+}
+
+/**
+ * Webhooks
+ */
+export const WEBHOOK_EVENTS = ['model.uploaded', 'comment.added', 'scene.created'] as const;
+export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
+
+export interface WebhookCreateRequestDto {
+  url: string;
+  events: WebhookEvent[];
+}
+
+export interface WebhookResponseDto {
+  id: string;
+  orgId: string;
+  url: string;
+  events: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface WebhookCreateResponseDto extends WebhookResponseDto {
+  secret: string;
+}
+
+export interface WebhookDeliveryLogDto {
+  id: string;
+  event: string;
+  payload: Record<string, unknown>;
+  responseStatus: number | null;
+  deliveredAt: string | null;
+  failedAt: string | null;
+  createdAt: string;
+}
+
+/**
+ * API Keys
+ */
+export const API_KEY_SCOPES = ['embed:read', 'read:models', 'read:scenes'] as const;
+export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
+
+export interface ApiKeyCreateRequestDto {
+  orgId: string;
+  name: string;
+  scopes: ApiKeyScope[];
+}
+
+export interface ApiKeyResponseDto {
+  id: string;
+  name: string;
+  prefix: string;
+  scopes: string[];
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  rawKey?: string | null;
 }

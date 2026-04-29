@@ -1,6 +1,91 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/notifications": {
+      "get": {
+        "operationId": "InAppNotificationsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/notifications/unread-count": {
+      "get": {
+        "operationId": "InAppNotificationsController_unreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadCountResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/notifications/read-all": {
+      "patch": {
+        "operationId": "InAppNotificationsController_markAllRead",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/api/notifications/{id}/read": {
+      "patch": {
+        "operationId": "InAppNotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
     "/api/resources/cg-soft/all": {
       "get": {
         "operationId": "ResourcesController_getCGSoft",
@@ -2485,6 +2570,167 @@
         ]
       }
     },
+    "/api/organizations/{id}/webhooks": {
+      "post": {
+        "operationId": "WebhooksController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookCreateResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient org role"
+          }
+        },
+        "tags": [
+          "webhooks"
+        ]
+      },
+      "get": {
+        "operationId": "WebhooksController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient org role"
+          }
+        },
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/api/organizations/{id}/webhooks/{webhookId}": {
+      "delete": {
+        "operationId": "WebhooksController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "403": {
+            "description": "Insufficient org role"
+          },
+          "404": {
+            "description": "Webhook not found"
+          }
+        },
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/api/organizations/{id}/webhooks/{webhookId}/deliveries": {
+      "get": {
+        "operationId": "WebhooksController_deliveries",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookDeliveryLogResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient org role"
+          },
+          "404": {
+            "description": "Webhook not found"
+          }
+        },
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
     "/api/api-keys": {
       "post": {
         "operationId": "ApiKeyController_generate",
@@ -2859,12 +3105,12 @@
         ]
       }
     },
-    "/api/embed/{modelId}": {
+    "/api/embed/{targetId}": {
       "get": {
         "operationId": "EmbedController_getEmbedViewer",
         "parameters": [
           {
-            "name": "modelId",
+            "name": "targetId",
             "required": true,
             "in": "path",
             "schema": {
@@ -2886,335 +3132,6 @@
         },
         "tags": [
           "embed"
-        ]
-      }
-    },
-    "/api/models-3d/{modelId}/comments": {
-      "get": {
-        "operationId": "ReviewsController_getComments",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CommentResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "reviews"
-        ]
-      },
-      "post": {
-        "operationId": "ReviewsController_addComment",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentCreateRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommentResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "reviews"
-        ]
-      }
-    },
-    "/api/models-3d/{modelId}/comments/{commentId}": {
-      "patch": {
-        "operationId": "ReviewsController_updateComment",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "commentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentUpdateRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommentResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "reviews"
-        ]
-      },
-      "delete": {
-        "operationId": "ReviewsController_deleteComment",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "commentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "reviews"
-        ]
-      }
-    },
-    "/api/models-3d/{modelId}/annotations": {
-      "get": {
-        "operationId": "AnnotationsController_getAnnotations",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AnnotationResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "annotations"
-        ]
-      },
-      "post": {
-        "operationId": "AnnotationsController_createAnnotation",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AnnotationCreateRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AnnotationResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "annotations"
-        ]
-      }
-    },
-    "/api/models-3d/{modelId}/annotations/{id}": {
-      "patch": {
-        "operationId": "AnnotationsController_updateAnnotation",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AnnotationUpdateRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AnnotationResponseDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "annotations"
-        ]
-      },
-      "delete": {
-        "operationId": "AnnotationsController_deleteAnnotation",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "annotations"
-        ]
-      }
-    },
-    "/api/models-3d/{modelId}/annotations/reorder": {
-      "put": {
-        "operationId": "AnnotationsController_reorderAnnotations",
-        "parameters": [
-          {
-            "name": "modelId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AnnotationReorderRequestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "annotations"
         ]
       }
     },
@@ -3781,6 +3698,335 @@
         ]
       }
     },
+    "/api/models-3d/{modelId}/comments": {
+      "get": {
+        "operationId": "ReviewsController_getComments",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommentResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reviews"
+        ]
+      },
+      "post": {
+        "operationId": "ReviewsController_addComment",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/comments/{commentId}": {
+      "patch": {
+        "operationId": "ReviewsController_updateComment",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reviews"
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewsController_deleteComment",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/annotations": {
+      "get": {
+        "operationId": "AnnotationsController_getAnnotations",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnnotationResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "annotations"
+        ]
+      },
+      "post": {
+        "operationId": "AnnotationsController_createAnnotation",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationCreateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "annotations"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/annotations/{id}": {
+      "patch": {
+        "operationId": "AnnotationsController_updateAnnotation",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationUpdateRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnnotationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "annotations"
+        ]
+      },
+      "delete": {
+        "operationId": "AnnotationsController_deleteAnnotation",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "annotations"
+        ]
+      }
+    },
+    "/api/models-3d/{modelId}/annotations/reorder": {
+      "put": {
+        "operationId": "AnnotationsController_reorderAnnotations",
+        "parameters": [
+          {
+            "name": "modelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationReorderRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "annotations"
+        ]
+      }
+    },
     "/api/scenes/{sceneId}/annotations": {
       "get": {
         "operationId": "SceneAnnotationsController_getAnnotations",
@@ -4137,6 +4383,46 @@
       }
     },
     "schemas": {
+      "NotificationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "payload",
+          "isRead",
+          "createdAt"
+        ]
+      },
+      "UnreadCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
       "CgSoftResponse": {
         "type": "object",
         "properties": {
@@ -5335,6 +5621,133 @@
           "createdAt"
         ]
       },
+      "WebhookCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://example.com/hook"
+          },
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "model.uploaded",
+                "comment.added",
+                "scene.created"
+              ]
+            }
+          }
+        },
+        "required": [
+          "url",
+          "events"
+        ]
+      },
+      "WebhookCreateResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Raw signing secret. Shown once on creation; cannot be retrieved later."
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "events",
+          "isActive",
+          "createdAt",
+          "secret"
+        ]
+      },
+      "WebhookResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "events",
+          "isActive",
+          "createdAt"
+        ]
+      },
+      "WebhookDeliveryLogResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "responseStatus": {
+            "type": "number",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "failedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event",
+          "createdAt"
+        ]
+      },
       "ApiKeyCreateRequestDto": {
         "type": "object",
         "properties": {
@@ -5345,11 +5758,24 @@
           "name": {
             "type": "string",
             "maxLength": 100
+          },
+          "scopes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "embed:read",
+                "read:models",
+                "read:scenes"
+              ]
+            }
           }
         },
         "required": [
           "orgId",
-          "name"
+          "name",
+          "scopes"
         ]
       },
       "ApiKeyResponseDto": {
@@ -5363,6 +5789,12 @@
           },
           "prefix": {
             "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "lastUsedAt": {
             "format": "date-time",
@@ -5388,6 +5820,7 @@
           "id",
           "name",
           "prefix",
+          "scopes",
           "lastUsedAt",
           "expiresAt",
           "revokedAt"
@@ -5405,6 +5838,10 @@
             "maxLength": 100
           },
           "modelId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sceneId": {
             "type": "string",
             "format": "uuid"
           },
@@ -5430,6 +5867,10 @@
             "type": "string"
           },
           "modelId": {
+            "type": "string",
+            "nullable": true
+          },
+          "sceneId": {
             "type": "string",
             "nullable": true
           },
@@ -5460,6 +5901,7 @@
           "orgId",
           "name",
           "modelId",
+          "sceneId",
           "autoRotate",
           "brandingConfig",
           "allowedOrigins",
@@ -5490,6 +5932,10 @@
             "maxLength": 100
           },
           "modelId": {
+            "type": "string",
+            "nullable": true
+          },
+          "sceneId": {
             "type": "string",
             "nullable": true
           },
@@ -5567,326 +6013,6 @@
           "dailyViews",
           "topOrigins",
           "totalViews"
-        ]
-      },
-      "EmbedViewerResponseDto": {
-        "type": "object",
-        "properties": {
-          "model": {
-            "$ref": "#/components/schemas/Model3dResponseDto"
-          },
-          "brandingConfig": {
-            "type": "object",
-            "nullable": true
-          },
-          "autoRotate": {
-            "type": "boolean"
-          },
-          "allowedOrigins": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "model",
-          "brandingConfig",
-          "autoRotate",
-          "allowedOrigins"
-        ]
-      },
-      "CommentPosDto": {
-        "type": "object",
-        "properties": {
-          "x": {
-            "type": "number"
-          },
-          "y": {
-            "type": "number"
-          },
-          "z": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "x",
-          "y",
-          "z"
-        ]
-      },
-      "CommentAuthorDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "avatar": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "CommentResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "body": {
-            "type": "string"
-          },
-          "pos": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CommentPosDto"
-              }
-            ]
-          },
-          "resolved": {
-            "type": "boolean"
-          },
-          "parentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "author": {
-            "$ref": "#/components/schemas/CommentAuthorDto"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "body",
-          "pos",
-          "resolved",
-          "parentId",
-          "author",
-          "createdAt"
-        ]
-      },
-      "CommentCreateRequestDto": {
-        "type": "object",
-        "properties": {
-          "body": {
-            "type": "string",
-            "maxLength": 2000
-          },
-          "posX": {
-            "type": "number"
-          },
-          "posY": {
-            "type": "number"
-          },
-          "posZ": {
-            "type": "number"
-          },
-          "parentId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "body"
-        ]
-      },
-      "CommentUpdateRequestDto": {
-        "type": "object",
-        "properties": {
-          "body": {
-            "type": "string",
-            "maxLength": 2000
-          },
-          "resolved": {
-            "type": "boolean"
-          }
-        }
-      },
-      "AnnotationPosDto": {
-        "type": "object",
-        "properties": {
-          "x": {
-            "type": "number"
-          },
-          "y": {
-            "type": "number"
-          },
-          "z": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "x",
-          "y",
-          "z"
-        ]
-      },
-      "AnnotationResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "label": {
-            "type": "string"
-          },
-          "body": {
-            "type": "string"
-          },
-          "pos": {
-            "$ref": "#/components/schemas/AnnotationPosDto"
-          },
-          "cameraPos": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AnnotationPosDto"
-              }
-            ]
-          },
-          "order": {
-            "type": "number"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "label",
-          "pos",
-          "cameraPos",
-          "order",
-          "createdAt"
-        ]
-      },
-      "AnnotationCreateRequestDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "maxLength": 50
-          },
-          "body": {
-            "type": "string"
-          },
-          "posX": {
-            "type": "number"
-          },
-          "posY": {
-            "type": "number"
-          },
-          "posZ": {
-            "type": "number"
-          },
-          "cameraPosX": {
-            "type": "number"
-          },
-          "cameraPosY": {
-            "type": "number"
-          },
-          "cameraPosZ": {
-            "type": "number"
-          },
-          "order": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "label",
-          "posX",
-          "posY",
-          "posZ"
-        ]
-      },
-      "AnnotationUpdateRequestDto": {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string",
-            "maxLength": 50
-          },
-          "body": {
-            "type": "string"
-          },
-          "posX": {
-            "type": "number"
-          },
-          "posY": {
-            "type": "number"
-          },
-          "posZ": {
-            "type": "number"
-          },
-          "cameraPosX": {
-            "type": "number"
-          },
-          "cameraPosY": {
-            "type": "number"
-          },
-          "cameraPosZ": {
-            "type": "number"
-          },
-          "order": {
-            "type": "number"
-          }
-        }
-      },
-      "AnnotationReorderRequestDto": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        },
-        "required": [
-          "ids"
-        ]
-      },
-      "SceneCreateRequestDto": {
-        "type": "object",
-        "properties": {
-          "workspaceId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
         ]
       },
       "SceneObjectFileDto": {
@@ -6106,6 +6232,68 @@
           "lights",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "EmbedViewerResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "model",
+              "scene"
+            ]
+          },
+          "model": {
+            "$ref": "#/components/schemas/Model3dResponseDto"
+          },
+          "scene": {
+            "$ref": "#/components/schemas/SceneResponseDto"
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "sceneId": {
+            "type": "string"
+          },
+          "brandingConfig": {
+            "type": "object",
+            "nullable": true
+          },
+          "autoRotate": {
+            "type": "boolean"
+          },
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "brandingConfig",
+          "autoRotate",
+          "allowedOrigins"
+        ]
+      },
+      "SceneCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
         ]
       },
       "SceneListItemResponseDto": {
@@ -6416,6 +6604,280 @@
         },
         "required": [
           "type"
+        ]
+      },
+      "CommentPosDto": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "z": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "CommentAuthorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "CommentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "pos": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CommentPosDto"
+              }
+            ]
+          },
+          "resolved": {
+            "type": "boolean"
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "author": {
+            "$ref": "#/components/schemas/CommentAuthorDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "pos",
+          "resolved",
+          "parentId",
+          "author",
+          "createdAt"
+        ]
+      },
+      "CommentCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "parentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "CommentUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "resolved": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AnnotationPosDto": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "z": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "z"
+        ]
+      },
+      "AnnotationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "pos": {
+            "$ref": "#/components/schemas/AnnotationPosDto"
+          },
+          "cameraPos": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AnnotationPosDto"
+              }
+            ]
+          },
+          "order": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "pos",
+          "cameraPos",
+          "order",
+          "createdAt"
+        ]
+      },
+      "AnnotationCreateRequestDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "body": {
+            "type": "string"
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "cameraPosX": {
+            "type": "number"
+          },
+          "cameraPosY": {
+            "type": "number"
+          },
+          "cameraPosZ": {
+            "type": "number"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "label",
+          "posX",
+          "posY",
+          "posZ"
+        ]
+      },
+      "AnnotationUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "body": {
+            "type": "string"
+          },
+          "posX": {
+            "type": "number"
+          },
+          "posY": {
+            "type": "number"
+          },
+          "posZ": {
+            "type": "number"
+          },
+          "cameraPosX": {
+            "type": "number"
+          },
+          "cameraPosY": {
+            "type": "number"
+          },
+          "cameraPosZ": {
+            "type": "number"
+          },
+          "order": {
+            "type": "number"
+          }
+        }
+      },
+      "AnnotationReorderRequestDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "ids"
         ]
       },
       "SceneAnnotationPosDto": {

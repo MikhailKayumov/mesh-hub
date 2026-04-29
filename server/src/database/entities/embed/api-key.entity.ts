@@ -25,6 +25,9 @@ export class ApiKeyEntity extends GuidIdEntityBase {
   @Column({ type: 'timestamp with time zone', name: 'revoked_at', nullable: true })
   public revokedAt: Date | null;
 
+  @Column({ type: 'text', name: 'scopes', array: true, nullable: false, default: () => "ARRAY['embed:read']" })
+  public scopes: string[];
+
   @Column({ type: 'uuid', name: 'org_id', nullable: false })
   public orgId: string;
 

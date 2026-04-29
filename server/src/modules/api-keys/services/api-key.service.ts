@@ -21,6 +21,7 @@ export class ApiKeyService {
       orgId: dto.orgId,
       prefix,
       keyHash,
+      scopes: dto.scopes,
       lastUsedAt: null,
       expiresAt: null,
       revokedAt: null,

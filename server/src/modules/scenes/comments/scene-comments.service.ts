@@ -1,6 +1,10 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { NotificationTypes } from '@/database/entities/notifications/notification.entity';
 import { SceneCommentEntity } from '@/database/entities/scenes/scene-comment.entity';
+import { SceneEntity } from '@/database/entities/scenes/scene.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
+import { InAppNotificationsService } from '@/modules/notifications/services/in-app-notifications.service';
+import { WebhookDeliveryService } from '@/modules/organizations/webhooks/services/webhook-delivery.service';
 import { SceneCommentCreateRequestDto } from '@/modules/scenes/comments/dto/scene-comment.create.request.dto';
 import { SceneCommentResponseDto } from '@/modules/scenes/comments/dto/scene-comment.response.dto';
 import { SceneCommentUpdateRequestDto } from '@/modules/scenes/comments/dto/scene-comment.update.request.dto';
@@ -10,9 +14,13 @@ import { ScenesService } from '@/modules/scenes/services/scenes.service';
 
 @Injectable()
 export class SceneCommentsService {
+  private readonly logger = new Logger(SceneCommentsService.name);
+
   public constructor(
     private readonly sceneCommentRepository: SceneCommentRepository,
     private readonly scenesService: ScenesService,
+    private readonly inAppNotificationsService: InAppNotificationsService,
+    private readonly webhookDeliveryService: WebhookDeliveryService,
   ) {}
 
   public async getComments(sceneId: string, user?: UserEntity): Promise<SceneCommentResponseDto[]> {
@@ -42,7 +50,48 @@ export class SceneCommentsService {
 
     const saved = await this.sceneCommentRepository.save(entity);
     const loaded = await this.sceneCommentRepository.findById(saved.id);
+
+    void this.fireCommentTriggers(sceneId, saved.id, user.id);
+
     return SceneCommentMapper.toResponse(loaded!);
+  }
+
+  /** Fire-and-forget: notify scene owner (personal scenes only) + dispatch org webhook. */
+  private async fireCommentTriggers(sceneId: string, commentId: string, authorId: string): Promise<void> {
+    let scene: SceneEntity;
+    try {
+      scene = await this.scenesService.loadSceneOrThrow(sceneId);
+    } catch (err) {
+      this.logger.warn(`Failed to load scene for comment triggers ${sceneId}: ${String(err)}`);
+      return;
+    }
+
+    if (scene.userId && scene.userId !== authorId) {
+      try {
+        await this.inAppNotificationsService.create(scene.userId, NotificationTypes.CommentAdded, {
+          sceneId,
+          commentId,
+          authorId,
+        });
+      } catch (err) {
+        this.logger.warn(`Failed to dispatch scene comment notification for scene ${sceneId}: ${String(err)}`);
+      }
+    }
+
+    if (scene.workspaceId) {
+      try {
+        const orgId = await this.scenesService.resolveWorkspaceOrgId(scene.workspaceId);
+        if (orgId) {
+          await this.webhookDeliveryService.dispatch(orgId, 'comment.added', {
+            sceneId,
+            commentId,
+            authorId,
+          });
+        }
+      } catch (err) {
+        this.logger.warn(`Failed to dispatch scene comment webhook for scene ${sceneId}: ${String(err)}`);
+      }
+    }
   }
 
   public async updateComment(

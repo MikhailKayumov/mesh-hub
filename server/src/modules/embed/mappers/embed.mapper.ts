@@ -3,6 +3,7 @@ import { EmbedProjectResponseDto } from '@/modules/embed/dto/embed-project.respo
 import { EmbedViewerResponseDto } from '@/modules/embed/dto/embed-viewer.response.dto';
 import { DailyViewDto, OriginViewDto, ViewAnalyticsResponseDto } from '@/modules/embed/dto/view-analytics.response.dto';
 import { Model3dResponseDto } from '@/modules/models-3d/dto/model-3d.response.dto';
+import { SceneResponseDto } from '@/modules/scenes/dto/scene.response.dto';
 
 export class EmbedMapper {
   public static toProjectResponse(project: EmbedProjectEntity): EmbedProjectResponseDto {
@@ -11,6 +12,7 @@ export class EmbedMapper {
     dto.orgId = project.orgId;
     dto.name = project.name;
     dto.modelId = project.modelId;
+    dto.sceneId = project.sceneId;
     dto.autoRotate = project.autoRotate;
     dto.brandingConfig = project.brandingConfig;
     dto.allowedOrigins = (project.domains ?? []).map((d) => d.domain);
@@ -19,9 +21,22 @@ export class EmbedMapper {
     return dto;
   }
 
-  public static toViewerResponse(model: Model3dResponseDto, project: EmbedProjectEntity): EmbedViewerResponseDto {
+  public static toViewerModelResponse(model: Model3dResponseDto, project: EmbedProjectEntity): EmbedViewerResponseDto {
     const dto = new EmbedViewerResponseDto();
+    dto.type = 'model';
     dto.model = model;
+    dto.modelId = model.id;
+    dto.brandingConfig = project.brandingConfig;
+    dto.autoRotate = project.autoRotate;
+    dto.allowedOrigins = (project.domains ?? []).map((d) => d.domain);
+    return dto;
+  }
+
+  public static toViewerSceneResponse(scene: SceneResponseDto, project: EmbedProjectEntity): EmbedViewerResponseDto {
+    const dto = new EmbedViewerResponseDto();
+    dto.type = 'scene';
+    dto.scene = scene;
+    dto.sceneId = scene.id;
     dto.brandingConfig = project.brandingConfig;
     dto.autoRotate = project.autoRotate;
     dto.allowedOrigins = (project.domains ?? []).map((d) => d.domain);

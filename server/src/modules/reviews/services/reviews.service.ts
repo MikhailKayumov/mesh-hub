@@ -1,11 +1,15 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ModelVisibility } from '@/constants';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { ModelCommentEntity } from '@/database/entities/models-3d/model-comment.entity';
+import { NotificationTypes } from '@/database/entities/notifications/notification.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceMemberRole } from '@/database/entities/workspaces/workspace-member.entity';
+import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
+import { InAppNotificationsService } from '@/modules/notifications/services/in-app-notifications.service';
+import { WebhookDeliveryService } from '@/modules/organizations/webhooks/services/webhook-delivery.service';
 import { CommentCreateRequestDto } from '@/modules/reviews/dto/comment.create.request.dto';
 import { CommentResponseDto } from '@/modules/reviews/dto/comment.response.dto';
 import { CommentUpdateRequestDto } from '@/modules/reviews/dto/comment.update.request.dto';
@@ -15,11 +19,17 @@ import { WorkspaceMemberRepository } from '@/modules/workspaces/repositories/wor
 
 @Injectable()
 export class ReviewsService {
+  private readonly logger = new Logger(ReviewsService.name);
+
   public constructor(
     private readonly commentRepository: ModelCommentRepository,
     @InjectRepository(Model3dEntity)
     private readonly model3dRepository: Repository<Model3dEntity>,
+    @InjectRepository(WorkspaceEntity)
+    private readonly workspaceRepository: Repository<WorkspaceEntity>,
     private readonly workspaceMemberRepository: WorkspaceMemberRepository,
+    private readonly inAppNotificationsService: InAppNotificationsService,
+    private readonly webhookDeliveryService: WebhookDeliveryService,
   ) {}
 
   public async getComments(modelId: string, user?: UserEntity): Promise<CommentResponseDto[]> {
@@ -49,7 +59,56 @@ export class ReviewsService {
 
     const saved = await this.commentRepository.save(entity);
     const loaded = await this.commentRepository.findById(saved.id);
+
+    void this.fireCommentTriggers(model, saved, user.id);
+
     return CommentMapper.toResponse(loaded!);
+  }
+
+  /** Fire-and-forget: notify model owner (if different) + dispatch org webhook. */
+  private async fireCommentTriggers(
+    model: Model3dEntity,
+    comment: ModelCommentEntity,
+    authorId: string,
+  ): Promise<void> {
+    try {
+      const ownerId = await this.resolveModelOwnerId(model.id);
+      if (ownerId && ownerId !== authorId) {
+        await this.inAppNotificationsService.create(ownerId, NotificationTypes.CommentAdded, {
+          modelId: model.id,
+          commentId: comment.id,
+          authorId,
+        });
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to dispatch comment notification for model ${model.id}: ${String(err)}`);
+    }
+
+    try {
+      const orgId = model.workspaceId ? await this.resolveOrgId(model.workspaceId) : null;
+      if (orgId) {
+        await this.webhookDeliveryService.dispatch(orgId, 'comment.added', {
+          modelId: model.id,
+          commentId: comment.id,
+          authorId,
+        });
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to dispatch comment webhook for model ${model.id}: ${String(err)}`);
+    }
+  }
+
+  private async resolveModelOwnerId(modelId: string): Promise<string | null> {
+    const m = await this.model3dRepository.findOne({
+      where: { id: modelId },
+      relations: { user: true },
+    });
+    return m?.user?.id ?? null;
+  }
+
+  private async resolveOrgId(workspaceId: string): Promise<string | null> {
+    const ws = await this.workspaceRepository.findOne({ where: { id: workspaceId } });
+    return ws?.orgId ?? null;
   }
 
   public async updateComment(

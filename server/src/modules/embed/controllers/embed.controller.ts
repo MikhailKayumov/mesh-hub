@@ -26,6 +26,7 @@ import { UserRoles } from '@/constants';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { Public, Roles } from '@/decorators/auth/auth.decorator';
 import { User } from '@/decorators/user/user.decorator';
+import { RequiredScope } from '@/modules/api-keys/decorators/required-scope.decorator';
 import { ApiKeyGuard } from '@/modules/api-keys/guards/api-key.guard';
 import { DomainAddRequestDto } from '@/modules/embed/dto/domain.add.request.dto';
 import { EmbedProjectCreateRequestDto } from '@/modules/embed/dto/embed-project.create.request.dto';
@@ -137,16 +138,17 @@ export class EmbedController {
 
   // ---- Public embed viewer endpoint (must be last to avoid routing collision) ----
 
-  @Get(':modelId')
+  @Get(':targetId')
   @Public()
   @UseGuards(ApiKeyGuard)
+  @RequiredScope('embed:read')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: EmbedViewerResponseDto })
   public getEmbedViewer(
-    @Param('modelId', ParseUUIDPipe) modelId: string,
+    @Param('targetId', ParseUUIDPipe) targetId: string,
     @Req() req: Request,
     @Headers('origin') origin: string | undefined,
   ): Promise<EmbedViewerResponseDto> {
-    return this.embedService.getEmbedViewer(modelId, req.apiKey!, origin);
+    return this.embedService.getEmbedViewer(targetId, req.apiKey!, origin);
   }
 }

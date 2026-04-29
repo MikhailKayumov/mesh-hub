@@ -1,13 +1,15 @@
 networks:
   mesh-hub-dev-net: {}
 
+volumes:
+  redis-data: {}
+
 name: mesh-hub
 
 services:
   db:
     image: postgres:18.0
-    env_file:
-      ./server/.env
+    env_file: ./server/.env
     networks:
       - mesh-hub-dev-net
     volumes:
@@ -20,6 +22,34 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  redis:
+    image: redis:8.6.2
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - ./.data/redis:/data
+    networks:
+      - mesh-hub-dev-net
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "requirepass $${REDIS_PASSWORD}" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        echo "user default on nopass ~* &* +@all" > /usr/local/etc/redis/users.acl &&
+        echo "user $${REDIS_USER} on >$${REDIS_PASSWORD} ~* &* +@all" >> /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 #  fs:
 #   image: quay.io/minio/minio

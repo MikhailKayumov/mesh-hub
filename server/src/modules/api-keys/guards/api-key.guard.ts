@@ -1,11 +1,18 @@
 import { createHash } from 'crypto';
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { AppHttpException } from '@/exceptions/app-http.exception';
+import { ApiKeyScope } from '@/modules/api-keys/api-key.constants';
+import { REQUIRED_SCOPE_KEY } from '@/modules/api-keys/decorators/required-scope.decorator';
 import { ApiKeyRepository } from '@/modules/api-keys/repositories/api-key.repository';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
-  public constructor(private readonly apiKeyRepository: ApiKeyRepository) {}
+  public constructor(
+    private readonly apiKeyRepository: ApiKeyRepository,
+    private readonly reflector: Reflector,
+  ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -28,6 +35,15 @@ export class ApiKeyGuard implements CanActivate {
 
     if (apiKey.expiresAt !== null && apiKey.expiresAt < new Date()) {
       throw new UnauthorizedException();
+    }
+
+    const requiredScope = this.reflector.getAllAndOverride<ApiKeyScope | undefined>(REQUIRED_SCOPE_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (requiredScope && !apiKey.scopes?.includes(requiredScope)) {
+      throw new AppHttpException(`API key missing required scope: ${requiredScope}`, HttpStatus.FORBIDDEN);
     }
 
     // Fire-and-forget — do not block the request on this update

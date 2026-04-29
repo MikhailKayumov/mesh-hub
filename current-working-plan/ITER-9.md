@@ -4,7 +4,7 @@
 
 Embed viewer supports scenes in addition to models. In-app notification system. Webhook delivery for external automation. API key scopes expansion. (AR/USDZ export is post-MVP.)
 
-## Status: 🔲 Pending
+## Status: ✅ Completed
 
 ---
 

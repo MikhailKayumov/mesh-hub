@@ -155,6 +155,15 @@ export class ConfigService {
     };
   }
 
+  public get redis() {
+    return {
+      host: this.get('REDIS_HOST', 'localhost'),
+      port: this.getNumber('REDIS_PORT', 6379),
+      username: this.get('REDIS_USER', ''),
+      password: this.get('REDIS_PASSWORD', ''),
+    };
+  }
+
   public get storageEncryptionKey(): string {
     return this.get('STORAGE_ENCRYPTION_KEY', '');
   }

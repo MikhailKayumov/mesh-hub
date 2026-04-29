@@ -9,7 +9,9 @@ import {
   Loader,
   Menu,
   Modal,
+  Radio,
   Select,
+  SimpleGrid,
   Stack,
   Table,
   Tabs,
@@ -17,11 +19,12 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
-import { IconDots, IconTrash, IconUserEdit } from '@tabler/icons-react';
+import { IconCube, IconDots, IconMovie, IconPlus, IconTrash, IconUserEdit } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { OrgMemberRole, StorageBackend } from '@/app/api/dto.ts';
 import { useEmbedProjectsQuery, useCreateEmbedProjectMutation } from '@/app/api/embed.ts';
+import { useModels3DQuery } from '@/app/api/models-3d.ts';
 import {
   useOrganizationQuery,
   useOrgMembersQuery,
@@ -31,11 +34,15 @@ import {
   useGetOrgSubscriptionQuery,
   useUpdateOrgStorageConfigMutation,
 } from '@/app/api/organizations.ts';
+import { useScenesQuery } from '@/app/api/scenes.ts';
 import { useCurrentUserQuery } from '@/app/api/user.ts';
 import { useMyWorkspacesQuery, useCreateWorkspaceMutation } from '@/app/api/workspaces.ts';
 import { RouterPaths } from '@/shared/router/paths.ts';
 import { buildAbsolutePath } from '@/shared/utils/router';
+import { EmptyData } from '@/widgets/EmptyData';
 import { QuotaBar } from '@/widgets/QuotaBar';
+import { ApiKeysTab } from './components/ApiKeysTab';
+import { WebhooksTab } from './components/WebhooksTab';
 import classes from './OrgDashboard.module.scss';
 
 const ROLE_LABELS: Record<OrgMemberRole, string> = {
@@ -81,6 +88,13 @@ export function OrgDashboardPage() {
   // Create embed project modal state
   const [embedModalOpen, setEmbedModalOpen] = useState(false);
   const [embedName, setEmbedName] = useState('');
+  const [embedType, setEmbedType] = useState<'model' | 'scene'>('model');
+  const [embedModelId, setEmbedModelId] = useState<string | null>(null);
+  const [embedSceneId, setEmbedSceneId] = useState<string | null>(null);
+  const [embedFormError, setEmbedFormError] = useState<string | null>(null);
+
+  const { data: modelsPage } = useModels3DQuery({ size: 100 }, { skip: !embedModalOpen });
+  const { data: scenesList } = useScenesQuery({}, { skip: !embedModalOpen });
 
   // Storage config state
   const [storageBackend, setStorageBackend] = useState<StorageBackend>(StorageBackend.Local);
@@ -91,6 +105,9 @@ export function OrgDashboardPage() {
   const [s3Endpoint, setS3Endpoint] = useState('');
 
   const isOwner = (membersPage?.data ?? []).some((m) => m.userId === currentUser?.id && m.role === OrgMemberRole.Owner);
+  const isAdmin = (membersPage?.data ?? []).some(
+    (m) => m.userId === currentUser?.id && (m.role === OrgMemberRole.Owner || m.role === OrgMemberRole.Admin),
+  );
 
   async function handleInvite() {
     if (!orgId || !inviteEmail.trim()) return;
@@ -109,9 +126,25 @@ export function OrgDashboardPage() {
 
   async function handleCreateEmbedProject() {
     if (!orgId || !embedName.trim()) return;
-    await createEmbedProject({ orgId, name: embedName.trim() });
+    if (embedType === 'model' && !embedModelId) {
+      setEmbedFormError('Выберите модель');
+      return;
+    }
+    if (embedType === 'scene' && !embedSceneId) {
+      setEmbedFormError('Выберите сцену');
+      return;
+    }
+    setEmbedFormError(null);
+    await createEmbedProject({
+      orgId,
+      name: embedName.trim(),
+      ...(embedType === 'model' ? { modelId: embedModelId ?? undefined } : { sceneId: embedSceneId ?? undefined }),
+    });
     setEmbedModalOpen(false);
     setEmbedName('');
+    setEmbedType('model');
+    setEmbedModelId(null);
+    setEmbedSceneId(null);
   }
 
   async function handleSaveStorageConfig() {
@@ -182,6 +215,8 @@ export function OrgDashboardPage() {
           <Tabs.Tab value="members">Участники</Tabs.Tab>
           <Tabs.Tab value="workspaces">Рабочие пространства</Tabs.Tab>
           <Tabs.Tab value="embed">Embed</Tabs.Tab>
+          {isAdmin && <Tabs.Tab value="webhooks">Webhooks</Tabs.Tab>}
+          {isAdmin && <Tabs.Tab value="apiKeys">API-ключи</Tabs.Tab>}
           {isOwner && <Tabs.Tab value="storage">Хранилище</Tabs.Tab>}
         </Tabs.List>
 
@@ -314,9 +349,12 @@ export function OrgDashboardPage() {
                 <Loader size="sm" />
               </Center>
             ) : (embedProjects ?? []).length === 0 ? (
-              <Center py="xl">
-                <Text c="dimmed">Нет embed-проектов</Text>
-              </Center>
+              <Stack align="center" py="xl" gap="md">
+                <EmptyData label="Создайте свой первый проект встраивания" width={160} height={100} />
+                <Button leftSection={<IconPlus size={16} />} onClick={() => setEmbedModalOpen(true)}>
+                  Новое встраивание
+                </Button>
+              </Stack>
             ) : (
               <Group gap="md">
                 {(embedProjects ?? []).map((ep) => (
@@ -339,6 +377,20 @@ export function OrgDashboardPage() {
             )}
           </Stack>
         </Tabs.Panel>
+
+        {/* Webhooks tab — Admin/Owner only */}
+        {isAdmin && orgId && (
+          <Tabs.Panel value="webhooks" pt="md">
+            <WebhooksTab orgId={orgId} />
+          </Tabs.Panel>
+        )}
+
+        {/* API Keys tab — Admin/Owner only */}
+        {isAdmin && orgId && (
+          <Tabs.Panel value="apiKeys" pt="md">
+            <ApiKeysTab orgId={orgId} />
+          </Tabs.Panel>
+        )}
 
         {/* Storage settings tab — Owner only */}
         {isOwner && (
@@ -439,6 +491,75 @@ export function OrgDashboardPage() {
             value={embedName}
             onChange={(e) => setEmbedName(e.currentTarget.value)}
           />
+          <Radio.Group
+            label="Тип встраивания"
+            value={embedType}
+            onChange={(v) => {
+              setEmbedType(v as 'model' | 'scene');
+              setEmbedFormError(null);
+            }}
+          >
+            <SimpleGrid cols={2} mt="xs">
+              <Radio.Card value="model" p="md" radius="md">
+                <Group wrap="nowrap" align="flex-start">
+                  <Radio.Indicator />
+                  <Stack gap={4}>
+                    <IconCube size={24} />
+                    <Text fw={600} size="sm">
+                      3D-модель
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Встроить одну модель
+                    </Text>
+                  </Stack>
+                </Group>
+              </Radio.Card>
+              <Radio.Card value="scene" p="md" radius="md">
+                <Group wrap="nowrap" align="flex-start">
+                  <Radio.Indicator />
+                  <Stack gap={4}>
+                    <IconMovie size={24} />
+                    <Text fw={600} size="sm">
+                      Сцена
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      Встроить составленную сцену
+                    </Text>
+                  </Stack>
+                </Group>
+              </Radio.Card>
+            </SimpleGrid>
+          </Radio.Group>
+          {embedType === 'model' ? (
+            <Select
+              label="Модель"
+              placeholder="Выберите модель"
+              searchable
+              data={(modelsPage?.data ?? []).map((m) => ({ value: m.id, label: m.name }))}
+              value={embedModelId}
+              onChange={(v) => {
+                setEmbedModelId(v);
+                setEmbedFormError(null);
+              }}
+            />
+          ) : (
+            <Select
+              label="Сцена"
+              placeholder="Выберите сцену"
+              searchable
+              data={(scenesList ?? []).map((s) => ({ value: s.id, label: s.name }))}
+              value={embedSceneId}
+              onChange={(v) => {
+                setEmbedSceneId(v);
+                setEmbedFormError(null);
+              }}
+            />
+          )}
+          {embedFormError && (
+            <Text c="red" size="xs">
+              {embedFormError}
+            </Text>
+          )}
           <Button onClick={handleCreateEmbedProject} loading={creatingEmbed}>
             Создать
           </Button>

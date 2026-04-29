@@ -18,6 +18,11 @@ export class EmbedProjectCreateRequestDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsUUID()
+  public sceneId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsBoolean()
   public autoRotate?: boolean;
 }

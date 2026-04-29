@@ -10,6 +10,7 @@ export const DatabaseSchemas = {
   Workspaces: 'workspaces',
   Embed: 'embed',
   Scenes: 'scenes',
+  Notifications: 'notifications',
 } as const;
 
 export const ResourcesSchemaTables = {
@@ -48,6 +49,12 @@ export const OrganizationsSchemaTables = {
   OrgMember: 'org_member',
   OrgSubscription: 'org_subscription',
   OrgInvite: 'org_invite',
+  Webhook: 'webhook',
+  WebhookDeliveryLog: 'webhook_delivery_log',
+} as const;
+
+export const NotificationsSchemaTables = {
+  Notification: 'notification',
 } as const;
 
 export const WorkspacesSchemaTables = {

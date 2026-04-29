@@ -15,6 +15,7 @@ import { Models3dRequestDto } from '@/modules/models-3d/dto/models-3d.request.dt
 import { Model3dMapper } from '@/modules/models-3d/mappers/model-3d.mapper';
 import { Model3dFileRepository } from '@/modules/models-3d/repositories/model-3d-file.repository';
 import { Model3dRepository } from '@/modules/models-3d/repositories/model-3d.repository';
+import { WebhookDeliveryService } from '@/modules/organizations/webhooks/services/webhook-delivery.service';
 import { CategoryRepository } from '@/modules/resources/repositories/category.repository';
 import { StorageQuotaService } from '@/modules/storage-quota/storage-quota.service';
 import { WorkspaceMemberRepository } from '@/modules/workspaces/repositories/workspace-member.repository';
@@ -30,6 +31,7 @@ export class Model3dService {
     private readonly categoryRepository: CategoryRepository,
     private readonly workspaceMemberRepository: WorkspaceMemberRepository,
     private readonly storageQuotaService: StorageQuotaService,
+    private readonly webhookDeliveryService: WebhookDeliveryService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
@@ -38,6 +40,26 @@ export class Model3dService {
     const model = await this.model3dRepository.findOne({ where: { id } });
     if (!model) throw new NotFoundException('Модель не найдена');
     return model;
+  }
+
+  private async fireModelUploadedWebhook(
+    modelId: string,
+    name: string,
+    workspaceId: string,
+    format?: string,
+  ): Promise<void> {
+    try {
+      const workspace = await this.dataSource.getRepository(WorkspaceEntity).findOne({ where: { id: workspaceId } });
+      if (!workspace) return;
+      await this.webhookDeliveryService.dispatch(workspace.orgId, 'model.uploaded', {
+        modelId,
+        name,
+        format: format ?? null,
+        workspaceId,
+      });
+    } catch (err) {
+      this.logger.warn(`Failed to dispatch model.uploaded webhook for model ${modelId}: ${String(err)}`);
+    }
   }
 
   /** Load a workspace entity by id — used to resolve orgId for storage strategy. */
@@ -138,6 +160,10 @@ export class Model3dService {
 
         return savedModel;
       });
+
+      if (workspaceId) {
+        void this.fireModelUploadedWebhook(model.id, model.name, workspaceId, model.file?.originalFormat);
+      }
 
       return {
         modelId: model.id,

@@ -20,6 +20,22 @@ export class EmbedProjectRepository extends Repository<EmbedProjectEntity> {
     });
   }
 
+  public findByScene(sceneId: string): Promise<EmbedProjectEntity | null> {
+    return this.findOne({
+      where: { sceneId },
+      relations: { domains: true },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  public findByModelOrScene(targetId: string): Promise<EmbedProjectEntity | null> {
+    return this.findOne({
+      where: [{ modelId: targetId }, { sceneId: targetId }],
+      relations: { domains: true },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   public findByOrg(orgId: string): Promise<EmbedProjectEntity[]> {
     return this.find({
       where: { orgId },

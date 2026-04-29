@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { useGetDisplayConfigQuery } from '@/app/api/display-config.ts';
 import { useEmbedViewerQuery } from '@/app/api/embed.ts';
 import { useGetMaterialsQuery } from '@/app/api/materials.ts';
+import { usePublicSceneViewer } from '@/pages/PublicScene/hooks/usePublicSceneViewer.ts';
 import { Model3DViewer } from '@/widgets/Model3DViewer';
 import classes from './EmbedViewerPage.module.scss';
 
@@ -15,8 +16,16 @@ export function EmbedViewerPage() {
     { modelId: modelId!, apiKey },
     { skip: !modelId || !apiKey },
   );
-  const { data: displayConfig } = useGetDisplayConfigQuery({ modelId: modelId! }, { skip: !modelId });
-  const { data: materialOverrides } = useGetMaterialsQuery({ modelId: modelId! }, { skip: !modelId });
+
+  const isModel = data?.type === 'model';
+  const modelEntityId = isModel ? data?.model?.id : undefined;
+
+  const { data: displayConfig } = useGetDisplayConfigQuery({ modelId: modelEntityId! }, { skip: !modelEntityId });
+  const { data: materialOverrides } = useGetMaterialsQuery({ modelId: modelEntityId! }, { skip: !modelEntityId });
+
+  const { containerRef } = usePublicSceneViewer({
+    scene: data?.type === 'scene' ? data.scene : undefined,
+  });
 
   if (!apiKey || isError) {
     return (
@@ -32,11 +41,22 @@ export function EmbedViewerPage() {
     return <Box className={classes.root} />;
   }
 
+  if (data.type === 'model' && !data.model) {
+    return <Box className={classes.root} />;
+  }
+
+  if (data.type === 'scene' && !data.scene) {
+    return <Box className={classes.root} />;
+  }
+
   const { brandingConfig } = data;
 
   return (
     <Box className={classes.root}>
-      <Model3DViewer model={data.model} displayConfig={displayConfig} materialOverrides={materialOverrides} />
+      {data.type === 'model' && data.model && (
+        <Model3DViewer model={data.model} displayConfig={displayConfig} materialOverrides={materialOverrides} />
+      )}
+      {data.type === 'scene' && data.scene && <Box ref={containerRef} className={classes.sceneCanvas} />}
       {brandingConfig?.showBadge && (
         <Box className={classes.badge}>
           <Text size="xs" c="dimmed">

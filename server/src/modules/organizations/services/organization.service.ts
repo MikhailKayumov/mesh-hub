@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { NotificationTypes } from '@/database/entities/notifications/notification.entity';
 import {
   OrgMemberEntity,
   OrgMemberRole,
@@ -20,6 +21,7 @@ import { UserEntity } from '@/database/entities/user/user.entity';
 import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
 import { ConfigService } from '@/modules/config/config.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { InAppNotificationsService } from '@/modules/notifications/services/in-app-notifications.service';
 import { OrgInviteCreateRequestDto } from '@/modules/organizations/dto/org-invite.create.request.dto';
 import { OrgMemberResponseDto } from '@/modules/organizations/dto/org-member.response.dto';
 import { OrganizationCreateRequestDto } from '@/modules/organizations/dto/organization.create.request.dto';
@@ -50,6 +52,7 @@ export class OrganizationService {
     private readonly orgSubscriptionRepository: Repository<OrgSubscriptionEntity>,
     private readonly userRepository: UserRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly inAppNotificationsService: InAppNotificationsService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -292,5 +295,22 @@ export class OrganizationService {
       invite.acceptedAt = new Date();
       await em.save(invite);
     });
+
+    void this.notifyOrgOwnerOfAcceptance(invite.orgId, user.id);
+  }
+
+  private async notifyOrgOwnerOfAcceptance(orgId: string, acceptedUserId: string): Promise<void> {
+    try {
+      const owner = await this.orgMemberRepository.findOne({
+        where: { orgId, role: OrgMemberRole.Owner },
+      });
+      if (!owner || owner.userId === acceptedUserId) return;
+      await this.inAppNotificationsService.create(owner.userId, NotificationTypes.InviteAccepted, {
+        orgId,
+        userId: acceptedUserId,
+      });
+    } catch (err) {
+      this.logger.warn(`Failed to dispatch invite-accepted notification for org ${orgId}: ${String(err)}`);
+    }
   }
 }

@@ -224,3 +224,9 @@ widgets/Model3DViewer/classes/types/ ← Viewer type layer
 | Viewer orchestrator class | `src/widgets/Model3DViewer/classes/Viewer/Viewer.ts` |
 | Editor page | `src/pages/Editor/index.tsx` |
 
+---
+
+## Testing
+
+There are no client tests yet. When they are introduced, follow the monorepo rule: all specs live under `client/test/<kind>/` (e.g. `client/test/unit/`, `client/test/component/`, `client/test/e2e/`), each with its own runner config and an `npm` script. Specs are never co-located with the source they cover. See [server/AGENTS.md § Testing](../server/AGENTS.md#testing) for the existing backend layout.
+

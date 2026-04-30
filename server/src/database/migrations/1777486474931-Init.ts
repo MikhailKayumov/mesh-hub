@@ -177,6 +177,35 @@ export class Init1777486474931 implements MigrationInterface {
     );
     await queryRunner.query(`CREATE INDEX "IDX_d0e5815877f7395a198a4cb0a4" ON "users"."user_role" ("user_id") `);
     await queryRunner.query(`CREATE INDEX "IDX_32a6fc2fcb019d8e3a8ace0f55" ON "users"."user_role" ("role_id") `);
+    // FK indices added in audit follow-up — Postgres does not auto-index FK columns,
+    // so 1:many relations need explicit indices to keep joins/lookups fast.
+    await queryRunner.query(`CREATE INDEX "IDX_session_user_id" ON "auth"."session" ("user_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_model_3d_user_id" ON "model_3d"."model_3d" ("user_id") `);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_model_version_uploader_id" ON "model_3d"."model_version" ("uploader_id") `,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_workspace_member_user_id" ON "workspaces"."workspace_member" ("user_id") `,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_org_member_user_id" ON "organizations"."org_member" ("user_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_org_invite_org_id" ON "organizations"."org_invite" ("org_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_scene_workspace_id" ON "scenes"."scene" ("workspace_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_scene_user_id" ON "scenes"."scene" ("user_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_scene_object_model_id" ON "scenes"."scene_object" ("model_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_scene_light_scene_id" ON "scenes"."scene_light" ("scene_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_scene_comment_author_id" ON "scenes"."scene_comment" ("author_id") `);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_scene_annotation_scene_object_id" ON "scenes"."scene_annotation" ("scene_object_id") `,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_scene_annotation_user_id" ON "scenes"."scene_annotation" ("user_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_embed_project_org_id" ON "embed"."embed_project" ("org_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_embed_project_model_id" ON "embed"."embed_project" ("model_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_embed_project_scene_id" ON "embed"."embed_project" ("scene_id") `);
+    await queryRunner.query(`CREATE INDEX "IDX_model_view_log_model_id" ON "embed"."model_view_log" ("model_id") `);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_model_view_log_embed_project_id" ON "embed"."model_view_log" ("embed_project_id") `,
+    );
+    await queryRunner.query(`CREATE INDEX "IDX_api_key_org_id" ON "embed"."api_key" ("org_id") `);
     await queryRunner.query(
       `ALTER TABLE "workspaces"."workspace" ADD CONSTRAINT "FK_a5498b79ec16741b57e976105ee" FOREIGN KEY ("org_id") REFERENCES "organizations"."organization"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
     );
@@ -406,6 +435,25 @@ export class Init1777486474931 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "model_3d"."model_version" DROP CONSTRAINT "FK_262706db9a3456e6c1e36613da8"`);
     await queryRunner.query(`ALTER TABLE "model_3d"."model_version" DROP CONSTRAINT "FK_959afe36ff1a069b7cfbdb65ece"`);
     await queryRunner.query(`ALTER TABLE "workspaces"."workspace" DROP CONSTRAINT "FK_a5498b79ec16741b57e976105ee"`);
+    await queryRunner.query(`DROP INDEX "embed"."IDX_api_key_org_id"`);
+    await queryRunner.query(`DROP INDEX "embed"."IDX_model_view_log_embed_project_id"`);
+    await queryRunner.query(`DROP INDEX "embed"."IDX_model_view_log_model_id"`);
+    await queryRunner.query(`DROP INDEX "embed"."IDX_embed_project_scene_id"`);
+    await queryRunner.query(`DROP INDEX "embed"."IDX_embed_project_model_id"`);
+    await queryRunner.query(`DROP INDEX "embed"."IDX_embed_project_org_id"`);
+    await queryRunner.query(`DROP INDEX "scenes"."IDX_scene_annotation_user_id"`);
+    await queryRunner.query(`DROP INDEX "scenes"."IDX_scene_annotation_scene_object_id"`);
+    await queryRunner.query(`DROP INDEX "scenes"."IDX_scene_comment_author_id"`);
+    await queryRunner.query(`DROP INDEX "scenes"."IDX_scene_light_scene_id"`);
+    await queryRunner.query(`DROP INDEX "scenes"."IDX_scene_object_model_id"`);
+    await queryRunner.query(`DROP INDEX "scenes"."IDX_scene_user_id"`);
+    await queryRunner.query(`DROP INDEX "scenes"."IDX_scene_workspace_id"`);
+    await queryRunner.query(`DROP INDEX "organizations"."IDX_org_invite_org_id"`);
+    await queryRunner.query(`DROP INDEX "organizations"."IDX_org_member_user_id"`);
+    await queryRunner.query(`DROP INDEX "workspaces"."IDX_workspace_member_user_id"`);
+    await queryRunner.query(`DROP INDEX "model_3d"."IDX_model_version_uploader_id"`);
+    await queryRunner.query(`DROP INDEX "model_3d"."IDX_model_3d_user_id"`);
+    await queryRunner.query(`DROP INDEX "auth"."IDX_session_user_id"`);
     await queryRunner.query(`DROP INDEX "users"."IDX_32a6fc2fcb019d8e3a8ace0f55"`);
     await queryRunner.query(`DROP INDEX "users"."IDX_d0e5815877f7395a198a4cb0a4"`);
     await queryRunner.query(`DROP TABLE "users"."user_role"`);

@@ -3,6 +3,7 @@ import { DatabaseSchemas, EmbedSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { OrganizationEntity } from '@/database/entities/organizations/organization.entity';
 
+@Index(['orgId'])
 @Entity({ name: EmbedSchemaTables.ApiKey, schema: DatabaseSchemas.Embed })
 export class ApiKeyEntity extends GuidIdEntityBase {
   @Column({ type: 'text', name: 'name', nullable: false })

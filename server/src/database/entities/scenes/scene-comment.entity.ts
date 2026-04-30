@@ -6,6 +6,7 @@ import { SceneEntity } from './scene.entity';
 
 @Index(['sceneId'])
 @Index(['parentId'])
+@Index(['authorId'])
 @Entity({ name: ScenesSchemaTables.SceneComment, schema: DatabaseSchemas.Scenes })
 export class SceneCommentEntity extends GuidIdEntityBase {
   @Column({ type: 'uuid', name: 'scene_id', nullable: false })

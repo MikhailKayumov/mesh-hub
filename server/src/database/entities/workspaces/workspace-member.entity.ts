@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { DatabaseSchemas, WorkspacesSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { UserEntity } from '@/database/entities/user/user.entity';
@@ -10,6 +10,7 @@ export enum WorkspaceMemberRole {
 }
 
 @Unique(['workspaceId', 'userId'])
+@Index(['userId'])
 @Entity({ name: WorkspacesSchemaTables.WorkspaceMember, schema: DatabaseSchemas.Workspaces })
 export class WorkspaceMemberEntity extends GuidIdEntityBase {
   @Column({

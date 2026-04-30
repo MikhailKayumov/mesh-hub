@@ -5,6 +5,7 @@ import { UserEntity } from '@/database/entities/user/user.entity';
 import { Model3dEntity } from './model-3d.entity';
 
 @Index(['modelId'])
+@Index(['uploaderId'])
 @Entity({ name: Models3DSchemaTables.ModelVersion, schema: DatabaseSchemas.Models3D })
 export class ModelVersionEntity extends GuidIdEntityBase {
   @Column({ type: 'int', name: 'version_number', nullable: false, default: 1 })

@@ -45,12 +45,12 @@ npm run migration:generate -- --schema=<schema> --name=<Name>
 npm run migration:run
 npm run migration:revert
 
-# Tests
-npm test                   # unit (jest, *.spec.ts colocated under src/)
-npm run test:e2e           # e2e (test/jest-e2e.json + supertest)
+# Tests — ALL specs live under server/test/<kind>/, never alongside source
+npm test                   # unit  (jest --config ./test/unit/jest.config.json)
+npm run test:e2e           # e2e   (jest --config ./test/e2e/jest.config.json + supertest)
 npm run test:cov
-npx jest path/to/file.spec.ts          # single test file
-npx jest -t "test name fragment"        # single test by name
+npx jest --config ./test/unit/jest.config.json path/to/file.spec.ts    # single test file
+npx jest --config ./test/unit/jest.config.json -t "test name fragment" # single test by name
 
 # OpenAPI export
 npm run swagger:generate   # builds, then writes server/swagger.openapi3.json
@@ -93,6 +93,10 @@ These are easy to violate accidentally and break things across the stack:
 - Three.js logic lives in plain TS classes under `widgets/Model3DViewer/classes/` (`Viewer`, `CameraController`, `Renderer`, `World`); React touches it only via the `useViewer` hook.
 - SCSS modules: `_mantine.scss` is auto-injected via `vite.config.ts` `additionalData` with `as *`. Do not `@use` or `@import` it manually. Use the global `light`/`dark`/`hover`/`rtl`/`ltr` mixins and the `rem(px)` function directly.
 - Client DTOs in `client/src/app/api/dto.ts` are maintained by hand. When backend response/request shapes change, edit `dto.ts` to match (regenerate `swagger.openapi3.json` server-side as a reference).
+
+**Tests**
+- All test files live under `<workspace>/test/<kind>/` — never co-located with source. Backend kinds today: `server/test/unit/` (mocked deps, no DB) and `server/test/e2e/` (Supertest + real Nest app). Each kind has its own `jest.config.json` and is invoked via a dedicated script in `package.json`.
+- Adding a new test kind (integration, contract, smoke, …) means creating `test/<kind>/jest.config.json` and a corresponding `npm` script — do not put specs anywhere else.
 
 ## Naming
 

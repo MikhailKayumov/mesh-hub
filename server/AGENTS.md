@@ -230,10 +230,25 @@ Inject `AppLogger` (from `src/modules/logger/logger.service.ts`) in any provider
 
 ## Testing
 
-- Unit tests co-located with source files as `*.spec.ts`.
-- E2E tests in `test/` using Supertest.
-- Jest is configured in `package.json` (`jest` key). `rootDir: src`, transforms `.ts` via `ts-jest`.
-- Path alias `@/` is resolved via `tsconfig-paths` in both Jest and ts-node.
+**All test files live under `server/test/`, never alongside source.** Each kind has its own subfolder with its own Jest config and required environment.
+
+```
+server/test/
+├── unit/                    # pure unit tests (mocked dependencies, no DB / network)
+│   ├── jest.config.json
+│   └── <module>/<thing>.spec.ts
+└── e2e/                     # end-to-end tests (real Nest app via Supertest)
+    ├── jest.config.json
+    └── <feature>.e2e-spec.ts
+```
+
+- Unit specs match `test/unit/**/*.spec.ts`, e2e specs match `test/e2e/**/*.e2e-spec.ts`.
+- Both configs set `rootDir` to `server/` so `@/...` imports resolve via `moduleNameMapper` to `src/`.
+- Adding a new test kind (integration, contract, smoke, …) means creating `test/<kind>/jest.config.json` plus a script in `package.json` — never co-locating specs with source.
+- Run scripts:
+  - `npm test` → `jest --config ./test/unit/jest.config.json`
+  - `npm run test:e2e` → `jest --config ./test/e2e/jest.config.json`
+- Use Supertest for e2e; mock external services (S3, mail) inside the spec or via `Test.overrideProvider(...)`.
 
 ---
 

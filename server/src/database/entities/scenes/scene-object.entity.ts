@@ -6,6 +6,7 @@ import { SceneEntity } from './scene.entity';
 
 @Entity({ name: ScenesSchemaTables.SceneObject, schema: DatabaseSchemas.Scenes })
 @Index(['sceneId'])
+@Index(['modelId'])
 export class SceneObjectEntity extends GuidIdEntityBase {
   @Column({ type: 'float', name: 'pos_x', default: 0 })
   public posX: number;

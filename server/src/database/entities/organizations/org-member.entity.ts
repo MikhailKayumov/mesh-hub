@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { DatabaseSchemas, OrganizationsSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { UserEntity } from '@/database/entities/user/user.entity';
@@ -20,6 +20,7 @@ export const OrgMemberRoleWeights: Record<OrgMemberRole, number> = {
 };
 
 @Unique(['orgId', 'userId'])
+@Index(['userId'])
 @Entity({ name: OrganizationsSchemaTables.OrgMember, schema: DatabaseSchemas.Organizations })
 export class OrgMemberEntity extends GuidIdEntityBase {
   @Column({

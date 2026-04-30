@@ -12,7 +12,7 @@
 ## Schema Layout
 
 ```
-PostgreSQL database (meshhub)
+PostgreSQL database (mesh_hub)
 │
 ├── auth
 │   └── session
@@ -20,8 +20,9 @@ PostgreSQL database (meshhub)
 ├── users
 │   ├── user
 │   ├── user_meta
+│   ├── user_meta_cg_soft     (M:M join: user_meta ↔ cg_soft)
 │   ├── role
-│   ├── user_role           (M:M join: user ↔ role)
+│   ├── user_role             (M:M join: user ↔ role)
 │   └── user_reset_password
 │
 ├── resources
@@ -31,16 +32,22 @@ PostgreSQL database (meshhub)
 ├── model_3d
 │   ├── model_3d
 │   ├── model_3d_file
-│   ├── model_3d_categories  (M:M join: model_3d ↔ category)
+│   ├── model_3d_categories   (M:M join: model_3d ↔ category)
+│   ├── model_version
 │   ├── model_comment
 │   ├── model_annotation
-│   └── model_version
+│   ├── model_audio
+│   ├── model_light
+│   ├── model_material_override
+│   └── model_display_config
 │
 ├── organizations
 │   ├── organization
 │   ├── org_member
 │   ├── org_subscription
-│   └── org_invite
+│   ├── org_invite
+│   ├── webhook
+│   └── webhook_delivery_log
 │
 ├── workspaces
 │   ├── workspace
@@ -52,13 +59,18 @@ PostgreSQL database (meshhub)
 │   ├── embed_domain_whitelist
 │   └── model_view_log
 │
-└── scenes
-    ├── scene
-    ├── scene_object
-    └── scene_light
+├── scenes
+│   ├── scene
+│   ├── scene_object
+│   ├── scene_light
+│   ├── scene_annotation
+│   └── scene_comment
+│
+└── notifications
+    └── notification
 ```
 
-Schema and table name constants are defined in `src/database/constants.ts`.
+Nine schemas total. Schema and table name constants are defined in `src/database/constants.ts`.
 
 ---
 
@@ -81,6 +93,8 @@ created_at timestamp with time zone  NOT NULL
 updated_at timestamp with time zone  nullable
 deleted_at timestamp with time zone  nullable
 ```
+
+Soft delete is the default; TypeORM `softRemove` / `softDelete` set `deleted_at` instead of issuing `DELETE`.
 
 ---
 
@@ -155,7 +169,7 @@ File: `src/database/entities/user/user-meta.entity.ts`
 
 | Relation | Target | Type | Details |
 |---|---|---|---|
-| `favoriteSoft` | `CgSoftEntity` | ManyToMany | Join table (in user_meta entity) |
+| `favoriteSoft` | `CgSoftEntity` | ManyToMany | Join table `users.user_meta_cg_soft` |
 
 ---
 
@@ -219,11 +233,13 @@ File: `src/database/entities/models-3d/model-3d.entity.ts`
 |---|---|---|---|
 | `id` | UUID | PK | — |
 | `user_id` | UUID | FK → users.user, CASCADE DELETE | Owner |
+| `workspace_id` | UUID | nullable | Workspace owner (when org-scoped) |
 | `name` | text | NOT NULL | Display name |
-| `file_id` | UUID | FK → model_3d.model_3d_file | Associated file |
-| `description` | jsonb | nullable | Rich text (Tiptap/ProseMirror JSON) |
+| `file_id` | UUID | FK → model_3d.model_3d_file, UNIQUE | Current file (eager) |
+| `current_version_id` | UUID | nullable | Active version pointer |
+| `description` | json | nullable | Rich text (Tiptap/ProseMirror JSON) |
 | `thumbnail` | text | nullable | Thumbnail filename |
-| `is_visible` | boolean | NOT NULL, default true | Public visibility |
+| `visibility` | enum `model_visibility` | NOT NULL, default `public` | `public` \| `private` \| `unlisted` |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
@@ -233,10 +249,8 @@ File: `src/database/entities/models-3d/model-3d.entity.ts`
 | Relation | Target | Type | Details |
 |---|---|---|---|
 | `user` | `UserEntity` | ManyToOne | Join on `user_id`, CASCADE DELETE |
-| `file` | `Model3dFileEntity` | OneToOne | Eager loaded, cascade, join on `file_id` |
+| `file` | `Model3dFileEntity` | OneToOne | Eager, cascade, join on `file_id` |
 | `categories` | `CategoryEntity` | ManyToMany | Join table `model_3d.model_3d_categories` |
-| `comments` | `ModelCommentEntity` | OneToMany | — |
-| `annotations` | `ModelAnnotationEntity` | OneToMany | Ordered by `order` |
 | `versions` | `ModelVersionEntity` | OneToMany | — |
 
 ---
@@ -248,26 +262,127 @@ File: `src/database/entities/models-3d/model-3d-file.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `name` | text | NOT NULL | Original filename |
+| `name` | text | NOT NULL | Stored filename (with extension) |
 | `size` | bigint | NOT NULL | File size in bytes |
-| `extension` | text | NOT NULL | `.glb` or `.gltf` |
+| `extension` | text | NOT NULL | `.glb` \| `.gltf` \| `.fbx` \| `.zip` \| ... |
+| `entry_file` | text | nullable | Entry path inside zipped multi-file uploads |
+| `original_format` | varchar(10) | NOT NULL, default `glb` | Source format pre-conversion |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | — |
 
 ---
 
-### `model_3d.model_comment` — `ModelCommentEntity`
+### `model_3d.model_version` — `ModelVersionEntity`
 
-File: `src/database/entities/models-3d/model-comment.entity.ts`
+File: `src/database/entities/models-3d/model-version.entity.ts`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `model_id` | UUID | FK → model_3d.model_3d | Parent model |
-| `user_id` | UUID | FK → users.user | Author |
-| `text` | text | NOT NULL | Comment body |
-| `rating` | integer | nullable | 1–5 stars |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, indexed | Parent model |
+| `uploader_id` | UUID | FK → users.user, CASCADE DELETE, indexed | Uploader |
+| `version_number` | int | NOT NULL, default 1 | Auto-incremented per model |
+| `file_name` | text | NOT NULL | Stored filename |
+| `file_size` | bigint | NOT NULL | Size in bytes |
+| `mime_type` | text | NOT NULL | MIME type |
+| `entry_file` | text | nullable | Entry path for multi-file uploads |
+| `change_notes` | varchar(500) | nullable | Author-supplied notes |
+| `is_active` | boolean | NOT NULL, default false | Single active version per model |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `model_3d.model_audio` — `ModelAudioEntity`
+
+File: `src/database/entities/models-3d/model-audio.entity.ts`
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, indexed | Parent model |
+| `filename` | varchar(255) | NOT NULL | Stored filename |
+| `original_name` | varchar(255) | NOT NULL | Upload-time name |
+| `duration_s` | float8 | nullable | Duration in seconds |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `model_3d.model_light` — `ModelLightEntity`
+
+File: `src/database/entities/models-3d/model-light.entity.ts`
+
+Model-level lights persisted with the model itself (separate from `scenes.scene_light`, which is per-scene).
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, indexed | Parent model |
+| `type` | varchar(15) | NOT NULL | `directional` \| `point` \| `spot` \| `ambient` |
+| `pos_x` | float8 | NOT NULL, default 0 | World-space X |
+| `pos_y` | float8 | NOT NULL, default 5 | World-space Y |
+| `pos_z` | float8 | NOT NULL, default 5 | World-space Z |
+| `color` | varchar(9) | NOT NULL, default `#ffffff` | Hex color (rgba supported) |
+| `intensity` | float8 | NOT NULL, default 1.0 | Brightness multiplier |
+| `cast_shadow` | boolean | NOT NULL, default true | — |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `model_3d.model_display_config` — `ModelDisplayConfigEntity`
+
+File: `src/database/entities/models-3d/model-display-config.entity.ts`
+
+One row per model (UNIQUE on `model_id`); per-model viewer defaults.
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, UNIQUE | Parent model |
+| `background_color` | varchar(9) | NOT NULL, default `#000000` | Viewer clear color |
+| `ambient_intensity` | float8 | NOT NULL, default 0.5 | Ambient light multiplier |
+| `environment_hdri_path` | text | nullable | HDRI environment file |
+| `fog_enabled` | boolean | NOT NULL, default false | — |
+| `fog_type` | varchar(10) | NOT NULL, default `linear` | `linear` \| `exp` \| `exp2` |
+| `fog_color` | varchar(9) | NOT NULL, default `#cccccc` | — |
+| `fog_near` | float8 | NOT NULL, default 10 | — |
+| `fog_far` | float8 | NOT NULL, default 100 | — |
+| `post_process` | jsonb | nullable | Post-processing pass config |
+| `renderer_config` | jsonb | nullable | Renderer overrides (toneMapping, exposure, ...) |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `model_3d.model_material_override` — `ModelMaterialOverrideEntity`
+
+File: `src/database/entities/models-3d/model-material-override.entity.ts`
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, indexed | Parent model |
+| `mesh_name` | varchar(255) | NOT NULL | Targeted mesh |
+| `color_hex` | varchar(9) | nullable | Base color override |
+| `metalness` | float8 | nullable | — |
+| `roughness` | float8 | nullable | — |
+| `emissive_hex` | varchar(9) | nullable | — |
+| `emissive_intensity` | float8 | nullable | — |
+| `opacity` | float8 | nullable | — |
+| `wireframe` | boolean | NOT NULL, default false | — |
+| `texture_map_path` | text | nullable | Base color map |
+| `normal_map_path` | text | nullable | — |
+| `roughness_map_path` | text | nullable | — |
+| `metalness_map_path` | text | nullable | — |
+| `emissive_map_path` | text | nullable | — |
+| `ao_map_path` | text | nullable | Ambient occlusion map |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
@@ -281,30 +396,37 @@ File: `src/database/entities/models-3d/model-annotation.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `model_id` | UUID | FK → model_3d.model_3d | Parent model |
-| `label` | text | NOT NULL | Short label |
-| `text` | text | nullable | Detailed annotation text |
-| `position_x` | float | NOT NULL | World-space X |
-| `position_y` | float | NOT NULL | World-space Y |
-| `position_z` | float | NOT NULL | World-space Z |
-| `order` | integer | NOT NULL, default 0 | Display order |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, indexed | Parent model |
+| `label` | varchar(50) | NOT NULL | Short label |
+| `body` | text | nullable | Detailed annotation text |
+| `pos_x` | float8 | NOT NULL | World-space X |
+| `pos_y` | float8 | NOT NULL | World-space Y |
+| `pos_z` | float8 | NOT NULL | World-space Z |
+| `camera_pos_x` | float8 | nullable | Saved camera X |
+| `camera_pos_y` | float8 | nullable | Saved camera Y |
+| `camera_pos_z` | float8 | nullable | Saved camera Z |
+| `order` | int | NOT NULL, default 0 | Display order |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
 
 ---
 
-### `model_3d.model_version` — `ModelVersionEntity`
+### `model_3d.model_comment` — `ModelCommentEntity`
 
-File: `src/database/entities/models-3d/model-version.entity.ts`
+File: `src/database/entities/models-3d/model-comment.entity.ts`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `model_id` | UUID | FK → model_3d.model_3d | Parent model |
-| `file_id` | UUID | FK → model_3d.model_3d_file | Version file record |
-| `version_number` | integer | NOT NULL | Auto-incremented |
-| `is_active` | boolean | NOT NULL, default false | Active (displayed) version |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, indexed | Parent model |
+| `author_id` | UUID | FK → users.user, CASCADE DELETE | Author (eager) |
+| `parent_id` | UUID | FK → model_3d.model_comment, SET NULL | Reply parent (threaded) |
+| `body` | text | NOT NULL | Comment body |
+| `pos_x` | float8 | nullable | Optional pin X |
+| `pos_y` | float8 | nullable | Optional pin Y |
+| `pos_z` | float8 | nullable | Optional pin Z |
+| `resolved` | boolean | default false | — |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
@@ -320,7 +442,7 @@ File: `src/database/entities/organizations/organization.entity.ts`
 | `id` | UUID | PK | — |
 | `name` | text | NOT NULL | Display name |
 | `slug` | text | NOT NULL, UNIQUE | URL-safe identifier |
-| `owner_id` | UUID | FK → users.user | Owner (non-removable member) |
+| `plan_type` | enum `organization_plan_type_enum` | NOT NULL, default `starter` | `starter` \| `growth` \| `enterprise` |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
@@ -334,10 +456,14 @@ File: `src/database/entities/organizations/org-member.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `org_id` | UUID | FK → organizations.organization | Org |
-| `user_id` | UUID | FK → users.user | Member |
-| `role` | text | NOT NULL | `owner` \| `admin` \| `viewer` |
+| `org_id` | UUID | FK → organizations.organization, CASCADE DELETE | Org |
+| `user_id` | UUID | FK → users.user, CASCADE DELETE, indexed | Member |
+| `role` | enum | NOT NULL | `owner` \| `admin` \| `editor` \| `viewer` |
 | `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+UNIQUE (`org_id`, `user_id`). Role weights are defined in code (`OrgMemberRoleWeights`) for hierarchical role checks.
 
 ---
 
@@ -348,13 +474,14 @@ File: `src/database/entities/organizations/org-subscription.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `org_id` | UUID | FK → organizations.organization, UNIQUE | Org (one-to-one) |
-| `plan` | text | NOT NULL, default `starter` | `starter` \| `growth` \| `enterprise` |
-| `storage_limit` | bigint | NOT NULL | Max bytes (plan-based) |
-| `s3_enabled` | boolean | NOT NULL, default false | S3 strategy active |
-| `s3_config` | text | nullable | AES-256-CBC encrypted JSON blob |
+| `org_id` | UUID | FK → organizations.organization, CASCADE DELETE, UNIQUE | Org (one-to-one) |
+| `storage_limit_bytes` | bigint | nullable | Plan storage cap |
+| `seats_limit` | int | nullable | Plan member cap |
+| `storage_backend` | enum | NOT NULL, default `local` | `local` \| `s3` |
+| `storage_config_encrypted` | text | nullable | AES-256-CBC encrypted JSON blob |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
 
 ---
 
@@ -364,12 +491,55 @@ File: `src/database/entities/organizations/org-invite.entity.ts`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
-| `id` | UUID | PK | Invite token |
-| `org_id` | UUID | FK → organizations.organization | Target org |
-| `email` | text | NOT NULL | Invitee email |
-| `role` | text | NOT NULL | Role granted on accept |
-| `expired_at` | timestamp tz | NOT NULL | Expiry |
+| `id` | UUID | PK | — |
+| `org_id` | UUID | FK → organizations.organization, CASCADE DELETE, indexed | Target org |
+| `invited_email` | text | NOT NULL | Invitee email |
+| `role` | enum | NOT NULL | Role granted on accept |
+| `token` | UUID | NOT NULL, UNIQUE | Invite token (URL-safe) |
+| `expires_at` | timestamp tz | NOT NULL | Expiry |
+| `accepted_at` | timestamp tz | nullable | Accept time (null = pending) |
 | `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `organizations.webhook` — `WebhookEntity`
+
+File: `src/database/entities/organizations/webhook.entity.ts`
+
+Outbound HTTP webhooks per organization.
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `org_id` | UUID | FK → organizations.organization, CASCADE DELETE, indexed | Owner org |
+| `url` | text | NOT NULL | Delivery target URL |
+| `events` | text[] | NOT NULL | Subscribed event names |
+| `secret` | varchar(255) | NOT NULL | HMAC signing secret |
+| `is_active` | boolean | NOT NULL, default true | Soft toggle |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `organizations.webhook_delivery_log` — `WebhookDeliveryLogEntity`
+
+File: `src/database/entities/organizations/webhook-delivery-log.entity.ts`
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `webhook_id` | UUID | FK → organizations.webhook, CASCADE DELETE, indexed | Source webhook |
+| `event` | varchar(50) | NOT NULL | Event name |
+| `payload` | jsonb | NOT NULL | Delivered body |
+| `response_status` | int | nullable | Last HTTP status |
+| `delivered_at` | timestamp tz | nullable | Success time |
+| `failed_at` | timestamp tz | nullable | Last failure time |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
 
 ---
 
@@ -380,7 +550,7 @@ File: `src/database/entities/workspaces/workspace.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `org_id` | UUID | FK → organizations.organization | Parent org |
+| `org_id` | UUID | FK → organizations.organization, CASCADE DELETE | Parent org |
 | `name` | text | NOT NULL | Display name |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
@@ -395,9 +565,14 @@ File: `src/database/entities/workspaces/workspace-member.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `workspace_id` | UUID | FK → workspaces.workspace | Workspace |
-| `org_member_id` | UUID | FK → organizations.org_member | Member |
+| `workspace_id` | UUID | FK → workspaces.workspace, CASCADE DELETE | Workspace |
+| `user_id` | UUID | FK → users.user, CASCADE DELETE, indexed | Member |
+| `role` | enum | NOT NULL | `editor` \| `viewer` |
 | `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+UNIQUE (`workspace_id`, `user_id`).
 
 ---
 
@@ -408,11 +583,17 @@ File: `src/database/entities/embed/api-key.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `org_id` | UUID | FK → organizations.organization | Scoped org |
+| `org_id` | UUID | FK → organizations.organization, CASCADE DELETE, indexed | Scoped org |
 | `name` | text | NOT NULL | Display name |
+| `prefix` | varchar(8) | NOT NULL, UNIQUE | First 8 chars of raw key (for lookup) |
 | `key_hash` | text | NOT NULL, UNIQUE | SHA-256 hash of raw key |
+| `scopes` | text[] | NOT NULL, default `{embed:read}` | Granted scopes |
+| `last_used_at` | timestamp tz | nullable | Last accepted usage |
+| `expires_at` | timestamp tz | nullable | Optional expiry |
+| `revoked_at` | timestamp tz | nullable | Revocation time |
 | `created_at` | timestamp tz | NOT NULL | — |
-| `deleted_at` | timestamp tz | nullable | soft delete (revoke) |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
 
 ---
 
@@ -423,13 +604,17 @@ File: `src/database/entities/embed/embed-project.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `org_id` | UUID | FK → organizations.organization | Owner org |
-| `model_id` | UUID | FK → model_3d.model_3d | Embedded model |
+| `org_id` | UUID | FK → organizations.organization, CASCADE DELETE, indexed | Owner org |
+| `model_id` | UUID | FK → model_3d.model_3d, SET NULL, indexed | Embedded model (XOR with `scene_id`) |
+| `scene_id` | UUID | FK → scenes.scene, SET NULL, indexed | Embedded scene (XOR with `model_id`) |
 | `name` | text | NOT NULL | Display name |
-| `logo` | text | nullable | Logo filename |
+| `branding_config` | json | nullable | `{ logoUrl, primaryColor, showBadge }` |
+| `auto_rotate` | boolean | NOT NULL, default false | Viewer auto-rotation default |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
+
+CHECK `embed_project_target_check`: `num_nonnulls("model_id", "scene_id") = 1` — exactly one of model/scene must be set.
 
 ---
 
@@ -439,10 +624,12 @@ File: `src/database/entities/embed/embed-domain-whitelist.entity.ts`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
-| `id` | UUID | PK | — |
-| `project_id` | UUID | FK → embed.embed_project | Project |
+| `id` | SERIAL | PK | — |
+| `embed_project_id` | UUID | FK → embed.embed_project, CASCADE DELETE, indexed | Project |
 | `domain` | text | NOT NULL | Allowed origin domain |
 | `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
 
 ---
 
@@ -452,12 +639,14 @@ File: `src/database/entities/embed/model-view-log.entity.ts`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
-| `id` | UUID | PK | — |
-| `project_id` | UUID | FK → embed.embed_project | Project |
-| `ip` | inet | nullable | Viewer IP |
-| `user_agent` | text | nullable | Viewer user agent |
-| `referer` | text | nullable | Origin page |
+| `id` | SERIAL | PK | — |
+| `model_id` | UUID | FK → model_3d.model_3d, CASCADE DELETE, indexed | Viewed model |
+| `embed_project_id` | UUID | FK → embed.embed_project, SET NULL, indexed | Originating project (nullable) |
+| `origin` | text | nullable | `Origin` header at view time |
+| `duration_seconds` | int | nullable | Session duration |
 | `created_at` | timestamp tz | NOT NULL | View timestamp |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | — |
 
 ---
 
@@ -468,14 +657,18 @@ File: `src/database/entities/scenes/scene.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `workspace_id` | UUID | FK → workspaces.workspace | Parent workspace |
-| `name` | text | NOT NULL | Display name |
-| `hdri_path` | text | nullable | Relative HDRI file path |
-| `camera_bookmark` | jsonb | nullable | Saved camera state |
-| `thumbnail` | text | nullable | Thumbnail filename |
+| `workspace_id` | UUID | FK → workspaces.workspace, CASCADE DELETE, indexed | Workspace owner (nullable) |
+| `user_id` | UUID | FK → users.user, CASCADE DELETE, indexed | Personal owner (nullable) |
+| `name` | varchar(100) | NOT NULL | Display name |
+| `description` | text | nullable | — |
+| `config` | jsonb | nullable | Serialized `SceneConfig` (camera, env, fog, post-fx) |
+| `thumbnail_path` | text | nullable | Thumbnail file path |
+| `visibility` | enum | NOT NULL, default `private` | `public` \| `private` \| `unlisted` |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
+
+CHECK `CHK_scene_owner`: `user_id IS NOT NULL OR workspace_id IS NOT NULL` — every scene has at least one owner.
 
 ---
 
@@ -486,11 +679,14 @@ File: `src/database/entities/scenes/scene-object.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `scene_id` | UUID | FK → scenes.scene | Parent scene |
-| `model_id` | UUID | FK → model_3d.model_3d | Placed model |
-| `position_x/y/z` | float | NOT NULL | World-space position |
-| `rotation_x/y/z` | float | NOT NULL | Euler rotation (radians) |
-| `scale_x/y/z` | float | NOT NULL, default 1 | Scale per axis |
+| `scene_id` | UUID | FK → scenes.scene, CASCADE DELETE, indexed | Parent scene |
+| `model_id` | UUID | FK → model_3d.model_3d, indexed | Placed model |
+| `pos_x/y/z` | float | default 0 | World-space position |
+| `rot_x/y/z` | float | default 0 | Euler rotation (radians) |
+| `scale_x/y/z` | float | default 1 | Scale per axis |
+| `order` | int | default 0 | Render/listing order |
+| `animation_config` | jsonb | nullable | Per-object animation overrides |
+| `audio_config` | jsonb | nullable | Per-object audio overrides |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
@@ -504,35 +700,161 @@ File: `src/database/entities/scenes/scene-light.entity.ts`
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | UUID | PK | — |
-| `scene_id` | UUID | FK → scenes.scene | Parent scene |
-| `type` | text | NOT NULL | `directional` \| `point` \| `spot` \| `ambient` |
-| `color` | text | NOT NULL, default `#ffffff` | Hex color |
-| `intensity` | float | NOT NULL, default 1 | Brightness multiplier |
-| `position_x/y/z` | float | NOT NULL | World-space position |
+| `scene_id` | UUID | FK → scenes.scene, CASCADE DELETE, indexed | Parent scene |
+| `type` | enum | NOT NULL | `directional` \| `point` \| `spot` |
+| `pos_x/y/z` | float | default 0 | World-space position |
+| `color` | varchar(7) | default `#ffffff` | Hex color |
+| `intensity` | float | default 1.0 | Brightness multiplier |
+| `cast_shadow` | boolean | default true | — |
 | `created_at` | timestamp tz | NOT NULL | — |
 | `updated_at` | timestamp tz | nullable | — |
 | `deleted_at` | timestamp tz | nullable | soft delete |
 
 ---
 
+### `scenes.scene_annotation` — `SceneAnnotationEntity`
+
+File: `src/database/entities/scenes/scene-annotation.entity.ts`
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `scene_id` | UUID | FK → scenes.scene, CASCADE DELETE, indexed | Parent scene |
+| `scene_object_id` | UUID | FK → scenes.scene_object, SET NULL, indexed | Optional anchor object |
+| `user_id` | UUID | FK → users.user, CASCADE DELETE, indexed | Author (eager) |
+| `label` | varchar(120) | NOT NULL | Short label |
+| `body` | text | nullable | Detailed text |
+| `pos_x/y/z` | double precision | NOT NULL | World-space position |
+| `camera_pos_x/y/z` | double precision | nullable | Saved camera state |
+| `order` | int | default 0 | Display order |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `scenes.scene_comment` — `SceneCommentEntity`
+
+File: `src/database/entities/scenes/scene-comment.entity.ts`
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `scene_id` | UUID | FK → scenes.scene, CASCADE DELETE, indexed | Parent scene |
+| `author_id` | UUID | FK → users.user, CASCADE DELETE, indexed | Author (eager) |
+| `parent_id` | UUID | FK → scenes.scene_comment, SET NULL, indexed | Reply parent (threaded) |
+| `body` | text | NOT NULL | Comment body |
+| `resolved` | boolean | default false | — |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+---
+
+### `notifications.notification` — `NotificationEntity`
+
+File: `src/database/entities/notifications/notification.entity.ts`
+
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK | — |
+| `user_id` | UUID | FK → users.user, CASCADE DELETE | Recipient |
+| `type` | varchar(50) | NOT NULL | `comment_added` \| `invite_accepted` \| `model_uploaded` \| `model_version_processed` \| ... |
+| `payload` | jsonb | NOT NULL | Type-specific payload |
+| `is_read` | boolean | default false | — |
+| `created_at` | timestamp tz | NOT NULL | — |
+| `updated_at` | timestamp tz | nullable | — |
+| `deleted_at` | timestamp tz | nullable | soft delete |
+
+Composite index on (`user_id`, `is_read`) for unread-list queries.
+
+---
+
+## Cross-Schema Relationships
+
+```
+users.user ──┬─< auth.session
+             ├─< model_3d.model_3d                    (owner)
+             ├─< model_3d.model_version               (uploader)
+             ├─< model_3d.model_comment.author_id
+             ├─< organizations.org_member
+             ├─< organizations.org_invite             (via accepted_at)
+             ├─< workspaces.workspace_member
+             ├─< scenes.scene                         (personal owner, nullable)
+             ├─< scenes.scene_annotation
+             ├─< scenes.scene_comment.author_id
+             └─< notifications.notification
+
+organizations.organization ──┬─< organizations.org_member
+                             ├─< organizations.org_subscription   (1:1)
+                             ├─< organizations.org_invite
+                             ├─< organizations.webhook ──< organizations.webhook_delivery_log
+                             ├─< workspaces.workspace
+                             ├─< embed.api_key
+                             └─< embed.embed_project
+
+workspaces.workspace ──┬─< workspaces.workspace_member
+                       └─< scenes.scene                            (workspace owner, nullable)
+
+model_3d.model_3d ──┬─1:1 model_3d.model_3d_file (eager)
+                    ├─< model_3d.model_version
+                    ├─< model_3d.model_audio
+                    ├─< model_3d.model_light
+                    ├─1:1 model_3d.model_display_config
+                    ├─< model_3d.model_material_override
+                    ├─< model_3d.model_annotation
+                    ├─< model_3d.model_comment
+                    ├─M:N resources.category
+                    ├─< scenes.scene_object                        (placement)
+                    ├─< embed.embed_project           (model_id, XOR scene_id)
+                    └─< embed.model_view_log
+
+scenes.scene ──┬─< scenes.scene_object ──> model_3d.model_3d
+               ├─< scenes.scene_light
+               ├─< scenes.scene_annotation
+               ├─< scenes.scene_comment
+               └─< embed.embed_project              (scene_id, XOR model_id)
+
+embed.embed_project ──┬─< embed.embed_domain_whitelist
+                      └─< embed.model_view_log
+```
+
+Key constraints:
+
+- `embed.embed_project` enforces XOR over (`model_id`, `scene_id`) via CHECK `embed_project_target_check`.
+- `scenes.scene` enforces "has an owner" via CHECK `CHK_scene_owner` over (`user_id`, `workspace_id`).
+- `model_3d.model_3d.file_id` is UNIQUE — every file row backs at most one model.
+- `organizations.org_subscription.org_id` is UNIQUE — strict 1:1 with `organization`.
+
+---
+
 ## Migrations
 
-Located in `src/database/migrations/`, grouped by schema:
+Located in `src/database/migrations/`. The data source globs all `*.ts` under that tree (`migrations: ['src/database/migrations/**/*.ts']`), so per-domain subfolders work today and are the convention going forward.
 
-| File | Description |
-|---|---|
-| `init/1703017999243-Init.ts` | Creates all schemas (`auth`, `users`, `resources`, `model_3d`), all initial tables, indexes, and constraints |
-| `models-3d/1703082170953-AddModel3DFileEntity.ts` | Extracts file data into a separate `model_3d_file` table; adds `file_id` FK to `model_3d` |
-| `models-3d/1704720192661-AddVisibility.ts` | Adds `is_visible` column to `model_3d` |
-| `models-3d/...AddComments.ts` | Adds `model_comment` table (schema `model_3d`) |
-| `models-3d/...AddAnnotations.ts` | Adds `model_annotation` table |
-| `models-3d/...AddVersions.ts` | Adds `model_version` table |
-| `organizations/...Init.ts` | Creates `organizations` schema with `organization`, `org_member`, `org_subscription`, `org_invite` tables |
-| `workspaces/...Init.ts` | Creates `workspaces` schema with `workspace`, `workspace_member` tables |
-| `embed/...Init.ts` | Creates `embed` schema with `api_key`, `embed_project`, `embed_domain_whitelist`, `model_view_log` tables |
-| `scenes/...Init.ts` | Creates `scenes` schema with `scene`, `scene_object`, `scene_light` tables |
+Current layout:
 
-### Running Migrations
+```
+src/database/migrations/
+└── 1777486474931-Init.ts        ← consolidated initial schema
+```
+
+The `Init` migration creates every schema, table, enum, index, and FK described above in a single transaction. New migrations after the initial baseline are grouped under per-schema subfolders:
+
+```
+src/database/migrations/
+├── 1777486474931-Init.ts
+├── embed/
+├── models-3d/
+├── notifications/
+├── organizations/
+├── scenes/
+└── workspaces/
+```
+
+Subfolder names match `DatabaseSchemas` in `src/database/constants.ts` (kebab-case: `models-3d`).
+
+### Running migrations
 
 ```bash
 # Apply all pending
@@ -541,12 +863,14 @@ npm run migration:run
 # Revert last migration
 npm run migration:revert
 
-# Generate a new migration (Linux/Mac)
-npm run migration:generate -- --schema=<schema> --name=<Name>
+# Generate from current entity diff (writes to migrations/, move it into the right subfolder before commit)
+npm run migration:generate -- src/database/migrations/<schema>/<Name>
 
-# Generate a new migration (Windows)
-npm run migration:generate:win --schema=<schema> --name=<Name>
+# Create an empty migration shell
+npm run migration:create -- src/database/migrations/<schema>/<Name>
 ```
+
+`migration:generate` emits a single file capturing the diff between current entities and the last applied migration; place the generated file under the subfolder for the schema it touches. Cross-schema migrations live at the top level.
 
 ---
 
@@ -557,7 +881,9 @@ Located in `src/database/seeds/`. Run via `npm run db:seeds` (requires a prior `
 | Seed | Records created |
 |---|---|
 | `user/seedRoles.ts` | 3 roles: `super-user`, `admin`, `user` |
+| `user/seedUsers.ts` | Bootstrap super-user from env (`SUPER_USER_EMAIL`, `SUPER_USER_PASSWORD`) |
 | `resources/seedCategories.ts` | ~20 model categories: Animals, Architecture, Art, Transport, Characters, … |
+| `resources/seedCGSoft.ts` | Common CG software entries (Blender, Maya, 3ds Max, …) |
 
 Seeds check for existing records before inserting (idempotent).
 
@@ -571,4 +897,16 @@ Seeds check for existing records before inserting (idempotent).
 
 ## Database Initialization
 
-The `src/database/init/index.ts` script runs before migrations and creates any missing schemas. This is called by `npm run db:init`. To drop and recreate all schemas, use `npm run db:init:hard` (pass `DROP_SCHEMAS=true` environment variable).
+The `src/database/init/index.ts` script runs before migrations and creates any missing schemas. This is called by `npm run db:init`. To drop and recreate all schemas, use `npm run db:init:hard` (passes `DROP_SCHEMAS=true`).
+
+---
+
+## See Also
+
+- [model-3d.md](model-3d.md) — model storage, versions, annotations, comments, viewer config
+- [organizations.md](organizations.md) — organizations, members, subscriptions, invites, webhooks
+- [scenes.md](scenes.md) — scene composition, lights, annotations, comments
+- [embed.md](embed.md) — embed projects, API keys, domain whitelisting, view logs
+- [notifications.md](notifications.md) — notification types and delivery
+- [auth.md](auth.md) — sessions, JWT cookie flow, refresh
+- [file-storage.md](file-storage.md) — local FS vs S3 strategies, encrypted org S3 config

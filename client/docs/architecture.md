@@ -92,6 +92,7 @@ Imports must only flow **downward** through the layer stack. Never import upward
                 │
 ┌───────────────▼─────────────────┐
 │           entities              │  ← imports shared only
+│  (user, model-3d, organization) │
 └───────────────┬─────────────────┘
                 │
 ┌───────────────▼─────────────────┐
@@ -178,4 +179,15 @@ The `@vitejs/plugin-react` is explicitly scoped to the `Model3DViewer/classes/` 
 ### Cookie-Based Auth Sessions
 
 The app uses HTTP-only cookies for session management (`credentials: 'include'` on all requests). The session ID is also stored in Redux as `user.session` (persisted to `localStorage`) for UI-level auth checks, but the actual auth token lives in the cookie.
+
+### Public Embed Viewer Bypasses Auth Refresh
+
+The public embed viewer page (`/embed/:modelId` → [`pages/EmbedViewer/EmbedViewerPage.tsx`](../src/pages/EmbedViewer/EmbedViewerPage.tsx)) is mounted as a top-level route outside `BasePage` and **bypasses the auth refresh path entirely**. It does not read `user.session` or rely on the session cookie; instead the `useEmbedViewerQuery` call ([`src/app/api/embed.ts`](../src/app/api/embed.ts)) attaches an `X-Api-Key` header (sourced from the `?apiKey=…` query param), and the server validates the request server-side via the API key plus a domain whitelist (`Origin`/`Referer` match against the `EmbedProject.allowedOrigins` list). This keeps anonymous third-party embeds independent of any user session state.
+
+---
+
+## Related Docs
+
+- [`embed.md`](embed.md) — Embed settings page and public viewer details (route trust models, RTK Query endpoints, API key flow)
+- [`routing.md`](routing.md) — Full route table, layout shells, and lazy boundaries
 

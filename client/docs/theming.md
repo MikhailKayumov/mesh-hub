@@ -32,11 +32,34 @@ type ThemeData = {
 ```
 
 **Files:**
-- `src/shared/theme/themes.ts` — defines the `ThemeData` for each `ThemeName`
-- `src/shared/theme/colors.ts` — raw color tuples
-- `src/shared/theme/index.tsx` — `<Theme>` wrapper component that applies the active theme to Mantine
-- `src/shared/theme/_mantine.scss` — Mantine CSS variable overrides
-- `src/shared/theme/global.scss` — global base styles
+
+| File | Purpose |
+|---|---|
+| `src/shared/theme/types.ts` | `ThemeName` union and `ThemeData` shape |
+| `src/shared/theme/themes.ts` | `baseTheme` (Mantine defaults merge) + `themes` record keyed by `ThemeName` |
+| `src/shared/theme/colors.ts` | Raw 10-stop color tuples (palette + `redColors`) |
+| `src/shared/theme/index.tsx` | `<Theme>` wrapper component that applies the active theme to Mantine |
+| `src/shared/theme/_mantine.scss` | SCSS mixins, `rem()`, breakpoint variables (auto-injected) |
+| `src/shared/theme/global.scss` | Global base styles, font imports, scale selectors |
+
+---
+
+## `baseTheme`
+
+`themes.ts` exports a `baseTheme` produced by `mergeMantineTheme(DEFAULT_THEME, createTheme({ ... }))`. It is theme-agnostic and holds:
+
+| Field | Value |
+|---|---|
+| `breakpoints` | `xs 36em / sm 48em / md 62em / lg 75em / xl 88em` |
+| `scale` | `Number(localStorage.getItem('mantine-scale') ?? 1)` |
+| `colors.red` | `redColors` tuple (extra named color, not selectable as `primary`) |
+| `fontFamily` | `Inter, ...` |
+| `fontFamilyMonospace` | `"JetBrains Mono", ...` |
+| `headings.fontFamily` | `Rubik, ...` |
+| `components.Container` | `defaultProps: { size: 'responsive', px: 'xl' }`, adds `responsive-container` class |
+| `components.Tooltip` | `withArrow`, `arrowSize: 6`, `arrowOffset: 17`, `fz: 12`, `multiline`, `maw: 320` |
+
+The active `ThemeData` is merged onto `baseTheme` per render (see below).
 
 ---
 
@@ -52,7 +75,7 @@ The `<Theme>` component (rendered in `App.tsx`) reads the current `ThemeName` fr
 </Theme>
 ```
 
-Mantine's `MantineProvider` is configured with `primaryColor: 'primary'` and the 10-stop color tuple from the selected theme. Switching themes dispatches `userActions.setTheme(name)` — the store update triggers a re-render of `<Theme>`, and Mantine re-applies CSS variables.
+`MantineProvider` is mounted with `defaultColorScheme="auto"` and `theme = mergeMantineTheme(baseTheme, createTheme(themes[themeName] ?? themes.deepblue))`. Switching themes dispatches `userActions.setTheme(name)` — the store update triggers a re-render of `<Theme>`, and Mantine re-applies CSS variables.
 
 ---
 
@@ -79,11 +102,11 @@ The `ColorSchemeSelect` widget exposes a UI control for switching between `'ligh
 
 ## SCSS Global Mixins
 
-All SCSS module files have the following injected automatically via `vite.config.ts` `additionalData`:
+All SCSS module files have the following injected automatically via `vite.config.ts` `css.preprocessorOptions.scss.additionalData`:
 
 ```ts
-// vite.config.ts
-additionalData: `@use "src/shared/theme/_mantine" as *;`
+// vite.config.ts (modern-compiler API)
+additionalData: `@use "${path.join(process.cwd(), 'src/shared/theme/_mantine').replace(/\\/g, '/')}" as *;`
 ```
 
 The `as *` wildcard forwards all variables, functions and mixins from `_mantine.scss` into every SCSS module without a namespace prefix. Do **not** `@use` or `@import` `_mantine.scss` manually in your modules — it is already injected.
@@ -151,4 +174,17 @@ $mantine-breakpoint-xl   // 88em  ≈ 1408px
   }
 }
 ```
+
+---
+
+## Mantine Scale
+
+Global UI scale is exposed via `--mantine-scale` and persisted in `localStorage` under `mantine-scale`. `themes.ts` reads the value at module load and feeds it into `baseTheme.scale`. `global.scss` also wires `[data-mantine-scale='1' | '1.5' | '2']` selectors to set `--mantine-scale` directly.
+
+---
+
+## Cross-references
+
+- [`architecture.md`](architecture.md) — FSD layout and where `shared/theme/` sits in the layer hierarchy.
+- [`widgets.md`](widgets.md) — full catalog including `ColorThemeSwitcher` and `ColorSchemeSelect`.
 

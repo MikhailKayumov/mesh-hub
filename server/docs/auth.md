@@ -272,3 +272,222 @@ Utility helpers in `src/utils/user-role.helper.ts`:
 - `hasEveryRoles(user, roles[])` — user has all roles
 
 The default role assigned to new users at signup is `UserRoles.User`.
+
+---
+
+## API Key Authentication
+
+Used by the public embed viewer endpoint (`GET /embed/:targetId`). API keys belong to an organization, not a user, and never exchange for a session.
+
+### Header
+
+| Header | Value |
+|---|---|
+| `x-api-key` | Raw API key string of the form `<prefix>_<random>` |
+
+The raw key is **not** stored. The server stores only a SHA-256 hex digest:
+
+```typescript
+const keyHash = createHash('sha256').update(rawKey).digest('hex');
+```
+
+(See [`api-key.guard.ts`](../src/modules/api-keys/guards/api-key.guard.ts).)
+
+### Lifecycle
+
+| Endpoint | Behaviour |
+|---|---|
+| `POST /api-keys` | Generates a new key. The response includes `rawKey` **once**; subsequent reads only expose the `prefix`. |
+| `GET /api-keys?orgId=...` | Lists keys for an org. `rawKey` is never returned here. |
+| `DELETE /api-keys/:id?orgId=...` | Sets `revoked_at`; revoked keys are rejected by the guard. |
+
+The create response DTO documents this contract:
+
+```typescript
+// src/modules/api-keys/dto/api-key.response.dto.ts
+/** Present only in the create response — shown once, never stored. */
+@ApiProperty({ nullable: true })
+public rawKey?: string;
+```
+
+### `ApiKeyEntity` (`embed.api_key`)
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `name` | text | Human-readable label |
+| `prefix` | varchar(8), unique | First 8 chars of the random part; safe to show in UI |
+| `key_hash` | text, unique | SHA-256 hex of the full raw key |
+| `scopes` | text[] | Default `['embed:read']` |
+| `org_id` | UUID (FK → `organizations.organization`) | Owning organisation |
+| `last_used_at` | timestamptz, nullable | Updated fire-and-forget by the guard |
+| `expires_at` | timestamptz, nullable | If past, guard returns 401 |
+| `revoked_at` | timestamptz, nullable | If set, guard returns 401 |
+
+### Scopes
+
+Defined in [`api-key.constants.ts`](../src/modules/api-keys/api-key.constants.ts):
+
+```typescript
+export const ApiKeyScopes = ['embed:read', 'read:models', 'read:scenes'] as const;
+```
+
+Today only `embed:read` is enforced on any endpoint (`GET /embed/:targetId`). The other two scopes are reserved for future use.
+
+### `@RequiredScope(scope)`
+
+Declarative gate consumed by `ApiKeyGuard`:
+
+```typescript
+@Public()
+@UseGuards(ApiKeyGuard)
+@RequiredScope('embed:read')
+@Get(':targetId')
+public getEmbedViewer(...) { ... }
+```
+
+If the loaded key's `scopes` array does not include the required scope, the guard throws `AppHttpException(..., 403)`.
+
+### Guard decision tree
+
+```
+Request arrives at endpoint with @UseGuards(ApiKeyGuard)
+    │
+    ├─ Read header x-api-key
+    │      └─ Missing or non-string → throw 401 Unauthorized
+    │
+    ├─ Hash with SHA-256, look up by key_hash
+    │      └─ Not found → throw 401 Unauthorized
+    │
+    ├─ revoked_at !== null → throw 401 Unauthorized
+    │
+    ├─ expires_at !== null && expires_at < now → throw 401 Unauthorized
+    │
+    ├─ @RequiredScope present and missing from key.scopes
+    │      └─ throw 403 Forbidden (AppHttpException)
+    │
+    ├─ Update last_used_at (fire-and-forget, non-blocking)
+    │
+    └─ Attach api_key to request.apiKey → proceed
+```
+
+The downstream service reads `request.apiKey` to scope its work to `apiKey.orgId`.
+
+---
+
+## Org-Member RBAC
+
+For org-scoped resources (organisations, workspaces, embed projects, etc.), authorisation is layered on top of `JwtAuthGuard`: after the user is authenticated, `OrgMemberGuard` confirms they are a member of the target org with at least the required role.
+
+### `OrgMemberRole` enum
+
+Defined in [`org-member.entity.ts`](../src/database/entities/organizations/org-member.entity.ts):
+
+| Role | Weight |
+|---|---|
+| `Owner` (`owner`) | 3 |
+| `Admin` (`admin`) | 2 |
+| `Editor` (`editor`) | 1 |
+| `Viewer` (`viewer`) | 0 |
+
+Higher weight = more privileged. A required role of `Admin` is satisfied by `Admin` or `Owner`.
+
+### `OrgMemberGuard` (`src/modules/organizations/guards/org-member.guard.ts`)
+
+Reads `request.params['id']` as the organisation UUID and `request.session.user.id` as the current user. Loads the matching `org_member` row and attaches it to `request.orgMember`.
+
+```
+Request arrives at endpoint decorated with @OrgMemberRole(...)
+    │
+    ├─ Read params.id (org UUID) and session.user.id
+    │      └─ Either missing → throw 403 Forbidden
+    │
+    ├─ orgMemberRepository.findByOrgAndUser(orgId, userId)
+    │      └─ Not found → throw 403 Forbidden
+    │
+    ├─ Attach member to request.orgMember
+    │
+    ├─ No required roles set → allow
+    │
+    ├─ memberWeight < min(requiredWeights) → throw 403 Forbidden
+    │
+    └─ proceed
+```
+
+The guard uses only the URL param named `id`. Routes that use a different param name (e.g. `:orgId`) cannot be guarded by `OrgMemberGuard` directly today — services that span multiple org-scoped IDs do their own membership check via `EmbedService.requireMembership` and similar helpers.
+
+### `@OrgMemberRole(...roles)`
+
+Composite decorator that sets the metadata key and applies `UseGuards(OrgMemberGuard)`:
+
+```typescript
+// src/modules/organizations/guards/org-member-role.decorator.ts
+@OrgMemberRole(OrgMemberRole.Admin)
+@Patch(':id')
+public updateOrg(@Param('id', ParseUUIDPipe) id: string, ...) { ... }
+```
+
+Pass multiple roles to express "any of these or higher": the guard takes the **minimum** required weight across the list.
+
+---
+
+## Embed Public Viewer Auth Flow
+
+`GET /embed/:targetId` is the only endpoint that uses `ApiKeyGuard` today. It is `@Public()` (no JWT required) but `@UseGuards(ApiKeyGuard)` + `@RequiredScope('embed:read')`. The handler also receives the `Origin` header for the domain whitelist check, which lives in `EmbedService.assertOriginAllowed`.
+
+```
+Browser / iframe                Server
+  │                               │
+  ├── GET /embed/:targetId ──────►│ [header: x-api-key=<raw_key>]
+  │   [Origin: https://site.tld]  │  1. JwtAuthGuard sees @Public() → skip auth
+  │                               │  2. ApiKeyGuard:
+  │                               │     a. SHA-256(rawKey) → look up api_key
+  │                               │     b. Reject if not found / revoked / expired
+  │                               │     c. Check @RequiredScope('embed:read')
+  │                               │     d. Attach api_key to req
+  │                               │  3. EmbedService.getEmbedViewer:
+  │                               │     a. Load embed_project for targetId
+  │                               │     b. project.orgId === apiKey.orgId? else 403
+  │                               │     c. assertOriginAllowed(project, origin)
+  │                               │     d. Load model or scene, log view, map DTO
+  │◄── 200 OK + viewer payload ───│
+```
+
+### Domain whitelist (`EmbedService.assertOriginAllowed`)
+
+The check lives in the service, not the guard:
+
+```typescript
+// src/modules/embed/services/embed.service.ts
+private assertOriginAllowed(project: EmbedProjectEntity, origin: string | undefined): void {
+  if (origin === undefined) return;
+  // ...
+  const whitelist = project.domains ?? [];
+  if (whitelist.length === 0) {
+    throw new ForbiddenException('Embed domain whitelist is not configured');
+  }
+  const allowed = whitelist.some((d) => d.domain === requestHostname);
+  if (!allowed) throw new ForbiddenException('Origin not in domain whitelist');
+}
+```
+
+Concrete behaviour:
+
+| Request shape | Result |
+|---|---|
+| No `Origin` header (e.g. server-to-server, `curl`) | Check is **skipped** — passes. |
+| `Origin` present, whitelist empty | **403 Forbidden** (`'Embed domain whitelist is not configured'`). The whitelist is fail-closed for browser callers. |
+| `Origin` present, hostname matches a whitelist entry exactly | Passes. |
+| `Origin` present, hostname does not match | **403 Forbidden** (`'Origin not in domain whitelist'`). |
+| `Origin` present but not parseable as a URL | **403 Forbidden** (`'Invalid Origin header'`). |
+
+Comparison is done on `new URL(origin).hostname`, so the whitelist stores bare hostnames (no scheme, no port).
+
+---
+
+## See also
+
+- [embed.md](./embed.md) — embed projects, viewer payload, domain whitelist storage
+- [organizations.md](./organizations.md) — org membership, invites, ownership transfer
+- [model-3d.md](./model-3d.md) — model visibility and ownership rules
+- [api.md](./api.md) — full endpoint catalogue with required guards/scopes

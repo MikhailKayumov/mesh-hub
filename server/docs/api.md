@@ -253,6 +253,43 @@ Set a new password using a reset token.
 
 ---
 
+## Notifications — `/notifications`
+
+In-app notification feed for the current user. All routes require an authenticated user.
+
+### GET `/notifications`
+
+List the most recent notifications for the current user.
+
+**Response** — `200 OK` (`NotificationResponseDto[]`)
+
+DTO: `src/modules/notifications/dto/notification.response.dto.ts`.
+
+---
+
+### GET `/notifications/unread-count`
+
+Get the count of unread notifications for the current user.
+
+**Response** — `200 OK` (`UnreadCountResponseDto`)
+```json
+{ "count": 3 }
+```
+
+---
+
+### PATCH `/notifications/read-all`
+
+Mark every notification for the current user as read. Returns `204 No Content`.
+
+---
+
+### PATCH `/notifications/:id/read`
+
+Mark a specific notification as read. Returns `204 No Content`.
+
+---
+
 ## 3D Models — `/models-3d`
 
 ### GET `/models-3d` `[Public]`
@@ -350,38 +387,49 @@ Only the model owner can delete it.
 
 ---
 
-### POST `/models-3d/:modelId/file`
+### POST `/models-3d/upload`
 
-Upload a 3D model file. `multipart/form-data`.
+Upload a 3D model file and create the associated `Model3dEntity`. `multipart/form-data`.
 
-**Form field**: `file` — 3D model file (`.glb` or `.gltf`; max 3 GB)
+**Form fields** (`UploadModel3dRequestDto`):
+- `file` — 3D model file (`.glb` or `.gltf`; max 3 GB)
+- `workspaceId` — optional uuid; assigns the model to a workspace (and triggers per-org storage strategy / quota)
 
-**Response** — `201 Created` (updated model object)
-
-Replaces the existing file if one was already uploaded.
-
----
-
-### POST `/models-3d/:modelId/thumbnail`
-
-Save a thumbnail from a base64-encoded PNG.
-
-**Request body**
-```json
-{
-  "thumbnail": "data:image/png;base64,iVBORw0KGgoAAAANS..."
-}
-```
-
-**Response** — `201 Created` (updated model object)
+**Response** — `201 Created` — `{ "modelId": "uuid" }`
 
 ---
 
-### GET `/models-3d/:modelId/file` `[Public]`
+### POST `/models-3d/:modelId/save-thumbnail-base64`
 
-Download the 3D model file.
+Save a thumbnail from a base64-encoded PNG produced by the viewer.
 
-**Response** — `200 OK` (binary file stream, with proper `Content-Type` and `Content-Disposition`)
+**Request body** — `{ "thumbnail": "data:image/png;base64,..." }`
+
+**Response** — `201 Created`
+
+---
+
+### GET `/models-3d/files/:modelId/thumbnail` `[Public]`
+
+Stream the model thumbnail image (`Cache-Control: max-age=31536000`).
+
+**Response** — `200 OK` (binary)
+
+---
+
+### GET `/models-3d/files/:modelId/*splat` `[Public]`
+
+Stream a model asset by relative path within the model directory. May 307-redirect to a signed S3 URL when the model's workspace is on an S3-backed organization.
+
+**Response** — `200 OK` (binary, `Cache-Control: max-age=2592000`) or `307 Temporary Redirect`
+
+---
+
+### GET `/models-3d/files/:modelId/versions/:versionId/*splat` `[Public]`
+
+Stream an asset belonging to a specific version. Same redirect behaviour as the previous route.
+
+**Response** — `200 OK` (binary) or `307 Temporary Redirect`
 
 ---
 
@@ -552,25 +600,183 @@ Get all versions for a model.
 
 ### POST `/models-3d/:modelId/versions`
 
-Upload a new model file version. `multipart/form-data`.
+Upload a new model file version. `multipart/form-data`. Body fields use `VersionUploadRequestDto` (optional `changeNotes`).
 
-**Form field**: `model` — `.glb` or `.gltf` file (max 3 GB)
+**Form field**: `file` — `.glb` or `.gltf` file (max 3 GB)
 
-**Response** — `201 Created`
+**Response** — `201 Created` (`VersionResponseDto`)
 
 ---
 
-### PATCH `/models-3d/:modelId/versions/:versionId/activate`
+### POST `/models-3d/:modelId/versions/:versionId/activate`
 
 Set a specific version as the active (displayed) version.
 
-**Response** — `200 OK`
+**Response** — `200 OK` (`VersionResponseDto`)
 
 ---
 
 ### DELETE `/models-3d/:modelId/versions/:versionId`
 
-Delete a model version. Returns `204 No Content`.
+Delete a model version. Returns `200 OK`.
+
+---
+
+## Model Audio — `/models-3d/:modelId/audio`
+
+Per-model audio attachments (background music or narration in the viewer).
+
+### GET `/models-3d/:modelId/audio`
+
+List audio tracks attached to a model.
+
+**Response** — `200 OK` (`ModelAudioResponseDto[]`)
+
+DTO: `src/modules/models-3d/audio/dto/model-audio.response.dto.ts`.
+
+---
+
+### POST `/models-3d/:modelId/audio`
+
+Upload a new audio track. `multipart/form-data`.
+
+**Form field**: `file` — audio file (`audio/mpeg`, `audio/mp3`, `audio/ogg`, `audio/wav`; max 20 MB)
+
+**Response** — `200 OK` (`ModelAudioResponseDto`)
+
+---
+
+### DELETE `/models-3d/:modelId/audio/:audioId`
+
+Remove an audio track. Returns `204 No Content`.
+
+---
+
+### GET `/models-3d/:modelId/audio/:audioId/stream` `[Public]`
+
+Stream the audio file. May 302-redirect to a signed S3 URL when the model is stored on an S3-backed org.
+
+**Response** — `200 OK` (binary, `Content-Type: audio/mpeg`) or `302 Found`
+
+---
+
+## Model Materials — `/models-3d/:modelId/materials`
+
+Per-mesh material overrides (PBR factors + textures) layered on top of the original GLTF materials.
+
+### GET `/models-3d/:modelId/materials` `[Public]`
+
+List all material overrides for the model.
+
+**Response** — `200 OK` (`MaterialOverrideResponseDto[]`)
+
+DTO: `src/modules/models-3d/materials/dto/material-override.response.dto.ts`.
+
+---
+
+### PUT `/models-3d/:modelId/materials/:meshName`
+
+Create or update an override for the named mesh. `:meshName` is URL-encoded.
+
+**Body** — `MaterialOverrideUpsertDto` (PBR factors, optional metadata).
+
+**Response** — `200 OK` (`MaterialOverrideResponseDto`)
+
+---
+
+### DELETE `/models-3d/:modelId/materials/:meshName`
+
+Drop the override (and any uploaded textures) for the mesh. Returns `204 No Content`.
+
+---
+
+### POST `/models-3d/:modelId/materials/:meshName/texture/:type`
+
+Upload a texture map for the override. `multipart/form-data`. `:type` is one of the texture slots (`baseColor`, `normal`, `roughness`, `metallic`, `emissive`, …) — see `MaterialsService` for the accepted set.
+
+**Form field**: `file` — image (`image/png`, `image/jpeg`, `image/webp`; max 5 MB)
+
+**Response** — `200 OK` (`MaterialOverrideResponseDto`)
+
+---
+
+### DELETE `/models-3d/:modelId/materials/:meshName/texture/:type`
+
+Clear the named texture slot. Returns `200 OK` (`MaterialOverrideResponseDto`).
+
+---
+
+### GET `/models-3d/:modelId/materials/:meshName/texture/:type` `[Public]`
+
+Serve the override texture binary.
+
+**Response** — `200 OK` (binary)
+
+---
+
+## Model Display Config — `/models-3d/:modelId/display-config`
+
+Per-model viewer presentation config (lights, environment, post-processing, camera defaults). Stored in `model_3d.display_config`.
+
+### GET `/models-3d/:modelId/display-config` `[Public]`
+
+Get (or lazily create) the model's display config.
+
+**Response** — `200 OK` (`DisplayConfigResponseDto`)
+
+DTO: `src/modules/models-3d/display-config/dto/display-config.response.dto.ts`.
+
+---
+
+### PATCH `/models-3d/:modelId/display-config`
+
+Update the display config.
+
+**Body** — `DisplayConfigUpdateDto` (env, post-processing, camera, render settings).
+
+**Response** — `200 OK` (`DisplayConfigResponseDto`)
+
+---
+
+### POST `/models-3d/:modelId/display-config/hdri`
+
+Upload an HDRI environment map for the model. `multipart/form-data`.
+
+**Form field**: `file` — `.hdr` / `.exr` (max 20 MB)
+
+**Response** — `200 OK` (`DisplayConfigResponseDto`)
+
+---
+
+### DELETE `/models-3d/:modelId/display-config/hdri`
+
+Remove the model HDRI. Returns `200 OK` (`DisplayConfigResponseDto`).
+
+---
+
+### POST `/models-3d/:modelId/display-config/lights`
+
+Add a light to the model's display config.
+
+**Body** — `ModelLightUpsertDto`.
+
+**Response** — `201 Created` (`DisplayConfigResponseDto`)
+
+---
+
+### PATCH `/models-3d/:modelId/display-config/lights/:lightId`
+
+Update a model light.
+
+**Body** — `ModelLightUpdateDto`.
+
+**Response** — `200 OK` (`DisplayConfigResponseDto`)
+
+---
+
+### DELETE `/models-3d/:modelId/display-config/lights/:lightId`
+
+Remove a model light. Returns `204 No Content`.
 
 ---
 
@@ -683,7 +889,45 @@ Get the organization's current subscription and storage config.
 
 ### PATCH `/organizations/:id/subscription/storage`
 
-Update the organization's storage configuration (S3 settings). Returns `200 OK`.
+Update the organization's storage configuration (`StorageBackend` + optional encrypted S3 config). Body: `UpdateStorageConfigRequestDto`. Requires the `Owner` org role. Returns `204 No Content`.
+
+---
+
+## Webhooks — `/organizations/:id/webhooks`
+
+Outbound webhooks per organization. All routes require the caller to be an `Admin` of the organization.
+
+### POST `/organizations/:id/webhooks`
+
+Register a new webhook.
+
+**Body** — `WebhookCreateRequestDto` (`url`, event filters, optional secret hint).
+
+**Response** — `201 Created` (`WebhookCreateResponseDto`) — includes the generated signing secret. Stored hashed; shown only on creation.
+
+---
+
+### GET `/organizations/:id/webhooks`
+
+List webhooks for the org.
+
+**Response** — `200 OK` (`WebhookResponseDto[]`)
+
+---
+
+### DELETE `/organizations/:id/webhooks/:webhookId`
+
+Revoke a webhook (soft delete). Returns `204 No Content`.
+
+---
+
+### GET `/organizations/:id/webhooks/:webhookId/deliveries`
+
+Most recent delivery attempts (limit 20) for the webhook, ordered newest-first.
+
+**Response** — `200 OK` (`WebhookDeliveryLogResponseDto[]`)
+
+DTO: `src/modules/organizations/webhooks/dto/webhook-delivery-log.response.dto.ts`.
 
 ---
 
@@ -758,31 +1002,37 @@ Generate a new API key scoped to an organization.
 { "name": "Embed Key 1", "orgId": "org-uuid" }
 ```
 
-**Response** — `201 Created`
+**Response** — `201 Created` (`ApiKeyResponseDto`)
 ```json
 {
   "id": "uuid",
   "name": "Embed Key 1",
-  "key": "mh_live_abc123...",
-  "createdAt": "2024-01-01T00:00:00.000Z"
+  "prefix": "mh_live_",
+  "scopes": ["embed:read"],
+  "lastUsedAt": null,
+  "expiresAt": null,
+  "revokedAt": null,
+  "rawKey": "mh_live_abc123..."
 }
 ```
 
-> The raw `key` is only returned once on creation. Store it securely.
+> `rawKey` is only returned once on creation. Store it securely; subsequent list responses omit it.
+
+Body shape: see `src/modules/api-keys/dto/api-key.create.request.dto.ts`.
 
 ---
 
 ### GET `/api-keys`
 
-List API keys for an organization. Filter by `orgId` query param.
+List API keys for an organization. Required query: `orgId` (uuid).
 
-**Response** — `200 OK` (key list without the raw key value)
+**Response** — `200 OK` (`ApiKeyResponseDto[]`, without `rawKey`)
 
 ---
 
 ### DELETE `/api-keys/:id`
 
-Revoke an API key. Pass `orgId` as query param. Returns `204 No Content`.
+Revoke an API key. Required query: `orgId` (uuid). Returns `200 OK`.
 
 ---
 
@@ -836,29 +1086,33 @@ Remove an allowed domain. Returns `204 No Content`.
 
 ### GET `/embed/projects/:id/analytics`
 
-Get embed view analytics (paginated `ModelViewLogDto[]`).
+Get aggregated view analytics for the embed project.
+
+**Response** — `200 OK` (`ViewAnalyticsResponseDto`)
+
+DTO: `src/modules/embed/dto/view-analytics.response.dto.ts`.
 
 ---
 
 ### POST `/embed/projects/:id/logo`
 
-Upload embed project logo. `multipart/form-data`.
+Upload an embed project logo. `multipart/form-data`.
 
-**Form field**: `logo` — image file (max 1 MB)
+**Form field**: `file` — image file
 
-**Response** — `201 Created`
+**Response** — `200 OK` (`EmbedProjectResponseDto`)
 
 ---
 
 ### GET `/embed/projects/:id/logo` `[Public]`
 
-Serve embed project logo file.
+Serve embed project logo file (`Cache-Control: max-age=3600`).
 
 ---
 
-### GET `/embed/:modelId` `[Public + ApiKeyGuard]`
+### GET `/embed/:targetId` `[Public + ApiKey]`
 
-Get full embed viewer payload (model + embed project config). Requires valid API key in `X-Api-Key` header or `apiKey` query param.
+Get full embed viewer payload (model + embed project config). `:targetId` is the embed project id. Requires a valid API key with the `embed:read` scope (passed via `X-Api-Key` header or `apiKey` query param) and an `Origin` matching one of the project's allowed domains.
 
 **Response** — `200 OK` (`EmbedViewerResponseDto`)
 
@@ -881,7 +1135,12 @@ Create a new scene.
 
 ### GET `/scenes`
 
-List scenes. Filter by `workspaceId` query param.
+List scenes the caller has access to.
+
+**Query params** (all optional):
+- `workspaceId` — restrict to one workspace
+- `userId` — restrict to scenes owned by that user
+- `search` — case-insensitive name match
 
 **Response** — `200 OK` (`SceneListItemResponseDto[]`)
 ```json
@@ -898,9 +1157,25 @@ List scenes. Filter by `workspaceId` query param.
 
 ---
 
-### GET `/scenes/:id`
+### GET `/scenes/using-model/:modelId` `[Public]`
 
-Get full scene with all objects and lights.
+List scenes that reference a given model. Visible scenes (and the caller's own) only.
+
+**Response** — `200 OK` (`SceneListItemResponseDto[]`)
+
+---
+
+### POST `/scenes/:id/clone`
+
+Duplicate a scene (new id, copies objects/lights/HDRI reference).
+
+**Response** — `201 Created` (`SceneListItemResponseDto`)
+
+---
+
+### GET `/scenes/:id` `[Public]`
+
+Get full scene with all objects and lights. Visibility is enforced server-side; non-owners get `404` for non-public scenes.
 
 **Response** — `200 OK` (`SceneResponseDto`)
 ```json
@@ -1011,15 +1286,15 @@ Remove a light from the scene. Returns `204 No Content`.
 
 Upload an HDRI environment map. `multipart/form-data`.
 
-**Form field**: `hdri` — `.hdr` file (max 20 MB)
+**Form field**: `file` — `.hdr` file (max 20 MB)
 
-**Response** — `201 Created`
+**Response** — `200 OK` (`SceneResponseDto`)
 
 ---
 
 ### GET `/scenes/:id/hdri` `[Public]`
 
-Serve the scene HDRI file.
+Serve the scene HDRI file. May 307-redirect to a signed URL on S3-backed orgs.
 
 ---
 
@@ -1032,7 +1307,97 @@ Save a scene thumbnail (base64 PNG from the viewer).
 { "thumbnail": "data:image/png;base64,..." }
 ```
 
-**Response** — `201 Created`
+**Response** — `200 OK` (`SceneResponseDto`)
+
+---
+
+## Scene Annotations — `/scenes/:sceneId/annotations`
+
+3D-anchored notes on a scene (separate from per-model annotations under `/models-3d/:modelId/annotations`).
+
+### GET `/scenes/:sceneId/annotations` `[Public]`
+
+List annotations for the scene.
+
+**Response** — `200 OK` (`SceneAnnotationResponseDto[]`)
+
+DTO: `src/modules/scenes/annotations/dto/scene-annotation.response.dto.ts`.
+
+---
+
+### POST `/scenes/:sceneId/annotations`
+
+Create an annotation.
+
+**Body** — `SceneAnnotationCreateRequestDto`.
+
+**Response** — `201 Created` (`SceneAnnotationResponseDto`)
+
+---
+
+### PATCH `/scenes/:sceneId/annotations/:annotId`
+
+Update an annotation.
+
+**Body** — `SceneAnnotationUpdateRequestDto`.
+
+**Response** — `200 OK` (`SceneAnnotationResponseDto`)
+
+---
+
+### DELETE `/scenes/:sceneId/annotations/:annotId`
+
+Delete an annotation. Returns `204 No Content`.
+
+---
+
+### PUT `/scenes/:sceneId/annotations/order`
+
+Reorder annotations.
+
+**Body** — `SceneAnnotationReorderRequestDto` (`{ items: { id, order }[] }`).
+
+**Response** — `204 No Content`
+
+---
+
+## Scene Comments — `/scenes/:sceneId/comments`
+
+Free-text comments on a scene (no rating; distinct from `/models-3d/:modelId/comments`).
+
+### GET `/scenes/:sceneId/comments` `[Public]`
+
+List comments for the scene.
+
+**Response** — `200 OK` (`SceneCommentResponseDto[]`)
+
+DTO: `src/modules/scenes/comments/dto/scene-comment.response.dto.ts`.
+
+---
+
+### POST `/scenes/:sceneId/comments`
+
+Add a comment.
+
+**Body** — `SceneCommentCreateRequestDto`.
+
+**Response** — `201 Created` (`SceneCommentResponseDto`)
+
+---
+
+### PATCH `/scenes/:sceneId/comments/:commentId`
+
+Update own comment.
+
+**Body** — `SceneCommentUpdateRequestDto`.
+
+**Response** — `200 OK` (`SceneCommentResponseDto`)
+
+---
+
+### DELETE `/scenes/:sceneId/comments/:commentId`
+
+Delete own comment. Returns `204 No Content`.
 
 ---
 
@@ -1079,3 +1444,17 @@ Standard NestJS throttler response.
   "hasMore": true
 }
 ```
+
+---
+
+## See also
+
+Per-domain references with deeper coverage of routes, payloads, and side effects:
+
+- [auth.md](auth.md) — sign-up / login / refresh / sessions, JWT cookie contract.
+- [organizations.md](organizations.md) — orgs, members, invites, plans, webhooks (`/organizations/:id/webhooks/*`).
+- [scenes.md](scenes.md) — scenes, scene objects, lights, scene annotations, scene comments.
+- [embed.md](embed.md) — embed projects, allowed domains, analytics, public viewer route, API-key scopes.
+- [model-3d.md](model-3d.md) — model upload pipeline, versions, materials, audio, display config, file streaming.
+- [notifications.md](notifications.md) — in-app notifications, unread counts, transports.
+- [file-storage.md](file-storage.md) — `IFileStorageStrategy` and per-org S3 routing for the binary asset endpoints above.

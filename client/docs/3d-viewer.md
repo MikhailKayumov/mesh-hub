@@ -12,10 +12,11 @@ Model3DViewer (React component)
 ├─ useViewer(props)              ← lifecycle hook
 │   └─ Viewer                   ← orchestrator class
 │       ├─ CameraController     ← Three.js PerspectiveCamera + camera-controls
-│       ├─ Renderer             ← WebGLRenderer + ResizeObserver + clock
-│       └─ World                ← Scene + lights + helpers + event bus
-│           └─ Loader (static)  ← GLTFLoader + LoaderCache (3 entries)
-│               └─ Destroyer (static) ← geometry/material disposal utility
+│       ├─ Renderer             ← WebGLRenderer + EffectComposer + CSS2DRenderer + ResizeObserver + clock
+│       ├─ World                ← Scene + lights (LightBuilder) + helpers + event bus
+│       │   └─ Loader (static)  ← per-format loaders + LoaderCache (3 entries)
+│       │       └─ Destroyer (static) ← geometry/material/texture disposal utility
+│       └─ MeasureTool           ← optional distance-measure overlay
 │
 ├─ ViewerContextProvider        ← shares Viewer instance to child components
 ├─ Model3DViewerTopBar          ← camera controls UI
@@ -48,6 +49,8 @@ The component:
 ```ts
 interface UseViewerProps {
   model: Model3DResponseDto | null;
+  displayConfig?: DisplayConfigResponseDto | null;
+  materialOverrides?: MaterialOverrideResponseDto[] | null;
   onInit?:    (viewer: Viewer) => void | Promise<void>;
   onReady?:   (viewer: Viewer) => void | Promise<void>;
   onDestroy?: (viewer?: Viewer) => void | Promise<void>;
@@ -56,7 +59,9 @@ interface UseViewerProps {
 
 | Prop | Required | Description |
 |---|---|---|
-| `model` | Yes | Model metadata from the API. When `model` changes (by `file.id`), the viewer destroys the current world and loads the new model. Pass `null` to render an empty viewer. |
+| `model` | Yes | Model metadata from the API. When `model.id` (or `?versionId`) changes, the viewer destroys the current world and loads the new model. Pass `null` to render an empty viewer. |
+| `displayConfig` | No | Persisted display configuration (background, ambient, fog, lights, renderer settings, post-process passes). Applied between `world.prepare` and `viewer.run`. |
+| `materialOverrides` | No | Per-material overrides applied via `world.applyMaterialOverrides` after the display config. |
 | `onInit` | No | Called once after the `Viewer` is created and `setPlace` + `init` have run. Use this to configure the viewer before the first model load. |
 | `onReady` | No | Called after the model is fully loaded, lights prepared, and the camera has animated to its initial position. Use this to add editor helpers or start animations. |
 | `onDestroy` | No | Called in the effect cleanup, before `viewer.destroy()`. |
@@ -76,11 +81,17 @@ Effect 1 — init (runs once)
   ├─ onInit?.(viewer)
   └─ cleanup: onDestroy?.(viewer), viewer.destroy()
 
-Effect 2 — run (depends on [viewer, model.file.id])
+Effect 2 — run (depends on [viewer, model.id, ?versionId])
   ├─ viewer.camera.enableLayer(1)
   ├─ viewer.world.destroy()             ← clears previous scene objects
-  ├─ viewer.loadModel(model)            ← GLTFLoader → cache check → spawn
+  ├─ viewer.loadModel(model) | loadFile(versionUrl)  ← Loader → cache check → spawn
   ├─ viewer.world.prepare(sceneBB)      ← adds 3 directional lights + ambient
+  ├─ if displayConfig:
+  │   ├─ world.setBackgroundColor / setAmbientLight / setFog
+  │   ├─ world.syncLights(displayConfig.lights)
+  │   ├─ renderer.setSettings(rendererConfig)
+  │   └─ renderer.setPostProcessing(postProcess)   ← rebuilds composer pass chain
+  ├─ if materialOverrides: world.applyMaterialOverrides(...)
   ├─ viewer.run()                       ← starts requestAnimationFrame loop
   ├─ camera.moveToInitPosition(sceneBB) ← instant fit + rotate to 194°/58°
   ├─ onReady?.(viewer)
@@ -106,13 +117,17 @@ The top-level orchestrator. Owns and initialises all sub-systems.
 | `world` | `World` | Three.js scene + lights + helpers |
 | `stats` | `Stats \| null` | three.js Stats panel (development mode only) |
 | `model` | `ViewerModel3D<Model3DResponseDto> \| null` | Currently loaded model, or `null` |
+| `measureTool` | `MeasureTool` | Distance-measure overlay; activated via `setMode('measure')` |
+| `mode` | `ViewerMode` | Current interaction mode (`'view'` \| `'comment'` \| `'annotate'` \| `'measure'`) |
 
 ### Public Methods
 
 | Method | Signature | Description |
 |---|---|---|
 | `init` | `(): this` | Attaches camera controls to the renderer canvas; adds Stats update callback if in dev mode |
-| `loadModel` | `(modelData: Model3DResponseDto): Promise<void>` | Loads a GLTF model: checks `Loader.cache` first, otherwise calls `Loader.load()`, processes bounding box and materials, spawns scene, stores in cache |
+| `loadModel` | `(modelData: Model3DResponseDto): Promise<void>` | Loads the model's primary file: checks `Loader.cache` first, otherwise calls `Loader.load()`, processes bounding box and materials, spawns scene, stores in cache |
+| `loadFile` | `(url: string): Promise<void>` | Loads an arbitrary version URL through `Loader.load()` (used when `?versionId` is set in the URL) |
+| `setMode` | `(mode: ViewerMode): void` | Switches interaction mode. Starts `measureTool` for `'measure'`, stops it for any other mode. |
 | `run` | `(): Promise<void>` | Starts the animation loop via `renderer.run()` |
 | `destroy` | `(): void` | Destroys world, detaches camera controls, destroys renderer |
 | `setPlace` | `(place: HTMLDivElement): this` | Moves the renderer canvas to a new DOM container; re-attaches Stats dom |
@@ -174,7 +189,7 @@ Extends `EventTarget`. Wraps Three.js `PerspectiveCamera` and the `camera-contro
 
 **File:** `src/widgets/Model3DViewer/classes/Renderer/Renderer.ts`
 
-Wraps `Three.WebGLRenderer`, manages a `ResizeObserver`, and orchestrates a per-frame callback set.
+Wraps `Three.WebGLRenderer`, an `EffectComposer` post-processing pipeline, a `CSS2DRenderer` overlay (used by `MeasureTool` labels and any future world-anchored DOM), a `ResizeObserver`, and a per-frame callback set.
 
 ### Constructor Parameters (`RendererParameters`)
 
@@ -195,6 +210,14 @@ Default renderer settings: `ReinhardToneMapping`, `toneMappingExposure = 1.0`, `
 | `renderer` | `WebGLRenderer` | The underlying Three.js renderer |
 | `clock` | `Clock` | Three.js clock used for delta/elapsed time in each frame |
 
+Internal (private) fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `composer` | `EffectComposer` | Post-processing pipeline. Always contains at least `RenderPass` (index 0) + `OutputPass`. |
+| `renderPass` | `RenderPass` | First pass; renders scene + camera into the composer's first render target. |
+| `css2dRenderer` | `CSS2DRenderer` | Absolute-positioned overlay renderer for `CSS2DObject` labels (pointer events disabled). |
+
 ### Public Methods
 
 | Method | Signature | Description |
@@ -207,6 +230,7 @@ Default renderer settings: `ReinhardToneMapping`, `toneMappingExposure = 1.0`, `
 | `getScreenshot` | `(): string` | Returns a `data:image/png` base64 screenshot at 20% quality |
 | `getSettings` | `(): RendererSettings` | Returns current renderer settings snapshot |
 | `setSettings` | `(settings: RendererSettings): void` | Applies output color space, tone mapping, shadow map type, clear color |
+| `setPostProcessing` | `(config: PostProcessConfig): Promise<void>` | Disposes every pass after `RenderPass` and re-adds the enabled passes (in the order described below). Pass modules are dynamically imported. |
 | `addCallback` | `(callback: RenderCallback): () => void` | Registers a per-frame callback; returns a removal function |
 | `removeCallback` | `(callback: RenderCallback): void` | Unregisters a per-frame callback |
 | `resize` | `(): void` | Reads container `getBoundingClientRect()` and resizes renderer + camera |
@@ -217,6 +241,36 @@ Default renderer settings: `ReinhardToneMapping`, `toneMappingExposure = 1.0`, `
 ```ts
 type RenderCallback = (delta: number, elapsed: number, clock: Clock) => void | Promise<void>;
 ```
+
+### Post-Processing Pipeline
+
+`Renderer.setPostProcessing(config)` rebuilds the composer pass chain. Order is fixed and matches `setPostProcessing`'s sequential `addPass` calls:
+
+| Order | Pass | Source | Toggle |
+|---|---|---|---|
+| 1 | `RenderPass` | `three/examples/jsm/postprocessing/RenderPass.js` | Always present |
+| 2 | `SSAOPass` | `three/examples/jsm/postprocessing/SSAOPass.js` | `config.ssao.enabled` |
+| 3 | `UnrealBloomPass` | `three/examples/jsm/postprocessing/UnrealBloomPass.js` | `config.bloom.enabled` |
+| 4 | `BokehPass` (DoF) | `three/examples/jsm/postprocessing/BokehPass.js` | `config.dof.enabled` |
+| 5 | `ShaderPass(VignetteShader)` | `three/examples/jsm/shaders/VignetteShader.js` | `config.vignette.enabled` |
+| 6 | `ShaderPass(ColorCorrectionShader)` | `three/examples/jsm/shaders/ColorCorrectionShader.js` | `config.colorCorrection.enabled` |
+| 7 | `OutputPass` | `three/examples/jsm/postprocessing/OutputPass.js` | Always re-appended last (handles tone mapping + color-space conversion) |
+
+```ts
+interface PostProcessConfig {
+  ssao?:            { enabled: boolean; kernelRadius?: number; minDistance?: number; maxDistance?: number; };
+  bloom?:           { enabled: boolean; strength?: number; radius?: number; threshold?: number; };
+  dof?:             { enabled: boolean; focus?: number; aperture?: number; maxblur?: number; };
+  vignette?:        { enabled: boolean; offset?: number; darkness?: number; };
+  colorCorrection?: { enabled: boolean; powRGB?: [number, number, number]; mulRGB?: [number, number, number]; addRGB?: [number, number, number]; };
+}
+```
+
+> **Notes**
+> - Pass modules are dynamically imported (`await import(...)`) so disabling a pass keeps it out of the bundle.
+> - On rebuild, every pass after index 0 has its `dispose?.()` called before being popped, then `OutputPass` is re-appended — never insert passes after `OutputPass`.
+> - `destroy()` calls `dispose?.()` on every pass and then `composer.dispose()` to release ping-pong render targets.
+> - Adding a new effect: see the [`add-postprocess-effect`](#related-skills) skill.
 
 ---
 
@@ -276,22 +330,104 @@ interface WorldSpawnOptions {
 
 **File:** `src/widgets/Model3DViewer/classes/Loader/Loader.ts`
 
-Static utility class. Loads GLTF/GLB files and maintains an LRU-style cache.
+Static utility class. Dispatches to per-format loaders by file extension and maintains an in-memory cache via `LoaderCache`.
 
 ### Static Members
 
 | Member | Type | Description |
 |---|---|---|
-| `cache` | `LoaderCache` | In-memory model cache; capacity **3 entries** |
-| `loaders.gltf` | `GLTFLoader` | Shared Three.js GLTF loader instance |
+| `cache` | `LoaderCache` | In-memory model cache; default capacity **3 entries** |
+| `loaders.gltf` | `GLTFLoader` | Shared GLTF/GLB loader instance |
+| `loaders.fbx` | `FBXLoader` | Shared FBX loader instance |
+| `loaders.dae` | `ColladaLoader` | Shared Collada (DAE) loader instance |
+| `loaders.stl` | `STLLoader` | Shared STL loader instance |
+
+> OBJ + MTL loaders are constructed per-load — `MTLLoader.setResourcePath` and `OBJLoader.setMaterials` are stateful and would leak between calls if shared.
 
 ### Static Methods
 
 | Method | Signature | Description |
 |---|---|---|
-| `load` | `(filepath: string): Promise<LoadedModel3D>` | Loads a GLTF/GLB from `filepath` using `GLTFLoader.loadAsync`; returns `{ scene, animations, associations }` |
+| `load` | `(filepath: string): Promise<LoadedModel3D>` | Detects format from the URL extension and dispatches to the matching format loader. Falls back to GLTF on unknown extensions. |
+| `resizeCache` | `(maxItems: number): void` | Updates `cache.maxSize` at runtime |
 
-> **Cache cap:** `LoaderCache` is initialised with a capacity of `3`. When a 4th model is loaded, the oldest entry is evicted. This is an intentional memory constraint to avoid unbounded GPU/memory growth when navigating between models.
+### Supported Formats
+
+| Extension | Internal method | Notes |
+|---|---|---|
+| `.glb`, `.gltf` | `loadGltf` | Returns `{ scene, animations, associations }`. Associations are kept for material override + texture disposal. |
+| `.fbx` | `loadFbx` | Wraps the loaded `Group`; missing/`MeshBasicMaterial` materials are replaced with `MeshStandardMaterial` defaults. |
+| `.obj` | `loadObj` | Tries to load a sibling `.mtl` first; falls back to OBJ-only with default materials if absent or failing. |
+| `.dae` | `loadDae` | Collada. Animations may live on either the result or the scene root. |
+| `.stl` | `loadStl` | Wraps the parsed `BufferGeometry` in a `Mesh` with a default `MeshStandardMaterial`, then a `Group`. |
+
+> Adding a new format: see the [`add-3d-loader`](#related-skills) skill.
+
+---
+
+## Class: `LoaderCache`
+
+**File:** `src/widgets/Model3DViewer/classes/Loader/LoaderCache.ts`
+
+In-memory cache for parsed models, keyed by file URL (the same string passed to `Loader.load`). Owns GPU resource disposal on eviction.
+
+### Public Members
+
+| Member | Type | Description |
+|---|---|---|
+| `maxSize` | `number` | Capacity. When `set` would exceed it, the oldest entry is evicted via `clear(1)`. |
+
+### Public Methods
+
+| Method | Signature | Description |
+|---|---|---|
+| `get` | `(name: string): ViewerModel3D \| null` | Returns the cached entry or `null`. |
+| `set` | `(name: string, data: ViewerModel3D): void` | Stores an entry; evicts the oldest first if the store is at capacity. |
+| `delete` | `(name: string): boolean` | Disposes geometries / materials / textures for the cached scene (via `Destroyer.destroyObject`) and any GLTF-associated `ImageBitmap` sources, then removes the entry. |
+| `clear` | `(removeItemCount?: number): void` | Removes the first `n` entries (or all if omitted), each through `delete` so GPU memory is released. |
+
+> **Capacity (default 3):** `Loader.cache = new LoaderCache(3)`. Hit a 4th model and the oldest entry is evicted to avoid unbounded GPU/memory growth when navigating between models. `Viewer.loadModel` checks the cache before calling `Loader.load`, so re-opening a recently visited model is instant.
+>
+> **Invalidation:** entries are keyed by URL. The editor invalidates a cached model by changing the URL (e.g. switching to `?versionId=<new>` or uploading a new version, which produces a new file path) — this naturally bypasses the previous key. To force eviction of an entry by URL, call `Loader.cache.delete(url)`; to drop everything, call `Loader.cache.clear()`.
+
+---
+
+## Class: `MeasureTool`
+
+**File:** `src/widgets/Model3DViewer/classes/MeasureTool/MeasureTool.ts`
+
+Optional distance-measurement tool. Owned by `Viewer` (`viewer.measureTool`) and toggled via `viewer.setMode('measure')` / `setMode('view')`. The user picks two points by clicking the model; the tool draws a screen-space line between them and a CSS2D label showing the distance in metres.
+
+### Public Methods
+
+| Method | Signature | Description |
+|---|---|---|
+| `start` | `(): void` | Attaches `pointerdown` (canvas) and `keydown` (window) listeners. First click stores point A (raycast hit on any non-measure mesh); second click draws the line + label and resets. `Escape` exits the mode via `viewer.setMode('view')`. |
+| `stop` | `(): void` | Removes listeners, resets the pending point, and disposes the current line + label. |
+| `dispose` | `(): void` | Alias for `stop()`. |
+
+### Visuals
+
+- Line uses `Line2` + `LineGeometry` + `LineMaterial` (`linewidth: 2`, `depthTest: false`, color `0x4dabf7`); `renderOrder = 999` so it draws on top.
+- Label is a `CSS2DObject` (a styled `<div>` placed at the segment midpoint) rendered through `Renderer.css2dRenderer`.
+- Both `line.userData.id` and `label.userData.id` are tagged `'measure-line'` so the raycaster excludes them when picking the next pair.
+
+---
+
+## Class: `Lights` / `LightBuilder`
+
+**File:** `src/widgets/Model3DViewer/classes/Lights/LightBuilder.ts`
+
+Factory for the light variants used by `World.prepare` and `World.syncLights`. Wraps Three.js light constructors and exposes a uniform shape so scene/model display configs can serialize and rebuild lights without referencing Three.js directly.
+
+| Type | Three.js class |
+|---|---|
+| `'ambient'` | `AmbientLight` |
+| `'directional'` | `DirectionalLight` |
+| `'point'` | `PointLight` |
+| `'spot'` | `SpotLight` |
+
+> Adding a new light variant: see the [`add-light-type`](#related-skills) skill.
 
 ---
 
@@ -306,6 +442,7 @@ Static utility for safely disposing Three.js objects.
 | Method | Description |
 |---|---|
 | `Destroyer.destroyObject(object)` | Disposes geometry and all materials on a mesh; safe to call as `scene.traverse(Destroyer.destroyObject)` |
+| `Destroyer.destroyImageBitmap(bitmap)` | Closes an `ImageBitmap` source backing a GLTF texture; called by `LoaderCache.delete` for cached entries. |
 
 ---
 
@@ -362,9 +499,34 @@ Use the context hook (exported from `context.tsx`) inside any child component to
 
 ---
 
+## Hooks
+
+**Directory:** [`src/widgets/Model3DViewer/hooks/`](../src/widgets/Model3DViewer/hooks/)
+
+| Hook | File | Purpose |
+|---|---|---|
+| `useViewer` | [`useViewer.ts`](../src/widgets/Model3DViewer/hooks/useViewer.ts) | Lifecycle hook for the `Viewer` instance — creates it, mounts it on `placeRef`, runs the load/run cycle on `model.id` / `?versionId` change, and applies `displayConfig` + `materialOverrides`. Returns `{ placeRef, viewer }`. |
+| `useViewerContext` | [`useViewerContext.ts`](../src/widgets/Model3DViewer/hooks/useViewerContext.ts) | `useContext(ViewerContext)` — returns the `Viewer` shared by `ViewerContextProvider`, or `null`. |
+| `useViewerReviews` | [`useViewerReviews.ts`](../src/widgets/Model3DViewer/hooks/useViewerReviews.ts) | Loads model annotations via RTK Query, keeps the in-scene markers in sync, and exposes `startPlacement` / `clearPending` for placing new comments/annotations. |
+| `useAnimations` | [`useAnimations.ts`](../src/widgets/Model3DViewer/hooks/useAnimations.ts) | Builds an `AnimationMixer` from the loaded model's clips, registers a per-frame mixer update on `Renderer`, and exposes play/pause/speed/loop state plus a clip selector with crossfade. Returns `null` when the model has no animations. |
+| `usePreventMiddleClick` | [`usePreventMiddleClick.ts`](../src/widgets/Model3DViewer/hooks/usePreventMiddleClick.ts) | Returns `{ onMouseEnter, onMouseLeave }` props that toggle a document-level `mousedown` handler suppressing middle-click scroll while the pointer is over the viewer. |
+
+---
+
 ## Development Notes
 
 - **Stats panel:** A `three/addons/libs/stats.module.js` FPS/memory panel is appended to the container in `development` mode only (`import.meta.env.MODE !== 'development'` guard in `Viewer.createStats()`).
-- **GLTF console log:** `Loader.load()` logs the full parsed GLTF result to the console (`console.log('==== GLTF ====',...)`). This is intentional for development inspection and should be removed before production hardening.
 - **`preserveDrawingBuffer: true`:** Required for `getScreenshot()` (`toDataURL`) to work; without it the canvas buffer is cleared after each frame.
+
+---
+
+## Related Skills
+
+The MeshHub agent harness ships with skills for the most common viewer extensions; prefer them over hand-wiring the same plumbing each time:
+
+| Skill | Use for |
+|---|---|
+| [`add-postprocess-effect`](../../.claude/skills/add-postprocess-effect/SKILL.md) | Adding a new `EffectComposer` pass (Bloom, SSAO, DoF, Vignette, ColorCorrection, FXAA, custom `ShaderPass`). Wires the config through `PostProcessConfig`, the model display config UI, and ensures pass order/disposal are correct. |
+| [`add-3d-loader`](../../.claude/skills/add-3d-loader/SKILL.md) | Adding a new file format loader (FBX, OBJ, DAE, STL, etc.) — registers it in `Loader.ts`, dispatches by extension, normalises the result into `LoadedModel3D`, and updates upload validation. |
+| [`add-light-type`](../../.claude/skills/add-light-type/SKILL.md) | Adding a new light variant to `LightBuilder`, the `scene_light` entity, the editor UI, and serialization. |
 

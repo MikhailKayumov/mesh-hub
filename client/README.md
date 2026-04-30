@@ -1,6 +1,6 @@
 # MeshHub — Client
 
-React SPA for the MeshHub platform — a web application for uploading, browsing, and interactively viewing 3D models (`.glb` / GLTF format) in the browser.
+React SPA for the MeshHub platform — a web application for uploading, browsing, and interactively viewing 3D models (`.glb` / GLTF format), editing display settings, organizing models into scenes, and embedding models on third-party sites with API-key access.
 
 > **Monorepo context:** This directory contains only the frontend. The backend is a NestJS REST API located in `../server/`. See the root `README.md` for full-stack setup instructions.
 
@@ -90,7 +90,7 @@ The project follows **Feature-Sliced Design (FSD)** with strict one-directional 
 ```
 src/
 ├── app/          # App bootstrap, router, Redux store, RTK Query base
-├── entities/     # Domain entities: user, model-3d
+├── entities/     # Domain entities: user, model-3d, organization
 ├── pages/        # Route-level page components
 ├── shared/       # Cross-cutting utilities, theme, hooks, constants
 └── widgets/      # Composite reusable UI blocks
@@ -109,6 +109,10 @@ src/
 | [`docs/state-management.md`](docs/state-management.md) | Redux store, RTK Query, persistence |
 | [`docs/api.md`](docs/api.md) | All API endpoints, DTOs, cache tags, auth token flow |
 | [`docs/theming.md`](docs/theming.md) | Color themes, Mantine override, SCSS mixins |
-| [`docs/widgets.md`](docs/widgets.md) | Catalogue of all 19 reusable widgets |
+| [`docs/widgets.md`](docs/widgets.md) | Catalogue of all 28 reusable widget directories |
 | [`docs/3d-viewer.md`](docs/3d-viewer.md) | Model3DViewer architecture, class API, lifecycle |
 | [`docs/editor.md`](docs/editor.md) | EditorPage internals, components, hooks |
+| [`docs/scene-editor.md`](docs/scene-editor.md) | Scene Editor page (panels, viewer integration, mutation flow) |
+| [`docs/embed.md`](docs/embed.md) | Embed feature (project configuration page + public viewer trust model) |
+| [`docs/organization-dashboard.md`](docs/organization-dashboard.md) | Organization & workspace dashboard (members, API keys, webhooks, subscription) |
+| [`docs/notifications.md`](docs/notifications.md) | Notification bell widget + notifications API module |

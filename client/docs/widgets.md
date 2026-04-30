@@ -4,238 +4,109 @@ Widgets live in `src/widgets/`. Each widget is a composite, reusable UI block th
 
 Every widget exposes its public API through an `index.ts` or `index.tsx` barrel file.
 
----
-
-## Layout
-
-### `layouts`
-
-**Path:** `src/widgets/layouts/`
-
-Layout wrapper components used to structure page content areas (e.g. centred content column, split panels). Consumed by `pages/` to enforce consistent spacing.
+The directory currently contains **28 entries** — 27 widgets plus the `layouts/` folder of layout wrappers.
 
 ---
 
-### `Header`
+## Top bar / Navigation
 
-**Path:** `src/widgets/Header/`
+Widgets composed by the global `Header` and the user / org navigation chrome.
 
-Global site header rendered inside `BasePage`. Includes the `Logo`, navigation links, user avatar/menu, and the `ColorSchemeSelect` + `ColorThemeSwitcher` controls. Reads auth state from `useCurrentUserQuery`.
-
----
-
-### `Footer`
-
-**Path:** `src/widgets/Footer/`
-
-Global site footer rendered inside `BasePage`. Contains copyright text and supplementary links.
-
----
-
-### `Logo`
-
-**Path:** `src/widgets/Logo/`
-
-The MeshHub brand logo component. Renders as a link to `/`. Accepts size/variant props for use in different layout contexts (header, auth pages).
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `Header` | `src/widgets/Header/` | Global site header: brand, search, org switcher, color scheme toggle, notifications, auth/user menu. | `widgets/layouts/Base` | Mantine, RTK Query (`useSession`) |
+| `Logo` | `src/widgets/Logo/` | MeshHub brand logo SVG, accepts `width`/`height`. | `Header`, auth pages | — |
+| `OrgSwitcher` | `src/widgets/OrgSwitcher/` | Org selector dropdown; calls `useMyOrganizationsQuery` and switches active org. | `Header` | Mantine, RTK Query |
+| `NotificationBell` | `src/widgets/NotificationBell/` | Bell icon + popover listing recent notifications, unread count polled every 60 s. Marks read on click and routes to scene/model/org. | `Header` | Mantine `Popover`/`Indicator`, `useGetNotificationsQuery`, `dayjs` |
+| `SearchInput` | `src/widgets/SearchInput/` | Combobox-based global search across models and scenes; debounced 300 ms, queries `useModels3DQuery` + `useScenesQuery`. | `Header` (visible from `md` breakpoint) | Mantine `Combobox`, RTK Query |
+| `ColorSchemeSelect` | `src/widgets/ColorSchemeSelect/` | Light/dark Mantine color scheme toggle. | `Header`, Editor header | Mantine `useMantineColorScheme` |
+| `ColorThemeSwitcher` | `src/widgets/ColorThemeSwitcher/` | Palette selector; dispatches `userActions.setTheme(name)` across the 7 `ThemeName` values. | `pages/Editor` footer, User Settings page | Redux (`userSlice`) |
+| `UserSidebar` | `src/widgets/UserSidebar/` | Left navigation panel for the `/user` section (Profile, Settings, models). Highlights active route. | `widgets/layouts/User` | React Router, Mantine `NavLink` |
 
 ---
 
-## User & Auth
+## Layouts
 
-### `Avatar`
-
-**Path:** `src/widgets/Avatar/`
-
-Displays a user avatar image. Falls back to initials when no `avatar` URL is set. Used in the header, user sidebar, and model cards.
-
----
-
-### `UserSidebar`
-
-**Path:** `src/widgets/UserSidebar/`
-
-Left-side navigation panel for the `/user` section. Contains links to Profile, Settings, and the user's model list. Highlights the active route.
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `layouts` | `src/widgets/layouts/` | Three layout wrappers: `BaseLayout` (global `AppShell` with `Header` + `Footer`), `AuthLayout` (centered `Paper` for login/register), `UserLayout` (`UserSidebar` + content column). | `pages/` route components | Mantine `AppShell` |
+| `Footer` | `src/widgets/Footer/` | Global site footer with copyright text and supplementary links. | `widgets/layouts/Base` | Mantine |
 
 ---
 
-### `ChangeAvatarModal`
+## Auth & Profile modals
 
-**Path:** `src/widgets/ChangeAvatarModal/`
-
-Modal dialog for uploading a new avatar image. Uses `@mantine/dropzone` for file selection and calls `useUpdateCurrentUserAvatarMutation`.
-
----
-
-### `ChangePasswordModal`
-
-**Path:** `src/widgets/ChangePasswordModal/`
-
-Modal dialog for changing the current user's password. Form is validated with Zod. Calls `useChangePasswordMutation`.
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `ChangeAvatarModal` | `src/widgets/ChangeAvatarModal/` | Modal for uploading a new avatar via dropzone. Calls `useUpdateCurrentUserAvatarMutation`. | `widgets/Avatar` | Mantine `Modal`, `@mantine/dropzone`, RTK Query |
+| `ChangePasswordModal` | `src/widgets/ChangePasswordModal/` | Modal to change the current user's password; Zod-validated form, `useChangePasswordMutation`. | `pages/User/pages/Profile` | Mantine `Modal`, Zod, RTK Query |
 
 ---
 
-### `SessionTable`
+## 3D & Editor
 
-**Path:** `src/widgets/SessionTable/`
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `Model3DViewer` | `src/widgets/Model3DViewer/` | Primary interactive 3D viewer. Wraps the Three.js class layer (`Viewer`, `CameraController`, `Renderer`, `World`, `MeasureTool`) in a React component with top/bottom bars, fullscreen, and a context provider. See [`3d-viewer.md`](3d-viewer.md). | `pages/Models3D/Model3D`, `pages/Editor`, `pages/EmbedViewer` | Three.js, React |
+| `AnnotationManager` | `src/widgets/AnnotationManager/` | Manages model-level 3D annotation pins. Highlights points via `Viewer.setSelectedObject`; supports create/edit/delete and drag reorder. | `pages/Models3D/Model3D`, `pages/Editor` Navbar | `@dnd-kit`, Mantine, RTK Query |
+| `SceneAnnotationManager` | `src/widgets/SceneAnnotationManager/` | Scene-level annotations: places pins by clicking the scene (`viewer.setMode('annotate')`), supports drag reorder, fly-to-camera, and read-only timeline mode. Operates on `sceneId` and a `Viewer` reference. | `pages/PublicScene`, `pages/SceneEditor` (`SceneReviewPanel`) | `@dnd-kit`, Three.js (`Vector3`), Mantine, RTK Query |
+| `ReviewPanel` | `src/widgets/ReviewPanel/` | Composite review panel combining starred comments and annotation entries; provides comment add/edit forms. Uses `useModelCommentsQuery`, `useAddCommentMutation`, `useModelAnnotationsQuery`. | `pages/Models3D/Model3D`, `pages/Editor` Navbar, `pages/SceneEditor`, `pages/PublicScene` | Mantine, RTK Query |
 
-Paginated table (powered by `mantine-datatable`) listing all active sessions for the current user. Each row shows device info parsed by `ua-parser-js` (IP, user-agent, created/expire dates) and a delete button that calls `useCloseCurrentUserSessionMutation`.
-
----
-
-## 3D Models
-
-### `Model3DViewer`
-
-**Path:** `src/widgets/Model3DViewer/`
-
-The primary interactive 3D model viewer. Wraps the Three.js class layer in a React component with a top bar, bottom bar, fullscreen support, and a context provider.
-
-**Props** (`Model3DPageViewerProps` = `UseViewerProps`):
-
-| Prop | Type | Required | Description |
-|---|---|---|---|
-| `model` | `Model3DResponseDto \| null` | Yes | Model data to load and display |
-| `onInit` | `(viewer: Viewer) => void \| Promise<void>` | No | Called after the viewer is initialised |
-| `onReady` | `(viewer: Viewer) => void \| Promise<void>` | No | Called after the model is loaded and the camera is positioned |
-| `onDestroy` | `(viewer?: Viewer) => void \| Promise<void>` | No | Called before the viewer is destroyed |
-
-See [`3d-viewer.md`](3d-viewer.md) for the full architecture.
+`MeasureTool` lives at `src/widgets/Model3DViewer/classes/MeasureTool/` — it is internal to the viewer, not a top-level widget.
 
 ---
 
-### `Models3DList`
+## Lists / Data display
 
-**Path:** `src/widgets/Models3DList/`
-
-Responsive grid/list of model cards. Accepts a paginated array of `Model3DResponseDto` items and renders thumbnails, names, owner info, and category badges. Used on both the public main page and the user's own models page.
-
----
-
-### `Upload3DModelModal`
-
-**Path:** `src/widgets/Upload3DModelModal/`
-
-Modal dialog for uploading a new 3D model file. Accepts `.glb`, `.gltf`, `.fbx`, `.obj`, `.dae`, `.stl`, and `.zip` (multi-file bundles) via `@mantine/dropzone`. Posts the `FormData` payload via the `uploadModel3DWithProgress` XHR helper (`shared/api/uploadModel3DWithProgress.ts`) so a Mantine `Progress` bar can advance for files > 10 MB; dispatches `Api.util.invalidateTags([CurrentUser3DModels, Get3DModels])` on success and navigates to the editor for the new model. Shows a context-aware Alert tip when the user selects an `.obj` file.
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `Models3DList` | `src/widgets/Models3DList/` | Responsive grid of model cards (thumbnail, name, owner, category badges) over a paginated `Model3DResponseDto[]`. | `pages/Main`, `pages/UserModels3D` | Mantine |
+| `EmptyData` | `src/widgets/EmptyData/` | Generic empty-state illustration + label, used wherever a list/query yields no rows. | `NotificationBell`, `SceneAnnotationManager`, dashboards, editor panels | Mantine |
+| `SessionTable` | `src/widgets/SessionTable/` | Paginated table of the current user's active sessions; parses UA via `ua-parser-js` and offers row-level revoke (`useCloseCurrentUserSessionMutation`). | `pages/User/pages/Settings` | `mantine-datatable`, `ua-parser-js`, RTK Query |
+| `VersionHistory` | `src/widgets/VersionHistory/` | Lists model upload versions with size/date/active flag. Supports upload (`useUploadVersionMutation`), activate (`useActivateVersionMutation`), delete (`useDeleteVersionMutation`). | `pages/Models3D/Model3D`, `pages/Editor` Navbar | Mantine, RTK Query |
+| `QuotaBar` | `src/widgets/QuotaBar/` | Storage quota progress bar driven by `useGetOrgSubscriptionQuery`; renders used/total via `formatBytes`. | `pages/OrgDashboard` | Mantine `Progress`, RTK Query |
 
 ---
 
-## UI Primitives
+## Form controls
 
-### `EmptyData`
-
-**Path:** `src/widgets/EmptyData/`
-
-A generic empty-state illustration + message component. Shown when a list or query result is empty. Accepts a customisable message prop.
-
----
-
-### `Errors`
-
-**Path:** `src/widgets/Errors/`
-
-A collection of pre-built error state components:
-- `NotFoundError` — 404 illustration and message
-- `ForbiddenError` — 403 state
-- `ServiceUnavailableError` — 503 state
-
-Used within pages and by `ErrorPage` to display contextual error UI.
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `NumberInputSlider` | `src/widgets/NumberInputSlider/` | Composite numeric input pairing a Mantine `NumberInput` and `Slider` that stay in sync. Used for renderer/scene/material settings (intensity, exposure, etc.). | `pages/Editor` Navbar tabs (Materials, Display, Lights), `pages/SceneEditor` panels | Mantine `NumberInput`, `Slider` |
+| `PhoneInput` | `src/widgets/PhoneInput/` | Phone number input with masked formatting. | `pages/User/pages/Profile` | `react-imask` |
+| `WysiwygEditor` | `src/widgets/WysiwygEditor/` | Rich text editor on Tiptap with `@mantine/tiptap` toolbar — bold/italic/underline/strike/highlight/super/sub/link/text-align/placeholder. Used for model description fields. | `pages/Models3D/Model3D` `EditPropertiesDrawer` | Tiptap (`StarterKit`, `Underline`, `Link`, `Superscript`, `Subscript`, `Highlight`, `TextAlign`, `Placeholder`), `@mantine/tiptap` |
 
 ---
 
-### `BaseErrorBoundary`
+## Upload modals
 
-**Path:** `src/widgets/BaseErrorBoundary/`
-
-React error boundary used as the `ErrorBoundary` on the root `BasePage` route. Catches unhandled render errors in the `BasePage` subtree and displays a fallback error UI instead of a blank page.
-
----
-
-### `NumberInputSlider`
-
-**Path:** `src/widgets/NumberInputSlider/`
-
-Composite input combining a Mantine `NumberInput` and a `Slider` that stay in sync. Used in the 3D editor's renderer and scene settings panels to control numeric values (e.g. light intensity, exposure).
-
-**Props:**
-| Prop | Type | Description |
-|---|---|---|
-| `value` | `number` | Current value |
-| `onChange` | `(v: number) => void` | Change handler |
-| `min` | `number` | Minimum value |
-| `max` | `number` | Maximum value |
-| `step` | `number` | Step increment |
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `Upload3DModelModal` | `src/widgets/Upload3DModelModal/` | Modal for uploading a new 3D model (`.glb`/`.gltf`/`.fbx`/`.obj`/`.dae`/`.stl`/`.zip`). Posts via the `uploadModel3DWithProgress` XHR helper (so the Mantine `Progress` bar advances on > 10 MB files), invalidates `CurrentUser3DModels` + `Get3DModels` tags, and routes to the editor for the new model. Shows a context tip when an `.obj` is selected. | `pages/UserModels3D` | Mantine `Modal`/`Progress`, `@mantine/dropzone` |
 
 ---
 
-### `PhoneInput`
+## Error / Boundary
 
-**Path:** `src/widgets/PhoneInput/`
-
-Phone number input with masked formatting powered by `react-imask`. Used in the Profile edit form.
-
----
-
-### `ColorSchemeSelect`
-
-**Path:** `src/widgets/ColorSchemeSelect/`
-
-Light / Dark mode toggle control. Reads and sets the Mantine color scheme.
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `BaseErrorBoundary` | `src/widgets/BaseErrorBoundary/` | React error boundary used as the route `ErrorBoundary` on `BaseLayout`. Catches unhandled render errors and falls back to `NotFoundError`. | `app/router` (root route) | React error boundaries |
+| `Errors` | `src/widgets/Errors/` | Pre-built error states: `BadRequestError`, `NotFoundError`, `ForbiddenError`, `ServiceUnavailableError`. | `pages/Error`, `pages/Editor`, `BaseErrorBoundary` | Mantine, illustrations |
 
 ---
 
-### `ColorThemeSwitcher`
+## Misc
 
-**Path:** `src/widgets/ColorThemeSwitcher/`
-
-Palette selector UI. Dispatches `userActions.setTheme(name)` to switch between the 7 available `ThemeName` values.
-
----
-
-### `WysiwygEditor`
-
-**Path:** `src/widgets/WysiwygEditor/`
-
-Rich text editor built on **Tiptap** with the `@mantine/tiptap` toolbar integration. Supports bold, italic, underline, strikethrough, highlight, superscript, subscript, links, text alignment, and placeholder text. Used in the model description field on the detail/editor pages.
-
-**Extensions enabled:** `StarterKit`, `Underline`, `Link`, `Superscript`, `Subscript`, `Highlight`, `TextAlign`, `Placeholder`.
+| Widget | Path | Purpose | Mounted by | Key deps |
+|---|---|---|---|---|
+| `Avatar` | `src/widgets/Avatar/` | User avatar with initials fallback, hover overlay with edit/delete actions. Owns and opens `ChangeAvatarModal`. Calls `useUpdateCurrentUserAvatarMutation` for delete. | `widgets/UserSidebar` (and other user-card surfaces) | Mantine `Avatar`/`Overlay`, RTK Query |
 
 ---
 
-### `OrgSwitcher`
+## Cross-references
 
-**Path:** `src/widgets/OrgSwitcher/`
-
-Organization selector dropdown. Displays the user's organizations and allows switching the active org context. Used in the main `Header` widget. Triggers `useMyOrganizationsQuery` and navigates to the selected org dashboard.
-
----
-
-### `QuotaBar`
-
-**Path:** `src/widgets/QuotaBar/`
-
-Visual progress bar that shows storage quota usage for an organization. Fetches subscription data via `useGetOrgSubscriptionQuery` and renders used/total storage in human-readable form (`formatBytes`). Used in the Org Dashboard sidebar.
-
----
-
-### `ReviewPanel`
-
-**Path:** `src/widgets/ReviewPanel/`
-
-Composite panel for model reviews: lists comments with ratings (stars) and 3D annotation entries. Provides forms for adding/editing comments. Uses `useModelCommentsQuery`, `useAddCommentMutation`, `useModelAnnotationsQuery`, and related hooks. Displayed on the Model detail page and in the Editor sidebar.
-
----
-
-### `AnnotationManager`
-
-**Path:** `src/widgets/AnnotationManager/`
-
-Manages 3D annotation points for a model. Integrates with the `Viewer` via `setSelectedObject` to highlight the annotation position in the scene. Supports creating, editing, deleting, and reordering annotations via drag-and-drop. Uses `useModelAnnotationsQuery`, `useCreateAnnotationMutation`, `useReorderAnnotationsMutation`, and related hooks.
-
----
-
-### `VersionHistory`
-
-**Path:** `src/widgets/VersionHistory/`
-
-Displays the upload history (model versions) for a 3D model. Shows version number, upload date, file size, and active status. Allows uploading a new version (`useUploadVersionMutation`), activating a specific version (`useActivateVersionMutation`), and deleting a version (`useDeleteVersionMutation`). Used in the Editor sidebar.
-
+- [`3d-viewer.md`](3d-viewer.md) — full architecture of `Model3DViewer` and its Three.js class layer.
+- [`editor.md`](editor.md) — model editor page that mounts `Model3DViewer`, `AnnotationManager`, `ReviewPanel`, `VersionHistory`, `NumberInputSlider`, `ColorThemeSwitcher`.
+- [`scene-editor.md`](scene-editor.md) — scene editor that mounts `Model3DViewer` and `SceneAnnotationManager`/`ReviewPanel` via `SceneReviewPanel`.
+- [`organization-dashboard.md`](organization-dashboard.md) — uses `OrgSwitcher` (in the header) and `QuotaBar`.
+- [`notifications.md`](notifications.md) — backend + transport feeding `NotificationBell`.

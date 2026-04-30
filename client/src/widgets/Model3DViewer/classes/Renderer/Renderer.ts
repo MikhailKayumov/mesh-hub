@@ -236,6 +236,14 @@ export class Renderer {
     this.placeObserver?.disconnect();
     this.renderCallbacks.clear();
     this.renderer.setAnimationLoop(null);
+
+    // Dispose every pass (each may hold WebGLRenderTargets / fsQuad / shader uniforms),
+    // then the composer's own ping-pong render targets.
+    for (const pass of this.composer.passes) {
+      (pass as { dispose?: () => void }).dispose?.();
+    }
+    this.composer.dispose();
+
     this.renderer.getRenderTarget()?.dispose();
     this.renderer.dispose();
     this.css2dRenderer.domElement.remove();

@@ -15,6 +15,7 @@ Full rework of the 3D platform: personal models/scenes, advanced editors, animat
 | [ITER-7.md](ITER-7.md) | Review & Annotations — Scenes + Access Control
 | [ITER-8.md](ITER-8.md) | Discovery & UX Polish — Search, Presets, Tools
 | [ITER-9.md](ITER-9.md) | Embed & Integrations — Notifications, AR, Webhooks
+| [ITER-10.md](ITER-10.md) | Migration Consolidation — Single InitAll File
 
 ## Architecture Pillars
 

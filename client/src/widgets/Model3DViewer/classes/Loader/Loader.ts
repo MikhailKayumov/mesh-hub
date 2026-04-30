@@ -9,6 +9,7 @@ import { type LoadedModel3D } from '../types';
 import { LoaderCache } from './LoaderCache.ts';
 
 type SupportedFormat = 'glb' | 'gltf' | 'fbx' | 'obj' | 'dae' | 'stl';
+type FormatLoader = (url: string) => Promise<LoadedModel3D>;
 
 export class Loader {
   public static readonly cache = new LoaderCache(3);
@@ -21,27 +22,28 @@ export class Loader {
     // are stateful, so reusing instances would leak materials/paths between calls.
   };
 
+  // Registry keyed by file extension. `glb` aliases to `gltf` so both share the same loader entry.
+  // Adding a new format means adding one entry here; `load()` does not need to change.
+  private static readonly registry: ReadonlyMap<SupportedFormat, FormatLoader> = new Map<SupportedFormat, FormatLoader>(
+    [
+      ['gltf', (url) => Loader.loadGltf(url)],
+      ['glb', (url) => Loader.loadGltf(url)],
+      ['fbx', (url) => Loader.loadFbx(url)],
+      ['obj', (url) => Loader.loadObj(url)],
+      ['dae', (url) => Loader.loadDae(url)],
+      ['stl', (url) => Loader.loadStl(url)],
+    ],
+  );
+
   public static resizeCache(maxItems: number): void {
     Loader.cache.maxSize = maxItems;
   }
 
   public static async load(filepath: string): Promise<LoadedModel3D> {
     const format = Loader.detectFormat(filepath);
+    const loader = Loader.registry.get(format as SupportedFormat) ?? Loader.loadGltf;
 
-    switch (format) {
-      case 'fbx':
-        return Loader.loadFbx(filepath);
-      case 'obj':
-        return Loader.loadObj(filepath);
-      case 'dae':
-        return Loader.loadDae(filepath);
-      case 'stl':
-        return Loader.loadStl(filepath);
-      case 'glb':
-      case 'gltf':
-      default:
-        return Loader.loadGltf(filepath);
-    }
+    return loader(filepath);
   }
 
   private static detectFormat(url: string): SupportedFormat | string {

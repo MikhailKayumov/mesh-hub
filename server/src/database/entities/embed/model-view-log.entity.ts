@@ -1,9 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { DatabaseSchemas, EmbedSchemaTables } from '@/database/constants';
 import { IntIdBaseEntity } from '@/database/entities/base';
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { EmbedProjectEntity } from './embed-project.entity';
 
+@Index(['modelId'])
+@Index(['embedProjectId'])
 @Entity({ name: EmbedSchemaTables.ModelViewLog, schema: DatabaseSchemas.Embed })
 export class ModelViewLogEntity extends IntIdBaseEntity {
   @Column({ type: 'text', name: 'origin', nullable: true })

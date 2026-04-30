@@ -28,6 +28,10 @@ export class LoaderCache {
     const item = this.store.get(name);
     if (!item) return false;
 
+    // Traverse the cached scene graph and dispose geometries / materials / textures.
+    // Without this, evicted models leak GPU memory every time the cache exceeds maxSize.
+    item.scene.traverse((object) => Destroyer.destroyObject(object));
+
     const associations = item.associations?.keys();
     if (associations) {
       for (const association of associations) {

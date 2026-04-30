@@ -1,8 +1,9 @@
-import { CreateDateColumn, JoinColumn, ManyToOne, Column, Entity } from 'typeorm';
+import { CreateDateColumn, JoinColumn, ManyToOne, Column, Entity, Index } from 'typeorm';
 import { AuthSchemaTables, DatabaseSchemas } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { UserEntity } from '@/database/entities/user/user.entity';
 
+@Index(['user'])
 @Entity({ name: AuthSchemaTables.Session, schema: DatabaseSchemas.Auth })
 export class SessionEntity extends GuidIdEntityBase {
   @ManyToOne(() => UserEntity, (user) => user.sessions, { onDelete: 'CASCADE' })

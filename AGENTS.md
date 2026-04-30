@@ -444,3 +444,23 @@ When the server API changes, update `dto.ts` by hand to reflect the new response
 - **Never send JWT in Authorization header** — the API reads tokens exclusively from HttpOnly cookies.
 - **`synchronize: false`** — database schema is managed only via TypeORM migrations, never via auto-sync.
 - **Soft-delete** — all entities extending the base classes include a `deletedAt` column; use TypeORM's soft-delete methods, not hard deletes, unless the operation explicitly requires removal.
+- **Tests live under `<workspace>/test/<kind>/`, never alongside source.** Each kind (`unit`, `e2e`, …) gets its own subfolder with a dedicated `jest.config.json` and a matching script in `package.json`. Adding a new test kind means adding a new subfolder + config + script — do not put a spec next to the file it covers.
+
+---
+
+## Test Layout
+
+```
+server/
+└── test/
+    ├── unit/                        # mocked deps, no DB / network
+    │   ├── jest.config.json
+    │   └── <module>/<thing>.spec.ts
+    └── e2e/                         # Supertest against real Nest app
+        ├── jest.config.json
+        └── <feature>.e2e-spec.ts
+```
+
+- Run scripts: `npm test` → unit, `npm run test:e2e` → e2e (both defined in `server/package.json`).
+- Both Jest configs set `rootDir` to the workspace root and map `^@/(.*)$` → `<rootDir>/src/$1`, so specs use `@/...` imports just like source files.
+- The same convention applies if/when frontend tests are introduced — they go under `client/test/<kind>/`, never next to the component.

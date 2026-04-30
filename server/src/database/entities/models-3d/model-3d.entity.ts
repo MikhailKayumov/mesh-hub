@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { ModelVisibility } from '@/constants';
 import { DatabaseSchemas, Models3DSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
@@ -7,6 +7,7 @@ import { ModelVersionEntity } from '@/database/entities/models-3d/model-version.
 import { CategoryEntity } from '@/database/entities/resources/category.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 
+@Index(['user'])
 @Entity({ name: Models3DSchemaTables.Model3D, schema: DatabaseSchemas.Models3D })
 export class Model3dEntity extends GuidIdEntityBase {
   @ManyToOne(() => UserEntity, (user) => user.sessions, { onDelete: 'CASCADE' })

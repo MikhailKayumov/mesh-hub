@@ -1,9 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { DatabaseSchemas, OrganizationsSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { OrgMemberRole } from './org-member.entity';
 import { OrganizationEntity } from './organization.entity';
 
+@Index(['orgId'])
 @Entity({ name: OrganizationsSchemaTables.OrgInvite, schema: DatabaseSchemas.Organizations })
 export class OrgInviteEntity extends GuidIdEntityBase {
   @Column({ type: 'text', name: 'invited_email', nullable: false })

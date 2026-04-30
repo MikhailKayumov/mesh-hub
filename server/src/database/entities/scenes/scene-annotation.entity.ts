@@ -6,6 +6,8 @@ import { SceneObjectEntity } from './scene-object.entity';
 import { SceneEntity } from './scene.entity';
 
 @Index(['sceneId'])
+@Index(['sceneObjectId'])
+@Index(['userId'])
 @Entity({ name: ScenesSchemaTables.SceneAnnotation, schema: DatabaseSchemas.Scenes })
 export class SceneAnnotationEntity extends GuidIdEntityBase {
   @Column({ type: 'uuid', name: 'scene_id', nullable: false })

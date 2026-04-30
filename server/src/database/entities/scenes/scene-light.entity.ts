@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { DatabaseSchemas, ScenesSchemaTables } from '@/database/constants';
 import { GuidIdEntityBase } from '@/database/entities/base';
 import { SceneEntity } from './scene.entity';
@@ -9,6 +9,7 @@ export enum LightType {
   Spot = 'spot',
 }
 
+@Index(['sceneId'])
 @Entity({ name: ScenesSchemaTables.SceneLight, schema: DatabaseSchemas.Scenes })
 export class SceneLightEntity extends GuidIdEntityBase {
   @Column({ type: 'enum', enum: LightType, name: 'type', nullable: false })

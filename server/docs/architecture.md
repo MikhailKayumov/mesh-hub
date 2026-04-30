@@ -102,6 +102,41 @@ Guard execution order (NestJS convention): guards are applied in the order they 
 
 ---
 
+## Per-Module Guards
+
+In addition to the two global guards, two module-scoped guards are opted in via decorators on individual controllers/handlers. They run after `JwtAuthGuard` (or independently of it, in the `@Public()` API-key case).
+
+| Guard | File | Decorator | Purpose |
+|---|---|---|---|
+| `OrgMemberGuard` | `src/modules/organizations/guards/org-member.guard.ts` | `@OrgMemberRole(...)` (`src/modules/organizations/guards/org-member-role.decorator.ts`) | Loads org membership from the `:id` route param + `req.session.user.id`, attaches it as `request.orgMember`, and enforces a minimum role. |
+| `ApiKeyGuard` | `src/modules/api-keys/guards/api-key.guard.ts` | `@RequiredScope(scope)` (`src/modules/api-keys/decorators/required-scope.decorator.ts`) | Validates the `x-api-key` header against `embed.api_key.key_hash` and enforces a required scope. Used by embed-public endpoints (typically combined with `@Public()` to bypass JWT). |
+
+### `OrgMemberGuard`
+
+- Reads `:id` from the route params (org-scoped controllers expose the org UUID as `:id`).
+- Looks up the `(orgId, userId)` pair via `OrgMemberRepository.findByOrgAndUser`. Missing membership → 403.
+- Sets `request.orgMember` so downstream handlers can read the membership without re-querying.
+- Reads required roles from `ORG_MEMBER_ROLE_KEY` metadata. Roles are compared by weight (`OrgMemberRoleWeights` in `src/database/entities/organizations/org-member.entity.ts`):
+
+  | Role | Weight |
+  |---|---|
+  | `owner` | 3 |
+  | `admin` | 2 |
+  | `editor` | 1 |
+  | `viewer` | 0 |
+
+  The handler's required weight is `min(weights)` of the listed roles; the caller's weight must be `>=` that threshold or the guard throws 403.
+
+### `ApiKeyGuard`
+
+- Hashes the raw `x-api-key` header with SHA-256 and looks up `embed.api_key` by `key_hash` (raw secret is never persisted).
+- Rejects revoked or expired keys (401).
+- If `@RequiredScope(scope)` is set, asserts the scope is present in `api_key.scopes` (otherwise 403 via `AppHttpException`).
+- Best-effort updates `last_used_at` (fire-and-forget).
+- Attaches the `ApiKeyEntity` as `request.apiKey`. Available scopes are defined in `src/modules/api-keys/api-key.constants.ts` (`embed:read`, `read:models`, `read:scenes`).
+
+---
+
 ## Design Patterns
 
 ### Repository Pattern
@@ -122,12 +157,12 @@ Mappers are plain TypeScript classes (not NestJS providers) with methods such as
 
 ### Strategy Pattern (File Storage)
 
-`FileStorageModule` provides `FileStorageService` backed by a pluggable `IFileStorageStrategy`.
+`FilesModule` provides `FilesService` (`src/modules/files/files.service.ts`) backed by a pluggable `IFileStorageStrategy`.
 
-- **`FsFileStorageStrategy`** — default; stores files on the local filesystem under `server/files/`.
-- **`S3FileStorageStrategy`** — AWS S3 SDK v3; credentials and bucket config stored per-org in `org_subscription.s3_config`, encrypted with AES-256-CBC.
+- **`FsFileStorageStrategy`** (`src/modules/files/strategies/fs.files.strategy.ts`) — default; stores files on the local filesystem under `server/files/`. Held as a single instance on the service; initialized in `onApplicationBootstrap`.
+- **`S3FileStorageStrategy`** (`src/modules/files/strategies/s3.files.strategy.ts`) — implemented; backed by AWS S3 SDK v3. Per-org bucket and credentials are read from `org_subscription.storage_config_encrypted` (AES-256-CBC, see [Encryption](#encryption)) and a fresh strategy instance is constructed for each request.
 
-`FilesService.getStrategyForOrg(orgId)` returns the correct strategy for an organization at runtime. File controllers pass `orgId` to the service to ensure org-scoped storage routing.
+`FilesService.getStrategyForOrg(orgId)` looks up the `OrgSubscriptionEntity`; if `storageBackend === 's3'` and `storageConfigEncrypted` is set, it decrypts the JSON config with `decryptAes256` and returns a new `S3FileStorageStrategy`. Otherwise it falls back to the local strategy. Decrypt failures surface as `InternalServerErrorException` ("File storage configuration error"). Org-scoped helpers on `FilesService` (`saveModelVersionForOrg`, `saveSceneHdri`, `saveModelDisplayHdri`, `saveModelMaterialTexture`, `saveModelAudio`, etc.) all route through `getStrategyForOrg`; the legacy non-`ForOrg` helpers stay on the local strategy.
 
 ### Pagination Pattern
 
@@ -207,6 +242,62 @@ In S3 mode the same key structure is used inside the org's S3 bucket.
 
 ---
 
+## Encryption
+
+Symmetric AES-256-CBC helpers live in `src/utils/encryption.ts`:
+
+| Function | Signature | Output / Behaviour |
+|---|---|---|
+| `encryptAes256` | `(plaintext: string, keyHex: string) => string` | Generates a random 16-byte IV and returns `<ivHex>:<ciphertextHex>`. |
+| `decryptAes256` | `(ciphertext: string, keyHex: string) => string` | Splits on `:`, throws on malformed input or wrong key, returns the original UTF-8 plaintext. |
+
+Both helpers consume the same `STORAGE_ENCRYPTION_KEY` (hex-encoded 32-byte key) exposed via `ConfigService.storageEncryptionKey`. There is no per-feature key derivation — encrypted blobs from different features are interchangeable as long as they round-trip with this single key.
+
+Current callers:
+
+| Caller | What is encrypted |
+|---|---|
+| `FilesService.getStrategyForOrg` (`src/modules/files/files.service.ts`) | Reads `org_subscription.storage_config_encrypted` — the org's per-org S3 bucket + credentials JSON. |
+| `WebhookCryptoService` (`src/modules/organizations/webhooks/services/webhook-crypto.service.ts`) | Encrypts/decrypts webhook signing secrets (`webhook.secret`). Also exposes `generateSecret()` (32 random bytes hex). |
+
+---
+
+## Storage Quota
+
+`StorageQuotaService` (`src/modules/storage-quota/storage-quota.service.ts`) is the single place that enforces per-org plan limits. The module is global (`StorageQuotaModule`), exporting only the service — there is no controller.
+
+| Method | Purpose |
+|---|---|
+| `getStorageUsed(orgId)` | Sums `model_3d_file.size` for non-deleted models across all workspaces in the org (raw `dataSource.query`). |
+| `getSubscription(orgId)` | Loads the `OrgSubscriptionEntity` for the org. |
+| `checkStorageQuota(orgId)` | Throws `AppHttpException(402)` if `storage_limit_bytes` is set and `getStorageUsed >= limit`. No-op when limit is null. |
+| `checkSeatsQuota(orgId)` | Throws `AppHttpException(402)` if `seats_limit` is set and current member count `>= limit`. |
+| `checkStorageQuotaByWorkspace(workspaceId)` | Resolves the workspace's `orgId` and delegates to `checkStorageQuota`. |
+
+Current call sites on `mvp`:
+
+- `OrganizationController` — surfaces usage on subscription detail endpoints.
+- `Model3dService.upload3DModel` — calls `checkStorageQuotaByWorkspace` before saving (only when an explicit `workspaceId` is supplied).
+
+Integration into other write paths (scenes, model versions, embed assets, avatar/logo uploads) is **not** wired yet on `mvp` — those endpoints currently bypass the quota check.
+
+---
+
+## Webhook Queue
+
+Webhooks live under `src/modules/organizations/webhooks/` and use BullMQ for delivery:
+
+- `BullModule.registerQueue({ name: WEBHOOK_QUEUE })` is declared in `webhooks.module.ts` (`WEBHOOK_QUEUE = 'webhooks'`, see `webhooks.constants.ts`).
+- `WebhookDeliveryService.dispatch(orgId, event, payload)` is the producer: it loads active webhooks subscribed to the event via `WebhookRepository.findActiveForEvent` and enqueues one `WEBHOOK_DELIVER_JOB` per webhook with `{ attempts: 3, backoff: { type: 'exponential', delay: 5000 }, removeOnComplete: true, removeOnFail: true }`. Errors during enqueue are logged and swallowed — never surfaced to the caller.
+- `WebhookProcessor` (`@Processor(WEBHOOK_QUEUE)`) is the consumer:
+  1. Reloads the webhook; skips inactive/deleted ones.
+  2. Decrypts the AES-encrypted `webhook.secret` via `WebhookCryptoService` (see [Encryption](#encryption)).
+  3. Builds the body `{ event, payload, deliveredAt }` and signs it with HMAC-SHA-256 using the **decrypted** secret.
+  4. POSTs to `webhook.url` with `Content-Type: application/json`, `X-Webhook-Signature: sha256=<hex>`, and `X-Webhook-Event: <event>`. 10-second `AbortController` timeout.
+  5. Persists a `WebhookDeliveryLogEntity` (with response status / `deliveredAt` / `failedAt`) and re-throws on failure so Bull retries per the queue's `attempts`/`backoff` config.
+
+---
+
 ## Cron Jobs
 
 | Module | Job | Schedule | Purpose |
@@ -227,3 +318,16 @@ To regenerate the static JSON file:
 ```bash
 npm run swagger:generate
 ```
+
+---
+
+## See Also
+
+Per-domain reference docs in `server/docs/`:
+
+- [organizations.md](organizations.md) — orgs, members, subscriptions, invites, webhooks
+- [scenes.md](scenes.md) — scene composition (objects, lights, HDRI)
+- [embed.md](embed.md) — embed projects, public viewer, API keys, view logs
+- [model-3d.md](model-3d.md) — model upload, versions, comments, annotations
+- [notifications.md](notifications.md) — email gateway and templates
+

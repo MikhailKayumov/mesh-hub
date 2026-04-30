@@ -1,3 +1,4 @@
+import { SceneConfig } from '@/database/entities/scenes/scene-config.type';
 import { SceneLightEntity } from '@/database/entities/scenes/scene-light.entity';
 import { SceneObjectEntity } from '@/database/entities/scenes/scene-object.entity';
 import { SceneEntity } from '@/database/entities/scenes/scene.entity';
@@ -8,6 +9,12 @@ import {
   SceneResponseDto,
 } from '../dto/scene.response.dto';
 
+const DEFAULT_CONFIG: SceneConfig = {
+  backgroundColor: '#000000',
+  ambientLightIntensity: 0.5,
+  cameraBookmarks: [],
+} as const;
+
 export class SceneMapper {
   public static toResponse(entity: SceneEntity): SceneResponseDto {
     return {
@@ -17,7 +24,7 @@ export class SceneMapper {
       visibility: entity.visibility,
       name: entity.name,
       description: entity.description,
-      config: entity.config,
+      config: entity.config ?? DEFAULT_CONFIG,
       thumbnailPath: entity.thumbnailPath,
       objects: (entity.objects ?? []).map(SceneMapper.toObjectResponse),
       lights: (entity.lights ?? []).map(SceneMapper.toLightResponse),

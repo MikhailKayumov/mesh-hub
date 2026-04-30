@@ -60,12 +60,14 @@ export function SceneConfigPanel({ scene, updateBackgroundColor, updateAmbientLi
   const [updateScene, { isLoading: isSavingScene }] = useUpdateSceneMutation();
   const [uploadHdri, { isLoading: isUploadingHdri }] = useUploadSceneHdriMutation();
 
+  const config = scene.config ?? { backgroundColor: '#000000', ambientLightIntensity: 0.5, environmentHdriPath: undefined };
+
   // --- Background color ---
-  const [bgColor, setBgColor] = useState(scene.config.backgroundColor);
+  const [bgColor, setBgColor] = useState(config.backgroundColor);
   const debouncedBgColor = useDebounce(bgColor, 400);
 
   useEffect(() => {
-    if (debouncedBgColor === scene.config.backgroundColor) return;
+    if (debouncedBgColor === config.backgroundColor) return;
     updateBackgroundColor(debouncedBgColor);
     updateScene({ sceneId: scene.id, body: { config: { backgroundColor: debouncedBgColor } } }).catch(() => {
       notifications.show({ color: 'red', title: 'Error', message: 'Failed to save background color' });
@@ -73,11 +75,11 @@ export function SceneConfigPanel({ scene, updateBackgroundColor, updateAmbientLi
   }, [debouncedBgColor]);
 
   // --- Ambient light ---
-  const [ambientIntensity, setAmbientIntensity] = useState(scene.config.ambientLightIntensity);
+  const [ambientIntensity, setAmbientIntensity] = useState(config.ambientLightIntensity);
   const debouncedAmbient = useDebounce(ambientIntensity, 400);
 
   useEffect(() => {
-    if (debouncedAmbient === scene.config.ambientLightIntensity) return;
+    if (debouncedAmbient === config.ambientLightIntensity) return;
     updateAmbientLight(debouncedAmbient);
     updateScene({ sceneId: scene.id, body: { config: { ambientLightIntensity: debouncedAmbient } } }).catch(() => {
       notifications.show({ color: 'red', title: 'Error', message: 'Failed to save ambient intensity' });
@@ -85,7 +87,7 @@ export function SceneConfigPanel({ scene, updateBackgroundColor, updateAmbientLi
   }, [debouncedAmbient]);
 
   // --- HDRI upload ---
-  const hasHdri = Boolean(scene.config.environmentHdriPath);
+  const hasHdri = Boolean(config.environmentHdriPath);
 
   const handleHdriDrop = useCallback(
     async (files: File[]) => {

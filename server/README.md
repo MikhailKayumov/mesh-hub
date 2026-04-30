@@ -1,6 +1,6 @@
 # MeshHub — Server
 
-NestJS REST API backend for the MeshHub 3D model sharing platform. Provides authentication, user management, 3D model storage, and reference data.
+NestJS REST API backend for the MeshHub 3D model sharing platform. Provides authentication, user management, organizations and workspaces, 3D model storage with versioning/comments/annotations, scene editing, public embed projects with API-key access, in-app notifications, and reference data.
 
 ## Tech Stack
 
@@ -10,9 +10,9 @@ NestJS REST API backend for the MeshHub 3D model sharing platform. Provides auth
 | Language | TypeScript 6 |
 | Database | PostgreSQL 18 via TypeORM 0.3 |
 | Auth | JWT (HS512) + DB sessions, cookie transport |
-| File storage | Local filesystem (pluggable strategy) |
+| File storage | Pluggable strategy — local filesystem (default) or S3 per organization (AES-256-CBC encrypted config) |
 | Email | Nodemailer / Yandex SMTP |
-| Queue | Bull (Redis) |
+| Queue | Bull (Redis) for webhook delivery |
 | Docs | Swagger / OpenAPI 3 at `/swagger` |
 | Runtime | Node.js ≥ 24.11.1 |
 
@@ -27,6 +27,11 @@ NestJS REST API backend for the MeshHub 3D model sharing platform. Provides auth
 | [docs/configuration.md](docs/configuration.md) | All environment variables |
 | [docs/file-storage.md](docs/file-storage.md) | File storage strategy, directory layout, limits |
 | [docs/modules.md](docs/modules.md) | Per-module controller/service/DTO reference |
+| [docs/organizations.md](docs/organizations.md) | Organizations, workspaces, members, API keys, webhooks, subscriptions |
+| [docs/scenes.md](docs/scenes.md) | Scene editor backend — scenes, scene models, scene lights |
+| [docs/embed.md](docs/embed.md) | Embed projects — public viewer endpoints and API-key access |
+| [docs/model-3d.md](docs/model-3d.md) | 3D model module — versioning, comments, annotations, display config |
+| [docs/notifications.md](docs/notifications.md) | In-app notifications — events, delivery, read state |
 | [AGENTS.md](AGENTS.md) | LLM-friendly conventions and how-to guides |
 
 ## Quick Start (local)

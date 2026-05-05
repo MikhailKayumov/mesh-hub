@@ -77,6 +77,22 @@ export class ScenesController {
     return this.scenesService.listScenesUsingModel(modelId, user ?? null);
   }
 
+  @Get('stats')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'Public scene statistics' })
+  public async getStats(): Promise<{ totalScenes: number }> {
+    return this.scenesService.getStats();
+  }
+
+  @Get('public')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: [SceneListItemResponseDto] })
+  public async listPublicScenes(@Query('search') search?: string): Promise<SceneListItemResponseDto[]> {
+    return this.scenesService.listPublicScenes(search);
+  }
+
   @Post(':id/clone')
   @Roles([UserRoles.User])
   @HttpCode(HttpStatus.CREATED)

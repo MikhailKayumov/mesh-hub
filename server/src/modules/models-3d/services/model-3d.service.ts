@@ -7,7 +7,7 @@ import { Model3dFileEntity } from '@/database/entities/models-3d/model-3d-file.e
 import { Model3dEntity } from '@/database/entities/models-3d/model-3d.entity';
 import { UserEntity } from '@/database/entities/user/user.entity';
 import { WorkspaceEntity } from '@/database/entities/workspaces/workspace.entity';
-import { PaginationDto, PaginationResponseDto } from '@/decorators/pagination';
+import { PaginationDto, PaginationResponseDto, PaginationSortOrder } from '@/decorators/pagination';
 import { FilesService } from '@/modules/files/files.service';
 import { Model3dResponseDto } from '@/modules/models-3d/dto/model-3d.response.dto';
 import { Model3dUpdateRequestDto } from '@/modules/models-3d/dto/model-3d.update.request.dto';
@@ -84,6 +84,13 @@ export class Model3dService {
     }
 
     return Model3dMapper.toModel3DResponse(model, user);
+  }
+
+  public async getStats(): Promise<{ totalModels: number }> {
+    const totalModels = await this.model3dRepository.count({
+      where: { visibility: ModelVisibility.Public },
+    });
+    return { totalModels };
   }
 
   public async get3DModels(
@@ -234,11 +241,15 @@ export class Model3dService {
   }
 
   private async find3DModels(
-    { size, skip }: PaginationDto,
+    { size, skip, sort }: PaginationDto,
     { categories, workspaceId, search }: Models3dRequestDto,
     user: UserEntity | undefined,
     asCurrent = false,
   ) {
+    const sortItem = sort?.[0];
+    const sortField = sortItem?.field ?? 'createdAt';
+    const sortOrder = sortItem?.by ?? PaginationSortOrder.DESC;
+
     const qb = this.model3dRepository
       .createQueryBuilder('model')
       .innerJoinAndSelect('model.file', 'file')
@@ -246,7 +257,7 @@ export class Model3dService {
       .innerJoinAndSelect('user.userMeta', 'userMeta')
       .leftJoinAndSelect('model.categories', 'category')
       .where('1=1')
-      .orderBy('model.createdAt', 'ASC');
+      .orderBy(`model.${sortField}`, sortOrder);
 
     if (asCurrent && user) {
       qb.andWhere({ user: { id: user.id } });

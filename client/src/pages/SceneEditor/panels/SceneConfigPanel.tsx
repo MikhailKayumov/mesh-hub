@@ -60,7 +60,11 @@ export function SceneConfigPanel({ scene, updateBackgroundColor, updateAmbientLi
   const [updateScene, { isLoading: isSavingScene }] = useUpdateSceneMutation();
   const [uploadHdri, { isLoading: isUploadingHdri }] = useUploadSceneHdriMutation();
 
-  const config = scene.config ?? { backgroundColor: '#000000', ambientLightIntensity: 0.5, environmentHdriPath: undefined };
+  const config = scene.config ?? {
+    backgroundColor: '#000000',
+    ambientLightIntensity: 0.5,
+    environmentHdriPath: undefined,
+  };
 
   // --- Background color ---
   const [bgColor, setBgColor] = useState(config.backgroundColor);

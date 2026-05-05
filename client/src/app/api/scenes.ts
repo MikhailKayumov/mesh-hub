@@ -5,6 +5,7 @@ import type {
   SceneObjectUpsertDto,
   SceneResponseDto,
   SceneUpdateRequestDto,
+  ScenesStatsResponse,
 } from './dto.ts';
 import { Api } from './base.ts';
 import { ApiTags } from './tags.ts';
@@ -13,6 +14,19 @@ import { ApiUrls } from './urls.ts';
 export const ScenesApi = Api.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
+    scenesStats: build.query<ScenesStatsResponse, void>({
+      query: () => ({
+        method: 'GET',
+        url: ApiUrls.ScenesStats,
+      }),
+    }),
+    publicScenes: build.query<SceneListItemResponseDto[], { search?: string }>({
+      query: ({ search }) => ({
+        method: 'GET',
+        url: ApiUrls.PublicScenes,
+        params: search ? { search } : undefined,
+      }),
+    }),
     scenes: build.query<SceneListItemResponseDto[], { workspaceId?: string; userId?: string; search?: string }>({
       providesTags: (_result, _error, { workspaceId, userId }) => [
         { type: ApiTags.Scenes, id: workspaceId ?? userId ?? 'personal' },
@@ -149,6 +163,8 @@ export const ScenesApi = Api.injectEndpoints({
 });
 
 export const {
+  useScenesStatsQuery,
+  usePublicScenesQuery,
   useScenesQuery,
   useSceneQuery,
   useCreateSceneMutation,

@@ -82,6 +82,14 @@ export class Model3dController {
     return this.model3dService.get3DModels(pagination, filters, user);
   }
 
+  @Get('stats')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'Public model statistics' })
+  public async getStats(): Promise<{ totalModels: number }> {
+    return this.model3dService.getStats();
+  }
+
   @Get(':modelId')
   @Public()
   @HttpCode(HttpStatus.OK)

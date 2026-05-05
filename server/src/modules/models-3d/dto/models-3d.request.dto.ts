@@ -1,9 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
-// todo: validation
 export class Models3dRequestDto {
   @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
   public search?: string;
 
   @ApiPropertyOptional()

@@ -559,6 +559,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 200,
               "type": "string"
             }
           },
@@ -581,6 +582,32 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "sortField",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "name"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
             }
           },
           {
@@ -615,6 +642,7 @@
             "name": "search",
             "in": "query",
             "schema": {
+              "maxLength": 200,
               "type": "string"
             }
           },
@@ -636,6 +664,24 @@
             "in": "query",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "description": "Field to sort by",
+            "name": "sortField",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "description": "Sort direction",
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           }
@@ -685,6 +731,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 200,
               "type": "string"
             }
           },
@@ -707,6 +754,32 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "sortField",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "name"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
             }
           },
           {
@@ -741,6 +814,7 @@
             "name": "search",
             "in": "query",
             "schema": {
+              "maxLength": 200,
               "type": "string"
             }
           },
@@ -762,6 +836,24 @@
             "in": "query",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "description": "Field to sort by",
+            "name": "sortField",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "description": "Sort direction",
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           }
@@ -795,6 +887,20 @@
                 }
               }
             }
+          }
+        },
+        "tags": [
+          "models-3d"
+        ]
+      }
+    },
+    "/api/models-3d/stats": {
+      "get": {
+        "operationId": "Model3dController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Public model statistics"
           }
         },
         "tags": [
@@ -3239,6 +3345,20 @@
                 }
               }
             }
+          }
+        },
+        "tags": [
+          "scenes"
+        ]
+      }
+    },
+    "/api/scenes/stats": {
+      "get": {
+        "operationId": "ScenesController_getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Public scene statistics"
           }
         },
         "tags": [

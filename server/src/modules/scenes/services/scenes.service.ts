@@ -47,6 +47,13 @@ export class ScenesService {
   // Scene CRUD
   // ---------------------------------------------------------------------------
 
+  public async getStats(): Promise<{ totalScenes: number }> {
+    const totalScenes = await this.sceneRepository.count({
+      where: { visibility: 'public' },
+    });
+    return { totalScenes };
+  }
+
   public async createScene(user: UserEntity, dto: SceneCreateRequestDto): Promise<SceneResponseDto> {
     if (dto.workspaceId) {
       await this.requireMember(dto.workspaceId, user.id);
@@ -79,6 +86,11 @@ export class ScenesService {
     } catch (err) {
       this.logger.warn(`Failed to dispatch scene.created webhook for scene ${sceneId}: ${String(err)}`);
     }
+  }
+
+  public async listPublicScenes(search?: string): Promise<SceneListItemResponseDto[]> {
+    const scenes = await this.sceneRepository.findPublicScenes(search);
+    return scenes.map(SceneMapper.toListItemResponse);
   }
 
   public async listScenes(

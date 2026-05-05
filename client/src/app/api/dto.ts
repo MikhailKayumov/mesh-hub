@@ -1,3 +1,11 @@
+export interface Models3DStatsResponse {
+  totalModels: number;
+}
+
+export interface ScenesStatsResponse {
+  totalScenes: number;
+}
+
 export interface PaginationDtoSortItem {
   field: string;
   by: 'ASC' | 'DESC';

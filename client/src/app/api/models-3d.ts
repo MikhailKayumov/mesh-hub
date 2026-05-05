@@ -2,6 +2,7 @@ import { Api } from '@/app/api/base.ts';
 import type {
   PaginationResponseDto,
   Model3DResponseDto,
+  Models3DStatsResponse,
   PaginationDto,
   Model3DUpdateRequestDto,
   SceneListItemResponseDto,
@@ -9,7 +10,15 @@ import type {
 import { ApiTags } from '@/app/api/tags.ts';
 import { ApiUrls } from '@/app/api/urls.ts';
 
-export type Models3DQueryParams = PaginationDto<any> & { workspaceId?: string; search?: string };
+export type Models3DQueryParams = {
+  skip?: number;
+  size?: number;
+  workspaceId?: string;
+  search?: string;
+  categories?: number[];
+  /** Sort format: [+-][fieldName], e.g. "-createdAt" = DESC, "name" = ASC */
+  sort?: string;
+};
 
 export const Models3dApi = Api.injectEndpoints({
   endpoints: (build) => ({
@@ -65,6 +74,12 @@ export const Models3dApi = Api.injectEndpoints({
         };
       },
     }),
+    models3DStats: build.query<Models3DStatsResponse, void>({
+      query: () => ({
+        method: 'GET',
+        url: ApiUrls.Models3DStats,
+      }),
+    }),
     getScenesUsingModel: build.query<SceneListItemResponseDto[], string>({
       providesTags: (_result, _error, modelId) => [{ type: ApiTags.Scenes, id: `using-model:${modelId}` }],
       query: (modelId) => ({
@@ -84,4 +99,5 @@ export const {
   useModel3DQuery,
   useSaveThumbnailFromBase64Mutation,
   useGetScenesUsingModelQuery,
+  useModels3DStatsQuery,
 } = Models3dApi;

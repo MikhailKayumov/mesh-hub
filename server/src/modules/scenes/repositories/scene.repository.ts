@@ -47,4 +47,19 @@ export class SceneRepository extends Repository<SceneEntity> {
       .orderBy('scene.createdAt', 'DESC')
       .getMany();
   }
+
+  public findPublicScenes(search?: string): Promise<SceneEntity[]> {
+    const qb = this.createQueryBuilder('scene')
+      .leftJoinAndSelect('scene.objects', 'objects')
+      .where('scene.visibility = :visibility', { visibility: 'public' })
+      .orderBy('scene.createdAt', 'DESC')
+      .take(48);
+
+    const term = search?.trim();
+    if (term) {
+      qb.andWhere('(scene.name ILIKE :search OR scene.description ILIKE :search)', { search: `%${term}%` });
+    }
+
+    return qb.getMany();
+  }
 }

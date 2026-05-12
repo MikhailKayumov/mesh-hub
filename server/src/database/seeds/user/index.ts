@@ -1,10 +1,11 @@
-import { INestApplication } from '@nestjs/common';
+import { SeedModule } from '../type';
 import seedRoles from './seedRoles';
 import seedUsers from './seedUsers';
 
-// const logger = new Logger('DatabaseSeedingResources');
+const UsersSeedModule: SeedModule = {
+  name: 'User seeds',
+  seeds: [seedRoles],
+  dev: [seedUsers],
+};
 
-export default async function seedUsersData(app: INestApplication) {
-  await seedRoles(app);
-  await seedUsers(app);
-}
+export default UsersSeedModule;

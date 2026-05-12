@@ -26,7 +26,7 @@ const predefinedUserData: UserData = [
     isTest: true,
   },
 ];
-const TEST_USER_AMOUNT = 10;
+const TEST_USER_AMOUNT = 2;
 
 export default async function seedUsers(app: INestApplication) {
   logger.log('Seed users');

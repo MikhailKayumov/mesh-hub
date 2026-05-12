@@ -1,18 +1,33 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
-import seedUsersData from './user';
-// import seedResources from '@/database/seeds/resources';
+import ContentSeedModule from './content';
+import ResourcesSeedModule from './resources';
+import { SeedModule } from './type';
+import UsersSeedModule from './user';
 
 const logger = new Logger('DatabaseSeeding');
+
+const Modules: SeedModule[] = [ResourcesSeedModule, UsersSeedModule, ContentSeedModule];
 
 async function run() {
   const app = await NestFactory.create(AppModule);
 
-  logger.log('Start seeding');
+  logger.log('Start seeding...');
 
-  // await seedResources(app);
-  await seedUsersData(app);
+  for (const module of Modules) {
+    const { name, seeds, dev } = module;
+
+    logger.log(`Seeding ${name} module...`);
+
+    for (const seed of seeds) {
+      await seed(app);
+    }
+
+    for (const seed of dev ?? []) {
+      await seed(app);
+    }
+  }
 }
 
 run()

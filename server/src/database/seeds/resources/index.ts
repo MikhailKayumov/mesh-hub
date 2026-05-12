@@ -1,12 +1,11 @@
-import { INestApplication, Logger } from '@nestjs/common';
-import seedCGSoft from '@/database/seeds/resources/seedCGSoft';
-import seedCategories from '@/database/seeds/resources/seedCategories';
+import { SeedModule } from '../type';
+import seedCGSoft from './seedCGSoft';
+import seedCategories from './seedCategories';
 
-const logger = new Logger('DatabaseSeedingResources');
+const ResourcesSeedModule: SeedModule = {
+  name: 'Resources seeds',
+  seeds: [seedCGSoft, seedCategories],
+  dev: [],
+};
 
-export default async function seedResources(app: INestApplication) {
-  logger.log('Seed resources');
-
-  await seedCGSoft(app);
-  await seedCategories(app);
-}
+export default ResourcesSeedModule;

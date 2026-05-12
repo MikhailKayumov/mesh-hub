@@ -585,32 +585,6 @@
             }
           },
           {
-            "name": "sortField",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "createdAt",
-                "name"
-              ]
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Sort direction",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "ASC",
-                "DESC"
-              ]
-            }
-          },
-          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -664,24 +638,6 @@
             "in": "query",
             "schema": {
               "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "description": "Field to sort by",
-            "name": "sortField",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "description": "Sort direction",
-            "name": "sortBy",
-            "in": "query",
-            "schema": {
               "type": "string"
             }
           }
@@ -757,32 +713,6 @@
             }
           },
           {
-            "name": "sortField",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "createdAt",
-                "name"
-              ]
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Sort direction",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "ASC",
-                "DESC"
-              ]
-            }
-          },
-          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -836,24 +766,6 @@
             "in": "query",
             "schema": {
               "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "description": "Field to sort by",
-            "name": "sortField",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "description": "Sort direction",
-            "name": "sortBy",
-            "in": "query",
-            "schema": {
               "type": "string"
             }
           }
@@ -3359,6 +3271,39 @@
         "responses": {
           "200": {
             "description": "Public scene statistics"
+          }
+        },
+        "tags": [
+          "scenes"
+        ]
+      }
+    },
+    "/api/scenes/public": {
+      "get": {
+        "operationId": "ScenesController_listPublicScenes",
+        "parameters": [
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SceneListItemResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [

@@ -18,7 +18,7 @@
     "tscheck": "tsc -p tsconfig.json --noEmit",
     "db:init": "ts-node src/database/init/index.ts && npm run migration:run",
     "db:init:hard": "cross-env DROP_SCHEMAS=true ts-node src/database/init/index.ts && npm run migration:run",
-    "db:seeds": "node ./dist/src/database/seeds/index.js",
+    "db:seeds": "npm run build && node ./dist/src/database/seeds/index.js",
     "db:build": "npm run db:init && npm run db:seeds",
     "db:build:hard": "npm run db:init:hard && npm run db:seeds",
     "typeorm": "typeorm-ts-node-commonjs",

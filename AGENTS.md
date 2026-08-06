@@ -15,6 +15,31 @@ Always read the relevant sub-system AGENTS file before touching code in that wor
 
 ---
 
+## Copilot Customization Map
+
+Use these files together; avoid duplicating large lists across documents.
+
+| File | Purpose |
+|---|---|
+| [`.github/copilot-instructions.md`](.github/copilot-instructions.md) | Repository-wide Copilot rules and path-specific instruction index |
+| [`.github/instructions/`](.github/instructions/) | Path-specific instruction files with `applyTo` targeting |
+| [`.github/agents/README.md`](.github/agents/README.md) | Installed custom agents catalog and usage examples |
+| [`.github/skills/README.md`](.github/skills/README.md) | Installed skills catalog and slash-command quick start |
+
+## Customization Precedence
+
+1. Architecture and domain constraints in this AGENTS file and subsystem AGENTS files are the source of truth.
+2. Repository-wide and path-specific Copilot instructions provide operational guidance.
+3. Agents and skills are task accelerators and must not override architecture invariants or established conventions.
+
+## Maintenance Rule
+
+- When adding or removing agents, update `.github/agents/README.md`.
+- When adding or removing skills, update `.github/skills/README.md`.
+- Keep discoverability links in `README.md` and `.github/copilot-instructions.md` in sync with current catalogs.
+
+---
+
 ## Monorepo Layout
 
 ```
@@ -22,10 +47,10 @@ mesh-hub/
 ├── client/               # React 19 SPA — Feature-Sliced Design
 │   ├── src/
 │   │   ├── app/          # Bootstrap, store, RTK Query base, router
-│   │   ├── entities/     # Domain hooks + Redux slices (user, model-3d)
+│   │   ├── entities/     # Domain hooks + Redux slices (user, model-3d, organization)
 │   │   ├── pages/        # Route-level components (lazy loaded)
 │   │   ├── shared/       # Cross-cutting utilities, theme, constants
-│   │   └── widgets/      # Composite reusable UI blocks (19 widgets)
+│   │   └── widgets/      # Composite reusable UI blocks (25 widgets)
 │   ├── nginx/            # Nginx config for the production container
 │   ├── Dockerfile        # Multi-stage: Node build → Nginx serve
 │   └── AGENTS.md
@@ -46,9 +71,6 @@ mesh-hub/
 │   ├── Dockerfile        # Multi-stage: Node build → Node run
 │   └── AGENTS.md
 │
-├── codegen/              # swagger-typescript-api scripts
-│   └── package.json
-│
 ├── data/                 # Runtime volumes (gitignored)
 │   ├── db/               # PostgreSQL data
 │   └── files/            # Uploaded files (production mount)
@@ -68,11 +90,11 @@ mesh-hub/
 |---|---|
 | Framework | NestJS 11 on Express |
 | Language | TypeScript 6 |
-| ORM | TypeORM 0.3 (4 schemas, snake_case naming strategy) |
+| ORM | TypeORM 0.3 (8 schemas, snake_case naming strategy) |
 | Database | PostgreSQL 18 |
 | Auth | JWT HS512, HttpOnly cookie, DB-persisted sessions |
 | Password hash | PBKDF2, sha512, 64-byte output, per-user salt |
-| File upload | Multer (multipart), stored on local filesystem |
+| File upload | Multer (multipart); `IFileStorageStrategy` — `FsFileStorageStrategy` (local) or `S3FileStorageStrategy` (AWS S3 v3, per-org) | — |
 | Email | `@nestjs-modules/mailer` + Nodemailer (Yandex SMTP) |
 | Queue | Bull (Redis) via `@nestjs/bull` |
 | Rate limiting | `@nestjs/throttler` (real IP via X-Forwarded-For) |
@@ -206,6 +228,26 @@ resources.category      — model categories
 model_3d.model_3d       — model record (title, description, visibility, owner)
 model_3d.model_3d_file  — uploaded file metadata (filename, size, MIME)
 model_3d.model_3d_categories — M:M join with categories
+model_3d.model_comment  — threaded comments on a model
+model_3d.model_annotation — 3D annotation points (world-space position + text)
+model_3d.model_version  — versioned model file uploads (one active at a time)
+
+organizations.organization  — org record (name, slug, owner)
+organizations.org_member    — member records with role (owner/admin/viewer)
+organizations.org_subscription — plan (starter/growth/enterprise), storage config, S3 settings (AES-256-CBC encrypted)
+organizations.org_invite    — pending email invites with token
+
+workspaces.workspace        — workspace scoped under an org
+workspaces.workspace_member — M:N join between workspace and org members
+
+embed.api_key               — hashed API keys for embed viewer access (scoped to org)
+embed.embed_project         — embed project (model, domain whitelist, logo, customization)
+embed.embed_domain_whitelist — allowed domains for an embed project
+embed.model_view_log        — analytics log entry per embed viewer load
+
+scenes.scene        — scene record (name, workspace, HDRI path, camera bookmark)
+scenes.scene_object — an object placed in the scene (model ref, position, rotation, scale)
+scenes.scene_light  — a light in the scene (type, color, intensity, position)
 ```
 
 **Base classes** (`src/database/entities/base.ts`):
@@ -222,12 +264,21 @@ Schema and table name constants are in `src/database/constants.ts`. Always refer
 server/files/          (dev)   |   ./data/files/   (Docker production volume)
 ├── avatars/
 │   └── <userId>.<ext>                 # overwritten on avatar update
-└── models-3d/
-    ├── temp/                          # multer upload target; cleaned after move
-    └── <modelId>/
-        ├── <filename>.glb/.gltf       # the 3D model file
-        └── thumbnail.png              # optional screenshot (always PNG)
+├── models-3d/
+│   ├── temp/                          # multer upload target; cleaned after move
+│   └── <modelId>/
+│       ├── <filename>.glb/.gltf       # the 3D model file
+│       └── thumbnail.png              # optional screenshot (always PNG)
+├── scenes/
+│   └── <sceneId>/
+│       ├── hdri.hdr                   # optional HDRI environment map (max 20 MB)
+│       └── thumbnail.png             # optional scene screenshot
+└── embed/
+    └── logos/
+        └── <projectId>.<ext>          # embed project logo (max 1 MB)
 ```
+
+> **S3 mode:** when an org has `S3FileStorageStrategy` configured, all files are stored in the org's S3 bucket under the same key structure. The strategy is selected per-org by `FilesService.getStrategyForOrg(orgId)`.
 
 Limits:
 
@@ -247,9 +298,17 @@ Global prefix: `/api` (configurable via `APP_GLOBAL_PREFIX`).
 |---|---|---|
 | Auth | `/auth` | signup, login, logout, refresh, session management |
 | User | `/user` | profile CRUD, avatar upload, password change/reset |
-| 3D Models | `/models-3d` | model CRUD, file upload, thumbnail |
+| 3D Models | `/models-3d` | model CRUD, file upload, thumbnail, versions |
 | Resources | `/resources` | categories + CG software reference lists |
-| Files (static) | `/user/avatar`, `/models-3d/files` | direct file serving |
+| Reviews | `/models-3d/:id/comments` | threaded comments per model |
+| Annotations | `/models-3d/:id/annotations` | 3D annotation points per model; reorder endpoint |
+| Organizations | `/organizations` | org CRUD, member invites/roles, subscription/storage config |
+| Workspaces | `/workspaces` | workspace CRUD, member management (scoped to org) |
+| API Keys | `/api-keys` | key generation (returns raw key once), listing, revocation |
+| Embed | `/embed` | embed projects, domain whitelist, analytics, logo upload, public viewer |
+| Scenes | `/scenes` | scene CRUD, objects, lights, HDRI upload, thumbnail |
+| Storage Quota | — | service-only (no controller); provides quota checks for org |
+| Files (static) | `/user/avatar`, `/models-3d/files`, `/embed/projects/:id/logo`, `/scenes/:id/hdri` | direct file serving |
 
 Default auth: **all endpoints are authenticated** via `JwtAuthGuard` (global).
 Use `@Public()` to opt out. Use `@Roles(UserRoles.Admin)` to require a role.
@@ -290,6 +349,18 @@ ApiTags = {
   Get3DModel:          'Get3DModels',        // ⚠ same value — intentional
   CurrentUser3DModels: 'CurrentUser3DModels',
   CurrentUser3DModel:  'CurrentUser3DModel',
+  Organization:        'Organization',
+  OrgMembers:          'OrgMembers',
+  OrgSubscription:     'OrgSubscription',
+  Workspaces:          'Workspaces',
+  Workspace:           'Workspace',
+  EmbedProjects:       'EmbedProjects',
+  EmbedProject:        'EmbedProject',
+  Comments:            'Comments',
+  Annotations:         'Annotations',
+  ModelVersions:       'ModelVersions',
+  Scenes:              'Scenes',
+  Scene:               'Scene',
 }
 ```
 
@@ -358,19 +429,10 @@ Networks: `net-db` (db ↔ api), `net-api` (api ↔ client).
 
 ---
 
-## Code Generation (swagger → TypeScript types)
+## DTO Types
 
-```bash
-# Step 1: export OpenAPI spec from the server
-cd server
-npm run swagger:generate   # → server/swagger.openapi3.json
-
-# Step 2: generate DTO types for the client
-cd ../codegen
-npm install
-npm run generate-client-types:no-client
-# → client/src/app/api/new_dto.ts
-```
+Client-side DTO types live in `client/src/app/api/dto.ts` and are maintained manually.
+When the server API changes, update `dto.ts` by hand to reflect the new response/request shapes.
 
 ---
 
@@ -382,3 +444,23 @@ npm run generate-client-types:no-client
 - **Never send JWT in Authorization header** — the API reads tokens exclusively from HttpOnly cookies.
 - **`synchronize: false`** — database schema is managed only via TypeORM migrations, never via auto-sync.
 - **Soft-delete** — all entities extending the base classes include a `deletedAt` column; use TypeORM's soft-delete methods, not hard deletes, unless the operation explicitly requires removal.
+- **Tests live under `<workspace>/test/<kind>/`, never alongside source.** Each kind (`unit`, `e2e`, …) gets its own subfolder with a dedicated `jest.config.json` and a matching script in `package.json`. Adding a new test kind means adding a new subfolder + config + script — do not put a spec next to the file it covers.
+
+---
+
+## Test Layout
+
+```
+server/
+└── test/
+    ├── unit/                        # mocked deps, no DB / network
+    │   ├── jest.config.json
+    │   └── <module>/<thing>.spec.ts
+    └── e2e/                         # Supertest against real Nest app
+        ├── jest.config.json
+        └── <feature>.e2e-spec.ts
+```
+
+- Run scripts: `npm test` → unit, `npm run test:e2e` → e2e (both defined in `server/package.json`).
+- Both Jest configs set `rootDir` to the workspace root and map `^@/(.*)$` → `<rootDir>/src/$1`, so specs use `@/...` imports just like source files.
+- The same convention applies if/when frontend tests are introduced — they go under `client/test/<kind>/`, never next to the component.

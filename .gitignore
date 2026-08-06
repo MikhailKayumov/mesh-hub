@@ -22,3 +22,5 @@ yarn-error.log*
 /sketches
 
 /deploy/data
+
+.claude/*local*
